@@ -1,0 +1,43 @@
+# ---------------------------
+# 📄 LaTeX build artifacts
+# ---------------------------
+
+# Output files from LaTeX compilation
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+
+# Intermediate files from BibLaTeX/Biber
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+
+# Latexmk-generated files
+*.fdb_latexmk
+*.fls
+
+# Synctex (used for editor–PDF sync)
+*.synctex.gz
+
+# Editor backup and temp files
+*~
+*.tmp
+*.bak
+*.swp
+*.synctex.gz(busy)
+
+# VS Code settings (optional, keep only if local)
+.vscode/
+
+# Mac/Windows system files (optional but useful)
+.DS_Store
+Thumbs.db
