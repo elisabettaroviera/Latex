@@ -1,12 +1,12 @@
 # Fdb version 4
-["biber main"] 1761600991.60433 "main.bcf" "main.bbl" "main" 1761639585.03484 0
-  "main.bcf" 1761639584 107332 fd2e2365a51e63e1f68521f4b4bedfdc "pdflatex"
-  "references.bib" 1761600990 2669 cbc6e0311232451af8793169e0b5f617 ""
+["biber main"] 1761648164.25186 "main.bcf" "main.bbl" "main" 1761648382.53863 0
+  "main.bcf" 1761648382 107401 73b8644a92429c6dac291c9a8b22dd93 "pdflatex"
+  "references.bib" 1761648095 3095 58d0584fcb4b1320290205828797a144 ""
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1761639582.11523 "c:/Users/elisa/Desktop/THESIS REPOSITORY/Latex/About_GSE67919's_Application/main.tex" "main.pdf" "main" 1761639585.03573 0
+["pdflatex"] 1761648380.08502 "c:/Users/elisa/Desktop/THESIS REPOSITORY/Latex/About_GSE67919's_Application/main.tex" "main.pdf" "main" 1761648382.54028 0
   "C:/Users/elisa/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1761600780 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
   "C:/Users/elisa/AppData/Local/MiKTeX/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1000.pk" 1761599371 11548 bc66a91d685ccaa2c29986f93aeb6611 ""
   "C:/Users/elisa/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1761598758 24225047 eb6fc4cc38d9169832fbc6761d20e712 ""
@@ -142,15 +142,16 @@
   "C:/Users/elisa/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty" 1700127522 55487 80a65caedd3722f4c20a14a69e785d8f ""
   "Figures/Enrichment of EZH2 TF-binding sites among DNA methylation field defects..jpg" 1761572352 406515 1a9191334ebf20ad058bc7c396b0c050 ""
   "Figures/Examples of two FEMs centred around seed genes CAV1 and FSTL1 in ER+ breast cancer.jpg" 1761572813 218207 dc509fda83d1166e8c5649fecada75e9 ""
+  "Figures/The DFNA5 gene with annotation of the 22 CpGs..jpg" 1761646202 198630 5b71dcb1e5b1b407749268c13cf09510 ""
   "Figures/Validation of tumor specific classifier in tumors with metastases.jpg" 1761581162 99329 bf351068a1dcf89ba918ebc425cb7511 ""
   "Figures/polito_logo_2021_blu.jpg" 1761597602 2103073 817339b224b3e04dce5011efc56f10f3 ""
-  "c:/Users/elisa/Desktop/THESIS REPOSITORY/Latex/About_GSE67919's_Application/main.tex" 1761639581 39555 bf4df5e4ceb8644cec396c04e40aaffa ""
-  "main.aux" 1761639584 9956 0a4951fbb50772664224e48c60f3b701 "pdflatex"
-  "main.bbl" 1761600995 12690 5081a58f83143bc530b52c3002d46093 "biber main"
-  "main.out" 1761639584 2962 11c1a50938bbb6061069448c5886a414 "pdflatex"
-  "main.run.xml" 1761639584 2402 05765085d18e81025e591027ecbce8c4 "pdflatex"
-  "main.tex" 1761639581 39555 bf4df5e4ceb8644cec396c04e40aaffa ""
-  "main.toc" 1761639584 4350 70c1f8583ae0327759ddb5cee28c55dd "pdflatex"
+  "c:/Users/elisa/Desktop/THESIS REPOSITORY/Latex/About_GSE67919's_Application/main.tex" 1761648376 47382 a85a8766be9e7d7097ff3d2901e3e0e9 ""
+  "main.aux" 1761648382 11951 483caa41709137015ba2aa4bc2397f80 "pdflatex"
+  "main.bbl" 1761648166 15128 507ee4243789fed49ddc1c7d08ef9d46 "biber main"
+  "main.out" 1761648382 3511 ac688f18b1bf42c2ef8126d363875238 "pdflatex"
+  "main.run.xml" 1761648382 2402 05765085d18e81025e591027ecbce8c4 "pdflatex"
+  "main.tex" 1761648376 47382 a85a8766be9e7d7097ff3d2901e3e0e9 ""
+  "main.toc" 1761648382 5277 60552409772dd2f8ed20da046b19fd5e "pdflatex"
   (generated)
   "main.aux"
   "main.bcf"

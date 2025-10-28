@@ -362,7 +362,76 @@ The identified hyperV DVMCs often overlap with Polycomb (PRC2) target regions an
 \paragraph{Conclusion}
 This work provides quantitative evidence that DNA methylation changes in histologically normal tissue are more predictive of cancer risk than copy-number variations. The methodological framework—EpiDISH correction, iEVORA feature selection, and risk-score modeling—demonstrates a reproducible way to extract early epigenetic markers from array data (e.g., GSE67919, GSE69914). The findings support a model where epigenetic instability precedes and possibly drives genetic alterations during tumor initiation.
 
+\section{Large-scale analysis of DFNA5 methylation reveals its potential as biomarker for breast cancer}
 
+\paragraph{Keywords}
+DFNA5, breast cancer, DNA methylation, Illumina HumanMethylation450K, CpG biomarkers, logistic regression, AUC, survival, TCGA, ER status, ductal vs.\ lobular, prognostic markers~\cite{croes2018dfna5}.
+
+\paragraph{Study design and datasets}
+This study used The Cancer Genome Atlas (TCGA) to perform a large-scale, locus-specific analysis of DNA methylation in the \textit{DFNA5} (also known as \textit{GSDME}) gene in breast cancer. Only female, untreated, ductal or lobular breast adenocarcinoma samples were included. Methylation data were available for 668 primary breast adenocarcinomas and 85 histologically normal breast tissues sampled at a distance from the tumor; 79 of these patients had matched tumor/normal pairs. Expression data were available for 476 tumors and 56 normals (Agilent microarray) and 666 tumors and 71 normals (RNA-seq). Clinical parameters were collected for each patient: estrogen receptor (ER) status, progesterone receptor (PR) status, HER2 status, histological type (ductal vs.\ lobular), pathological tumor stage (I--IV), age at diagnosis, and overall survival (OS) up to 5 years after diagnosis. Three independent public datasets (GEO: GSE52865, GSE69914, GSE60185) were later used to externally validate classifier performance.
+
+\paragraph{Methylation and expression profiling}
+Genome-wide DNA methylation profiles were obtained from TCGA level-3 Illumina HumanMethylation450K BeadChip data. For \textit{DFNA5}, 22 distinct CpG loci on chromosome~7 were available. Methylation at each CpG was represented as a $\beta$ value, defined as the ratio of methylated probe intensity to the total probe intensity (methylated + unmethylated). Gene expression of \textit{DFNA5} was quantified using Agilent microarray and RNA-seq data, normalized as $\log_2$ fold-changes or abundance. Only 5 of 570 sequenced breast adenocarcinomas carried \textit{DFNA5} variants (3 missense, 2 silent), indicating that \textit{DFNA5} is rarely mutated; therefore, analysis focused on epigenetic regulation.
+
+\paragraph{Statistical framework}
+All statistical analyses were performed in \texttt{R}. Linear mixed models with batch as random effect and age as covariate were used for methylation/expression associations. For paired tumor/normal comparisons, paired $t$-tests were used. Stepwise logistic regression with tenfold cross-validation identified CpGs that best discriminated tumor from normal tissues, optimizing the area under the ROC curve (AUC). Cox proportional hazards models assessed whether CpGs contributed to 5-year OS prediction beyond age and tumor stage.
+
+\paragraph{DFNA5 methylation landscape}
+The 22 CpGs were distributed as follows:
+\begin{itemize}[label=-]
+\item \textbf{Gene body (6 CpGs):} CpG17790129, CpG14205998, CpG04317854, CpG12922093, CpG17569154, CpG19260663.
+\item \textbf{Promoter region (14 CpGs):} CpG09333471, CpG00473134, CpG03995857, CpG07320646, CpG07293520, CpG04770504, CpG24805239, CpG01733570, CpG25723149, CpG22804000, CpG07504598, CpG15037663, CpG19706795, CpG20764575.
+\item \textbf{Upstream region (2 CpGs):} CpG06301139, CpG26712096.
+\end{itemize}
+Breast cancers displayed clear promoter hypermethylation and gene-body hypomethylation. In the promoter, tumor $\beta$-values ranged 0.6–0.75 vs.\ 0.3–0.4 in normal tissue, while gene-body CpGs showed the opposite pattern (hypomethylation in tumor). These results indicate focal hypermethylation of regulatory regions concurrent with hypomethylation of coding regions.
+
+\paragraph{Relationship between methylation and expression}
+Tumors exhibited both promoter hypermethylation and lower \textit{DFNA5} expression compared with normal tissue, but direct CpG–expression correlations were modest ($|\rho|<0.35$). Multivariate models explained about 20\% of expression variance in tumors, suggesting methylation partially controls gene repression. This partial correlation may reflect tumor heterogeneity and the complex regulation of \textit{DFNA5} transcription.
+
+\paragraph{Diagnostic classifier}
+Stepwise logistic regression identified two CpGs that maximized tumor/normal discrimination:
+\begin{itemize}[label=-]
+\item \textbf{CpG12922093} (gene body, hypomethylated in tumor),
+\item \textbf{CpG07504598} (promoter, hypermethylated in tumor).
+\end{itemize}
+The logistic model:
+\[
+\text{Pr}(\text{tumor}) = \frac{e^{7.49 - 10.77 \beta(\text{CpG12922093}) + 6.33 \beta(\text{CpG07504598})}}{1 + e^{7.49 - 10.77 \beta(\text{CpG12922093}) + 6.33 \beta(\text{CpG07504598})}}
+\]
+yielded tenfold cross-validated AUC = 0.93 (95\% CI: 0.92–0.95). Using a cutoff of 0.87 achieved 85.3\% sensitivity and 100\% specificity (accuracy 87\%). The model replicated well in GSE52865, GSE69914, and GSE60185 datasets. In contrast, \textit{DFNA5} expression alone provided lower AUCs (0.82–0.88), confirming methylation as a superior diagnostic marker.
+
+\paragraph{Clinicopathological correlations}
+\begin{itemize}[label=-]
+\item \textbf{ER status:} Promoter CpGs were more methylated in ER$^+$ tumors, gene-body CpGs less methylated. \textit{DFNA5} expression was lower in ER$^+$ cancers.
+\item \textbf{PR status:} 15 CpGs correlated with PR status, but expression differences were not significant.
+\item \textbf{HER2 status:} Only CpG04317854 associated with HER2; expression unaffected.
+\item \textbf{Tumor stage:} Five CpGs showed significant stage correlation.
+\item \textbf{Histology:} Lobular carcinomas had higher promoter methylation (10 CpGs) and higher \textit{DFNA5} expression than ductal carcinomas, suggesting subtype-specific regulation.
+\end{itemize}
+
+\paragraph{Prognostic relevance}
+Cox models revealed that five \textbf{gene-body CpGs}—CpG17790129, CpG14205998, CpG12922093, CpG17569154, and CpG19260663—were significantly associated with 5-year OS ($p<0.05$). Higher methylation at these loci predicted worse prognosis independently of stage and age. Promoter CpGs, while diagnostic, were not prognostic. Hence, promoter methylation primarily distinguishes tumors, while gene-body methylation predicts aggressiveness.
+
+\paragraph{Replication protocol}
+To reproduce these findings:
+\begin{enumerate}
+\item Extract $\beta$-values for the 22 CpGs from 450K data (TCGA or GEO).
+\item Perform paired $t$-tests for tumor vs.\ normal and visualize mean $\beta$ by genomic position.
+\item Fit logistic regression with all 22 CpGs; select the 2-CpG model above for classification.
+\item Validate AUC through cross-validation or on external datasets (expected $\text{AUC}\approx0.93$).
+\item Associate CpG methylation with ER, PR, HER2, histology using linear mixed models.
+\item Fit Cox models for OS; expect significant gene-body CpG effects on prognosis.
+\end{enumerate}
+
+\paragraph{Conclusion}
+Croes et al.\ demonstrated that \textit{DFNA5} promoter hypermethylation and gene-body hypomethylation constitute a reproducible epigenetic signature in breast cancer. The 22 CpGs identified delineate functional regions with diagnostic and prognostic value. The 2-CpG logistic model (CpG12922093, CpG07504598) offers a compact, high-specificity classifier (AUC = 0.93). Gene-body methylation correlates with poor prognosis, suggesting that \textit{DFNA5} methylation captures both tumor presence and aggressiveness. These results position \textit{DFNA5} as a promising epigenetic biomarker for breast cancer detection and risk stratification.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figures/The DFNA5 gene with annotation of the 22 CpGs..jpg} % o .png, .pdf, .eps...
+    \caption{The DFNA5 gene with annotation of the 22 CpGs. The 10 exons and the promoter and gene body region of the DFNA5 gene are indicated.}
+    \label{fig:22CpG}
+\end{figure}
 
 \printbibliography
 \end{document}

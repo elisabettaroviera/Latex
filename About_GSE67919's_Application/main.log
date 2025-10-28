@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.10.27)  28 OCT 2025 09:19
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2025.10.27)  28 OCT 2025 11:46
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -814,7 +814,7 @@ Package hyperref Info: Link coloring ON on input line 54.
 \@outlinefile=\write4
 \openout4 = `main.out'.
 
-<Figures/polito_logo_2021_blu.jpg, id=23, 3522.15875pt x 2491.3075pt>
+<Figures/polito_logo_2021_blu.jpg, id=27, 3522.15875pt x 2491.3075pt>
 File: Figures/polito_logo_2021_blu.jpg Graphic file (type jpg)
 <use Figures/polito_logo_2021_blu.jpg>
 Package pdftex.def Info: Figures/polito_logo_2021_blu.jpg  used on input line 59.
@@ -838,51 +838,76 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
  [1
 
 {C:/Users/elisa/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map} <./Figures/polito_logo_2021_blu.jpg>] [2] [3]
-<Figures/Enrichment of EZH2 TF-binding sites among DNA methylation field defects..jpg, id=79, 1067.48813pt x 983.92593pt>
+<Figures/Enrichment of EZH2 TF-binding sites among DNA methylation field defects..jpg, id=83, 1067.48813pt x 983.92593pt>
 File: Figures/Enrichment of EZH2 TF-binding sites among DNA methylation field defects..jpg Graphic file (type jpg)
 <use Figures/Enrichment of EZH2 TF-binding sites among DNA methylation field defects..jpg>
 Package pdftex.def Info: Figures/Enrichment of EZH2 TF-binding sites among DNA methylation field defects..jpg  used on input line 182.
 (pdftex.def)             Requested size: 263.78506pt x 243.12831pt.
-
+ [4]
 Overfull \hbox (16.94759pt too wide) in paragraph at lines 189--189
 []\OT1/cmr/bx/n/14.4 The in-te-gra-tive epigenomic-transcriptomic land-scape of ER-positive breast
  []
 
-[4 <./Figures/Enrichment of EZH2 TF-binding sites among DNA methylation field defects..jpg>] [5]
-<Figures/Examples of two FEMs centred around seed genes CAV1 and FSTL1 in ER+ breast cancer.jpg, id=114, 1204.5pt x 579.66562pt>
+[5 <./Figures/Enrichment of EZH2 TF-binding sites among DNA methylation field defects..jpg>] [6]
+<Figures/Examples of two FEMs centred around seed genes CAV1 and FSTL1 in ER+ breast cancer.jpg, id=129, 1204.5pt x 579.66562pt>
 File: Figures/Examples of two FEMs centred around seed genes CAV1 and FSTL1 in ER+ breast cancer.jpg Graphic file (type jpg)
 <use Figures/Examples of two FEMs centred around seed genes CAV1 and FSTL1 in ER+ breast cancer.jpg>
 Package pdftex.def Info: Figures/Examples of two FEMs centred around seed genes CAV1 and FSTL1 in ER+ breast cancer.jpg  used on input line 257.
 (pdftex.def)             Requested size: 263.78506pt x 126.94305pt.
- [6 <./Figures/Examples of two FEMs centred around seed genes CAV1 and FSTL1 in ER+ breast cancer.jpg>] [7]
-<Figures/Validation of tumor specific classifier in tumors with metastases.jpg, id=145, 628.59843pt x 602.25pt>
+ [7 <./Figures/Examples of two FEMs centred around seed genes CAV1 and FSTL1 in ER+ breast cancer.jpg>]
+<Figures/Validation of tumor specific classifier in tumors with metastases.jpg, id=147, 628.59843pt x 602.25pt>
 File: Figures/Validation of tumor specific classifier in tumors with metastases.jpg Graphic file (type jpg)
 <use Figures/Validation of tumor specific classifier in tumors with metastases.jpg>
 Package pdftex.def Info: Figures/Validation of tumor specific classifier in tumors with metastases.jpg  used on input line 309.
 (pdftex.def)             Requested size: 158.27264pt x 151.6373pt.
- [8 <./Figures/Validation of tumor specific classifier in tumors with metastases.jpg>] [9] [10] (main.aux)
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[8] [9 <./Figures/Validation of tumor specific classifier in tumors with metastases.jpg>]
+Overfull \hbox (30.28596pt too wide) in paragraph at lines 365--365
+[]\OT1/cmr/bx/n/14.4 Large-scale anal-y-sis of DFNA5 methy-la-tion re-veals its po-ten-tial as biomarker
+ []
+
+[10]
+Overfull \hbox (32.78569pt too wide) in paragraph at lines 383--384
+[]\OT1/cmr/bx/n/10 Promoter re-gion (14 CpGs): \OT1/cmr/m/n/10 CpG09333471, CpG00473134, CpG03995857, CpG07320646, CpG07293520, CpG04770504,
+ []
+
+
+Overfull \hbox (21.7645pt too wide) in paragraph at lines 383--384
+\OT1/cmr/m/n/10 CpG24805239, CpG01733570, CpG25723149, CpG22804000, CpG07504598, CpG15037663, CpG19706795, CpG20764575. 
+ []
+
+[11]
+<Figures/The DFNA5 gene with annotation of the 22 CpGs..jpg, id=192, 1204.5pt x 666.99188pt>
+File: Figures/The DFNA5 gene with annotation of the 22 CpGs..jpg Graphic file (type jpg)
+<use Figures/The DFNA5 gene with annotation of the 22 CpGs..jpg>
+Package pdftex.def Info: Figures/The DFNA5 gene with annotation of the 22 CpGs..jpg  used on input line 431.
+(pdftex.def)             Requested size: 369.29749pt x 204.49577pt.
+ [12 <./Figures/The DFNA5 gene with annotation of the 22 CpGs..jpg>] [13] (main.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-04>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 11C1A50938BBB6061069448C5886A414;2962.
+(rerunfilecheck)             Checksum: AC688F18B1BF42C2EF8126D363875238;3511.
 Package logreq Info: Writing requests to 'main.run.xml'.
 \openout1 = `main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 26904 strings out of 474486
- 526249 string characters out of 5743754
- 1941542 words of memory out of 5000000
- 48815 multiletter control sequences out of 15000+600000
+ 26939 strings out of 474486
+ 527110 string characters out of 5743754
+ 1940542 words of memory out of 5000000
+ 48827 multiletter control sequences out of 15000+600000
  563042 words of font info for 55 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 73i,8n,81p,1477b,2122s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 73i,8n,81p,1477b,2044s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\elisa\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1000.pk><C:/Users/elisa/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users/elisa/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/elisa/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmcsc10.pfb><C:/Users/elisa/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/elisa/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/elisa/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/elisa/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/elisa/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/elisa/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/elisa/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/elisa/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/elisa/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users/elisa/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on main.pdf (10 pages, 3075917 bytes).
+Output written on main.pdf (13 pages, 3292083 bytes).
 PDF statistics:
- 265 PDF objects out of 1000 (max. 8388607)
- 94 named destinations out of 1000 (max. 500000)
- 61 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 310 PDF objects out of 1000 (max. 8388607)
+ 117 named destinations out of 1000 (max. 500000)
+ 74 words of extra memory for PDF output out of 10000 (max. 10000000)
 

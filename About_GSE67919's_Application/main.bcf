@@ -2367,6 +2367,7 @@
     <bcf:citekey order="3" intorder="1">gao2015integrative</bcf:citekey>
     <bcf:citekey order="4" intorder="1">ding2019pancancer</bcf:citekey>
     <bcf:citekey order="5" intorder="1">gao2018dnamethylation</bcf:citekey>
+    <bcf:citekey order="6" intorder="1">croes2018dfna5</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="none">

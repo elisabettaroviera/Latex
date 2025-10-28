@@ -318,6 +318,65 @@
       \verb https://doi.org/10.1016/j.ebiom.2018.04.025
       \endverb
     \endentry
+    \entry{croes2018dfna5}{article}{}
+      \name{author}{7}{}{%
+        {{hash=668438c29bf2f3019251a78cc627fbc5}{%
+           family={Croes},
+           familyi={C\bibinitperiod},
+           given={J.},
+           giveni={J\bibinitperiod}}}%
+        {{hash=6c5b044d6f025431e3bc4c890289ee5b}{%
+           family={Couck},
+           familyi={C\bibinitperiod},
+           given={L.},
+           giveni={L\bibinitperiod}}}%
+        {{hash=bbd9c1772ec208eeb8ba37254a77485e}{%
+           family={De\bibnamedelima Wilde},
+           familyi={D\bibinitperiod\bibinitdelim W\bibinitperiod},
+           given={J.},
+           giveni={J\bibinitperiod}}}%
+        {{hash=966692f80c00ca8124836ac903556f14}{%
+           family={Tummers},
+           familyi={T\bibinitperiod},
+           given={P.},
+           giveni={P\bibinitperiod}}}%
+        {{hash=d7da33382cbe83c55916dfa1d64a82ad}{%
+           family={Denys},
+           familyi={D\bibinitperiod},
+           given={P.},
+           giveni={P\bibinitperiod}}}%
+        {{hash=29d20ee1ae2e77e1295f1b48b179a451}{%
+           family={De\bibnamedelima Schrijver},
+           familyi={D\bibinitperiod\bibinitdelim S\bibinitperiod},
+           given={P.},
+           giveni={P\bibinitperiod}}}%
+        {{hash=6424d3c71135fa105079ba8f48173cbd}{%
+           family={Van\bibnamedelima Camp},
+           familyi={V\bibinitperiod\bibinitdelim C\bibinitperiod},
+           given={L.},
+           giveni={L\bibinitperiod}}}%
+      }
+      \strng{namehash}{7c5e28237c3d529bb99f084ed2cdf6b4}
+      \strng{fullhash}{65320066a8497f04e4ce1b2e3adca5b6}
+      \strng{bibnamehash}{7c5e28237c3d529bb99f084ed2cdf6b4}
+      \strng{authorbibnamehash}{7c5e28237c3d529bb99f084ed2cdf6b4}
+      \strng{authornamehash}{7c5e28237c3d529bb99f084ed2cdf6b4}
+      \strng{authorfullhash}{65320066a8497f04e4ce1b2e3adca5b6}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Clinical Epigenetics}
+      \field{number}{1}
+      \field{title}{Large-scale analysis of DFNA5 methylation reveals its potential as biomarker for breast cancer}
+      \field{volume}{10}
+      \field{year}{2018}
+      \field{pages}{51\bibrangedash 64}
+      \range{pages}{14}
+      \verb{doi}
+      \verb 10.1186/s13148-018-0490-9
+      \endverb
+    \endentry
   \enddatalist
 \endrefsection
 \endinput
