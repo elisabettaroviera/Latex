@@ -177,6 +177,69 @@ The integrative analysis reveals that ER+ breast cancers form two principal epig
     \label{fig:FEMs}
 \end{figure}
 
+\section{An integrative pan-cancer-wide analysis of epigenetic enzymes reveals universal patterns of epigenomic deregulation in cancer}
+
+\paragraph{Keywords}
+DNA methylation, epigenetic enzymes, Illumina 450K, TCGA, HyperZ/HypoZ instability indices, UHRF1, WHSC1, CBX7, GSE69914, breast cancer subtypes, luminal B, promoter hypermethylation, open-sea hypomethylation, pan-cancer analysis~\cite{yang2015integrative}.
+
+\paragraph{Study aim and rationale}
+The study performs a pan-cancer integrative analysis of DNA methylation and gene expression across ten tumor types from The Cancer Genome Atlas (TCGA), in order to identify epigenetic enzymes (EEs) that act as consistent regulators of cancer-associated methylation changes. Epigenetic enzymes are defined broadly as writers, erasers, readers and editors of chromatin and DNA methylation states (212 genes total). The goal is to (i) determine which EE genes are universally deregulated across cancers, (ii) quantify how their expression relates to genome-wide DNA hypermethylation and hypomethylation, and (iii) prioritize candidate master regulators of these methylation changes. A particular focus is on whether these processes are shared across different tissues and tumor types, and whether methylation instability detected in TCGA tumors is also observable in external breast tissue methylation data such as GSE69914.
+
+\paragraph{Data sources and preprocessing}
+Matched RNA-Seq (gene-level, log$_2$-transformed RSEM values) and DNA methylation data (Illumina HumanMethylation450K $\beta$-values) were collected from TCGA for ten cancer types, including breast, bladder, colon, head and neck, kidney, liver, lung adenocarcinoma, lung squamous, thyroid, and endometrial carcinoma. Quality control relied on singular value decomposition to confirm that the dominant source of variation was biological (tumor vs.\ normal) rather than technical batch structure. For methylation arrays, probes with excessive missingness were removed, missing values were imputed using $k$-nearest neighbors, and type~II probe bias was corrected using BMIQ. DNA methylation data from an independent breast tissue cohort (GSE69914; 30 healthy normals, 21 normal-adjacent to tumor, and 165 tumors profiled on Illumina 450K) were processed analogously (minfi, impute, BMIQ) and used to test whether ``normal-adjacent'' samples already carry field defects comparable to tumor, or whether they can still function as a quasi-normal reference for large-scale deviations.
+
+\paragraph{Genome-wide methylation instability indices (HyperZ and HypoZ)}
+To quantify global epigenetic disruption per tumor, two \textit{instability indices} were defined for each cancer sample by comparing that sample to reference normal tissue from the same organ:
+\begin{itemize}[label=-]
+    \item \textbf{HyperZ}: measures aberrant promoter CpG-island \textit{hypermethylation}. For each promoter CGI cluster, a Z-score is computed relative to normals. Only positive deviations (hypermethylation relative to normal) contribute, and the mean of these positive deviations defines HyperZ for that tumor.
+    \item \textbf{HypoZ}: measures aberrant \textit{hypomethylation} in low-CpG-density ``open sea'' regions (intergenic). For each open-sea cluster, the absolute negative deviation from normal methylation contributes to the index. The mean of these hypomethylation deviations defines HypoZ.
+\end{itemize}
+These indices summarize how far a given tumor departs from the normal epigenome along two distinct axes: focal promoter CGI hypermethylation vs.\ large-scale open-sea hypomethylation. When HyperZ and HypoZ were plotted against each other for tumors within each cancer type, they were only weakly correlated (per-cancer $R^2 \approx 0.1$ or less), indicating that promoter CGI hypermethylation and intergenic hypomethylation are at least partially independent processes. In breast cancer specifically, luminal~B tumors showed the highest HyperZ and HypoZ scores, consistent with stronger epigenetic deregulation compared to luminal~A, and HyperZ was also elevated in HER2$^+$ tumors. This supports that the instability indices capture clinically relevant subtype differences.
+
+\paragraph{Universal differential expression of epigenetic enzyme genes}
+Expression of the 212 curated EE genes was compared between tumor and matched/adjacent normal tissue for each TCGA cancer type using moderated $t$-tests. A gene was considered ``consistently deregulated'' if it showed the same direction of change (up or down) in at least 8 of the 10 cancers at nominal $p < 0.05$. This yielded 62 EE genes with pan-cancer deregulation: 35 recurrently overexpressed (putative epigenetic oncogenes) and 27 recurrently underexpressed (putative epigenetic tumor suppressors). The probability of observing this many consistently deregulated genes by chance, given 212 candidates, was estimated to be effectively zero (binomial model $P \ll 10^{-30}$). The overexpressed group included \textit{EZH2} (a PRC2 histone methyltransferase), \textit{DNMT1}, \textit{DNMT3A}, \textit{DNMT3B} (DNA methyltransferases), multiple histone deacetylases (e.g.\ \textit{HDAC1}), \textit{KDM1A} (histone demethylase), and \textit{UHRF1} (a coordinator of maintenance methylation via DNMT1 recruitment). The underexpressed group included chromatin regulators such as \textit{CBX7} (polycomb- and H3K36-associated reader linked to tumor suppression), and histone acetyltransferases (\textit{KAT2B}, \textit{KAT5}) and PRDM-family methyltransferases (\textit{PRDM2}, \textit{PRDM5}). This step narrows down which epigenetic modifiers are repeatedly altered at the transcriptional level across tissues.
+
+\paragraph{Linking EE expression to global hypermethylation and hypomethylation}
+Next, the expression level of each EE gene was correlated (Pearson correlation, converted to Fisher $Z$) with HyperZ and HypoZ across tumor samples, cancer type by cancer type. Genes with significant ($p<0.05$) and directionally consistent correlations in at least 6 of the 10 cancers were retained. This analysis showed:
+\begin{itemize}[label=-]
+    \item Certain EE genes correlate positively with HyperZ (higher expression $\rightarrow$ stronger promoter CGI hypermethylation relative to normal) across many cancer types.
+    \item Other EE genes correlate positively with HypoZ (higher expression $\rightarrow$ stronger open-sea hypomethylation).
+    \item Generally, EE genes associated with HyperZ are \textit{not} the same as those associated with HypoZ, reinforcing that promoter CGI hypermethylation and intergenic hypomethylation are controlled by partially distinct regulatory programs.
+\end{itemize}
+An important exception is that a few genes (\textit{EZH2}, \textit{PCNA}, etc.) show consistent association with both HyperZ and HypoZ, suggesting that proliferative/repair-linked programs can influence both focal hypermethylation and large-scale hypomethylation simultaneously.
+
+\paragraph{Candidate master regulators of the cancer methylome}
+By intersecting (i) pan-cancer differential expression status and (ii) pan-cancer correlation with HyperZ/HypoZ, the study prioritizes 18 EE genes as putative global methylome regulators. These split into:
+\begin{itemize}[label=-]
+    \item 11 overexpressed ``epigenetic oncogenes'' whose elevated expression is associated with higher HyperZ and/or HypoZ, including \textit{UHRF1}, \textit{WHSC1} (H3K36 methyltransferase), \textit{EZH2}, \textit{KDM1A}, \textit{SUV39H2}, \textit{HDAC1}, \textit{PCNA}, \textit{TTF2}, \textit{RAD54L}, \textit{TDG}, \textit{TET3}.
+    \item 7 underexpressed ``epigenetic tumor suppressors'' whose reduced expression is associated with higher HyperZ and/or HypoZ, including \textit{CBX7}, \textit{PRDM2}, \textit{PRDM5}, \textit{SETBP1}, \textit{EYA4}, \textit{DUSP1}, \textit{KAT2B}.
+\end{itemize}
+A causal network modeling step (partial correlation / multivariate regression) was then used to distinguish direct from indirect associations: for each EE gene, the correlation with HyperZ/HypoZ was re-estimated while controlling for (a) promoter methylation of that EE gene itself and (b) the expression of the other EE genes. After this adjustment, three genes emerged as the most plausible \textit{drivers} rather than passengers:
+\begin{itemize}[label=-]
+    \item \textbf{UHRF1}: overexpression associates with increased promoter CGI hypermethylation (higher HyperZ), suggesting a role in establishing or maintaining aberrant promoter hypermethylation in tumors. UHRF1 is known to recruit DNMT1 to hemimethylated DNA during replication.
+    \item \textbf{WHSC1} (also known as \textit{NSD2}): overexpression associates with increased promoter hypermethylation. WHSC1 writes H3K36me2/3, and altered H3K36 methylation has been linked to aberrant targeting of DNA methylation gains at CpG islands.
+    \item \textbf{CBX7}: loss of expression associates with widespread intergenic hypomethylation (higher HypoZ), implying that CBX7 normally helps maintain DNA methylation in open-sea regions; its downregulation may destabilize large-scale methylation domains.
+\end{itemize}
+These predictions imply that tumors across many tissues converge on the same few epigenetic nodes (UHRF1, WHSC1, CBX7) to reshape their methylomes.
+
+\paragraph{Shared genomic targets across cancer types}
+For each of the three predicted master regulators (UHRF1, WHSC1, CBX7), genomic regions (clusters of CpGs) were ranked by how strongly their methylation correlated with that regulator’s expression in one cancer type, then checked in other cancer types. The same promoter CpG islands and open-sea blocks tended to recur at the top of these rankings across distinct cancers. This indicates that the loci most sensitive to UHRF1- or WHSC1-associated hypermethylation and CBX7-associated hypomethylation are not tumor-type specific, but instead define a conserved “epigenetic response program” reused in multiple tissues.
+
+\paragraph{Relevance to GSE69914 and field effects in normal-adjacent tissue}
+Because TCGA “normal” tissues are often sampled adjacent to tumor, there is a risk that early field defects could bias the normal reference. To address this, Illumina 450K data from an external breast cohort (GSE69914) were analyzed: 30 normal tissues from healthy women, 21 histologically normal tissues adjacent to breast tumors, and 165 breast cancers. After identical preprocessing (minfi, BMIQ), methylation patterns in normal-adjacent breast tissue were compared to healthy normal tissue. Large-scale field defects were found to be rare, and the HyperZ/HypoZ instability indices were highly similar regardless of whether the reference normals came from healthy breast or adjacent-normal breast. This supports that the HyperZ/HypoZ framework is robust, and that the genome-wide deviations captured by these indices (promoter CGI hypermethylation and open-sea hypomethylation) reflect true tumor-associated remodeling rather than trivial contamination of the “normal” baseline.
+
+\paragraph{Implications}
+This work indicates that:
+\begin{itemize}[label=-]
+    \item Global promoter CGI hypermethylation and intergenic hypomethylation are partially decoupled processes within tumors and likely driven by distinct epigenetic programs.
+    \item A relatively small set of epigenetic regulators (notably \textit{UHRF1}, \textit{WHSC1}, and \textit{CBX7}) appears to control pan-cancer methylation instability, affecting the same genomic loci in multiple tissues.
+    \item Breast cancer subtypes with worse prognosis (e.g.\ luminal~B) show stronger global methylation instability (higher HyperZ/HypoZ), linking these methylome deviations to clinical aggressiveness.
+    \item External breast methylation data (GSE69914) confirm that these instability patterns are reproducible and not an artifact of using normal-adjacent tissue as baseline.
+\end{itemize}
+Overall, the study proposes a generalizable systems-level framework: quantify genome-wide methylation deviation (HyperZ/HypoZ), link it to expression of epigenetic enzyme genes, and nominate direct master regulators of tumor methylome remodeling. This framework directly involves datasets such as GSE69914 and supports the idea that a limited set of conserved epigenetic mechanisms underlies methylome deregulation across cancers.
+
+
+
 
 \section{DNA methylation outliers in normal breast tissue identify field defects that are enriched in cancer}
 
@@ -433,6 +496,56 @@ metastatic breast cancer (GSE58999) and metastatic prostate cancer (GSE73549 and
     \label{fig:ROC}
 \end{figure}
 
+\section{EPISCORE: cell type deconvolution of bulk tissue DNA methylomes from single-cell RNA-Seq data}
+
+\paragraph{Keywords}
+DNA methylation, deconvolution, cell-type composition, breast tissue, Illumina 450K, single-cell RNA-Seq, EPISCORE, TCGA, GSE69914, cell-type-specific differential methylation~\cite{teschendorff2020episcore}.
+
+\paragraph{Aim}
+The work introduces \textbf{EPISCORE}, a computational pipeline that estimates cell-type proportions and detects cell-type-specific DNA methylation changes in bulk tissue samples. The core motivation is that most DNA methylation datasets (including breast cancer datasets on the Illumina HumanMethylation450K array such as GSE69914) are generated from heterogeneous tissues, where epithelial, stromal, endothelial, adipose, and immune cells are mixed. Without correcting for this heterogeneity, it is not possible to tell whether a methylation difference reflects a true epithelial (or stromal, etc.) change or just a shift in cellular composition. EPISCORE overcomes the lack of genome-wide single-cell methylation atlases by \textit{inferring} cell-type-specific DNA methylation reference profiles from single-cell \textit{RNA}-Seq atlases.
+
+\paragraph{Core idea}
+Instead of requiring purified cell-type DNA methylomes, EPISCORE learns which genes have promoter methylation that is predictably (usually anti-) correlated with their expression across many purified cell/tissue types. Those genes are then used as ``anchors'' to \textit{translate} single-cell RNA-Seq cell-type signatures into approximate, cell-type-specific methylation signatures. These inferred methylation signatures act as a reference to decompose any bulk 450K (or WGBS) sample into proportions of its constituent cell types and to localize differential methylation to specific cell types.
+
+\paragraph{EPISCORE workflow}
+EPISCORE proceeds in four main steps:
+\begin{enumerate}
+    \item \textbf{Build a tissue-specific single-cell expression reference.}  
+    Single-cell RNA-Seq atlases (e.g. mammary epithelium, stroma, endothelium, immune infiltrate) are clustered into major cell types (for breast: basal epithelial, luminal epithelial, stromal/fibroblast, endothelial, lymphocytes, macrophages). For each cell type, highly specific marker genes are selected (high expression in that type, near-zero in others). The result is a cell-type-by-gene matrix of median expression.
+    %
+    \item \textbf{Identify ``imputable'' genes with expression--methylation coupling.}  
+    Using \textit{independent} matched DNA methylation and bulk expression data from many purified primary cell types (Epigenomics Roadmap, Stem Cell Matrix Compendium), genes are scanned genome-wide. A gene is kept if its promoter (or enhancer) methylation and its expression are strongly anti-correlated across purified cell/tissue samples, after requiring sufficient dynamic range. This yields a core set ($\sim$2--3k) of genes for which promoter methylation can be predicted from expression.
+    %
+    \item \textbf{Impute a DNA methylation reference for the tissue.}  
+    For each marker gene that is both (i) cell-type-specific in single-cell RNA-Seq and (ii) “imputable”, a probabilistic model (logistic / Bayesian regression) is used to convert its median expression (per cell type) into an estimated promoter methylation level for that same cell type. Aggregating over all such genes produces a \textbf{synthetic, tissue-specific DNA methylation reference matrix}: rows = marker loci (CpGs near TSS/enhancers of those genes), columns = cell types (e.g. luminal epithelium, basal epithelium, fibroblast, endothelial, immune). Each locus also receives a weight reflecting confidence in the imputation.
+    %
+    \item \textbf{Deconvolution and cell-type-specific differential methylation.}  
+    Given a bulk Illumina 450K profile (for instance, normal breast, normal-adjacent breast, tumor breast from GSE69914), EPISCORE solves a robust weighted regression to estimate the fraction of each cell type in that sample using the imputed methylation reference.  
+    These estimated fractions are then passed to CellDMC, which fits interaction models to call \textbf{differentially methylated cytosines by cell type} (DMCTs): i.e. CpGs whose methylation shifts in the epithelial compartment vs. the stromal compartment, etc., between biological groups (e.g. ER$^+$ vs.\ triple-negative tumors; tumor vs.\ normal-adjacent tissue).
+\end{enumerate}
+
+\paragraph{Validation in lung and breast tissue}
+EPISCORE is validated on (i) lung squamous cell carcinoma and lung adenocarcinoma from TCGA, and (ii) breast tissue data including the Erlangen cohort/GSE69914 (50 normal breast, 42 normal-adjacent, 305 cancers profiled on the 450K array).  
+Key observations:
+\begin{itemize}[label=-]
+    \item In lung tumors, EPISCORE detects strong epithelial fractions (as expected) and reduced endothelial fractions. CellDMC then localizes thousands of cancer-associated differentially methylated CpGs to the epithelial compartment and, importantly, also to endothelial cells. Endothelial-specific DMCTs are enriched for TGF-$\beta$/SMAD2/3 signaling and endothelial-to-mesenchymal transition (EndoMT) programs, suggesting vascular remodeling that may facilitate invasion and metastasis.
+    \item In breast cancer, EPISCORE-derived deconvolution distinguishes basal-like (triple-negative) vs.\ luminal ER$^+$ tumors at the \textit{epithelial} level, not just at bulk level. Most CpGs that differ between ER$^+$ and triple-negative tumors are assigned specifically to the epithelial compartment, and these same CpGs reproduce differences seen directly in luminal vs.\ basal breast cancer cell lines.  
+    \item When applied to breast Illumina 450K data (including normal vs.\ normal-adjacent vs.\ tumor profiles from GSE69914), the method confirms that methylation deviations in normal-adjacent tissue are already detectable in the epithelium, consistent with ``field defects'' near tumors. This directly supports the interpretation that GSE69914 captures early, spatially localized epithelial epigenetic damage rather than mere shifts in stromal content.
+\end{itemize}
+
+\paragraph{Relevance for the GSE69914 analysis}
+For GSE69914-like data (paired normal breast, normal-adjacent breast, and tumor breast on the 450K array), EPISCORE provides:
+\begin{itemize}[label=-]
+    \item An estimated cellular composition per sample (luminal epithelium, basal epithelium, stroma/fibroblast, endothelium, immune).
+    \item A way to test whether methylation differences between normal and normal-adjacent tissue are epithelial-intrinsic (true early field defects) or driven by microenvironmental admixture.
+    \item A way to map which CpGs are specifically altered in epithelial cells of aggressive subtypes (e.g. triple-negative) versus luminal ER$^+$ cases, reproducing subtype biology.
+\end{itemize}
+
+\paragraph{Conclusion}
+EPISCORE shows that cell-type-resolved methylation analysis can be recovered \textit{without} having physical purified methylomes from each breast cell type. This is crucial for heterogeneous cohorts such as GSE69914, where early epigenetic lesions in morphologically ``normal-adjacent'' epithelium are subtle and would otherwise be obscured by stromal/immune admixture. The pipeline therefore justifies interpreting GSE69914 not only at bulk level but explicitly at the epithelial compartment level, using inferred per-sample cell-type fractions and epithelial-specific differentially methylated CpGs.
+
+
+
 
 \section{Prediction of Disease Genes Based on Stage-Specific Gene Regulatory Networks in Breast Cancer}
 
@@ -569,6 +682,281 @@ By integrating DNA methylation, gene expression, TF--target regulatory structure
     \caption{Workflow of the computational framework for predicting disease genes based on stage-specific gene regulatory network.}
     \label{fig:Workflow}
 \end{figure}
+
+
+\section{Inference of tissue relative proportions of the breast epithelial cell types luminal progenitor, basal, and luminal mature}
+
+\paragraph{Keywords}
+Breast epithelium, luminal progenitor cells, basal cells, luminal mature cells, DNA methylation deconvolution, RNA-seq deconvolution, TNBC, BRCA1 carriers, Fanconi anemia pathway, GSE69914, TCGA, cell-type proportions, RLM-pseudoinverse\cite{bartlett2021breastepithelial}.
+
+\paragraph{Goal of the study}
+The paper develops a computational framework to estimate the relative abundance of key breast epithelial subtypes --- luminal progenitor, luminal mature, and basal cells --- using bulk genomic data (DNA methylation arrays and RNA-seq). The motivation is that aggressive hormone receptor (HR)-negative, triple-negative breast cancers (TNBCs) are believed to originate from hormone-receptor-negative luminal progenitor cells. Therefore, being able to quantify the proportion of luminal progenitor-like cells in bulk tissue provides information about cancer risk and tumor phenotype. The method is designed for use in realistic cohort-scale data, including Illumina HumanMethylation450K datasets such as GSE69914 and TCGA breast cancer samples, where single-cell sequencing is not available for all individuals.
+
+\paragraph{Two-step deconvolution model}
+Cell-type proportions are inferred using a linear mixing model
+\[
+X = A W + \epsilon,
+\]
+where $X \in \mathbb{R}^{p \times n}$ is the observed bulk data (DNA methylation $\beta$-values or RNA-seq expression) across $p$ features and $n$ samples, $A \in \mathbb{R}^{p \times k}$ is a reference matrix containing cell-type-specific profiles for $k$ epithelial subtypes, and $W \in [0,1]^{k \times n}$ is the unknown matrix of mixing proportions (cell-type fractions per sample).\\
+The pipeline proceeds hierarchically:
+\begin{enumerate}
+    \item First, estimate broad tissue compartments (epithelial, adipose, fibroblast, immune) using DNA methylation reference profiles from prior studies.
+    \item Second, within the epithelial compartment, resolve the three epithelial subtypes of interest: luminal progenitor, luminal mature, and basal.
+\end{enumerate}
+Estimation of $W$ uses a robust linear model to compute a pseudo-inverse of $A$ (RLM-pseudoinverse, implemented via \texttt{rlm()} in \texttt{MASS} in R). Negative fitted weights (which are interpreted as noise) are truncated to zero, and column weights are renormalized to sum to one. This allows estimation of biologically interpretable cell-type proportions from standard 450K methylation data and from bulk RNA-seq.
+
+\paragraph{Reference matrix construction ($A$)}
+The reference matrix $A$ encodes the DNA methylation or RNA expression profiles of the three epithelial subtypes.\\
+For DNA methylation:
+\begin{itemize}[label=-]
+    \item Purified luminal progenitor, luminal mature, and basal epithelial cells were profiled by bisulfite sequencing.
+    \item CpG loci were retained only if (i) they were measured both in bisulfite-seq and in bulk Illumina 450K arrays (for downstream compatibility with datasets such as GSE69914), (ii) they showed low variance across non-epithelial lineages, (iii) they had at least a 0.5 difference in mean methylation between the epithelial subtype of interest and non-epithelial lineages, and (iv) they maximally discriminated the epithelial subtypes from each other.
+    \item This yielded a compact DNA methylation reference matrix $A \in [0,1]^{58 \times 3}$, where entries are subtype-specific methylation rates $\beta \in [0,1]$ at informative CpGs.
+\end{itemize}
+For RNA-seq:
+\begin{itemize}[label=-]
+    \item Single-cell RNA-seq data from 13{,}909 human breast epithelial cells were used to define luminal progenitor, luminal mature, and basal clusters.
+    \item Clusters were identified with an unsupervised pipeline: spectral graph Laplacian embedding followed by Gaussian Mixture Modeling (GMM-LE), and then validated with known subtype marker genes.
+    \item To enable deconvolution in bulk RNA-seq (which also contains adipose and stromal signal), synthetic reference profiles for stromal and adipose were generated by adapting bulk stromal/adipose libraries so that they were comparable in scale to epithelial single-cell profiles.
+    \item Informative RNA features for each subtype were ranked using either (1) a Mahalanobis-distance-based statistic that accounts for covariance between features, or (2) classical differential expression statistics (edgeR) contrasting each subtype against all others. The top $\sim$250 discriminating genes per subtype were used to assemble $A$.
+\end{itemize}
+This systematic construction of $A$ is crucial, because the accuracy of $W$ depends on having subtype-specific markers that are robust across platforms.
+
+\paragraph{Simulation robustness}
+The method was stress-tested using simulated bulk DNA methylation data created from the known reference $A$ and randomly generated mixing weights $W$. Increasing fractions of entries in $X$ were then randomly replaced by uniform noise. Even after replacing up to 40\% of the data with noise, the reconstructed subtype proportions remained accurate, with low mean squared error and with only a small fraction of samples failing to return valid estimates. This shows that the RLM-based inversion of $A$ is numerically stable and tolerant to noise/missingness typical of 450K arrays.
+
+\paragraph{DNA methylation vs RNA-seq agreement}
+To evaluate biological validity in real data (rather than only simulations), the method was applied to $n=175$ low-stage (Stage I--II) breast tumor biopsies from TCGA, for which both bulk DNA methylation and bulk RNA-seq data are available for the same samples. For each sample:
+\begin{itemize}[label=-]
+    \item Luminal progenitor, luminal mature, and basal proportions were inferred from DNA methylation using the hierarchical RLM-pseudoinverse approach.
+    \item The same proportions were inferred from RNA-seq using several published deconvolution tools (URSM, Bisque, MuSiC, CIBERSORTx) as well as the same RLM-pseudoinverse strategy.
+\end{itemize}
+Correlations between DNAme-based and RNA-based estimates were then computed. When $A$ was defined using the covariance-aware Mahalanobis-distance ranking and $W$ was inferred with the robust RLM-pseudoinverse, Pearson correlations between DNAme-based and RNA-based estimates of luminal progenitor and luminal mature fractions were very high ($r \approx 0.85$--$0.9$ with narrow 95\% CIs). Basal proportions showed moderate correlations ($r \approx 0.5$). These correlation values are notably higher than the typical correlation between mRNA and protein abundance ($\sim 0.4$), indicating good cross-platform consistency in subtype proportion estimates.\\
+This supports using Illumina 450K methylation datasets (including GSE69914) to infer epithelial subtype composition, even in the absence of matched RNA-seq.
+
+\paragraph{Application to breast cancer biopsies and normal tissue}
+The inferred proportions of luminal progenitor-like, luminal mature-like, and basal-like cells were examined in:
+\begin{itemize}[label=-]
+    \item Hormone receptor positive (HR$+$) vs. hormone receptor negative / triple-negative (TNBC) breast cancers.
+    \item Healthy breast tissue from BRCA1/FANCS mutation carriers.
+    \item Breast tumors from carriers of heterozygous mutations in non-BRCA Fanconi anemia (FA) pathway genes.
+\end{itemize}
+Key findings:
+\begin{itemize}[label=-]
+    \item TNBC / HR$-$ tumors showed elevated proportions of luminal progenitor-like cells. This is consistent with the model in which TNBC originates from an HR$-$ luminal progenitor lineage.
+    \item HR$+$ tumors showed higher luminal mature-like proportions, coherent with the fact that luminal mature cells are typically hormone receptor positive.
+    \item Healthy breast tissue from BRCA1 (FANCS) mutation carriers showed elevated luminal progenitor cell proportions compared to controls, in agreement with prior observations that BRCA1 carriers accumulate at-risk HR$-$ progenitor-like populations.
+    \item Tumors from carriers of heterozygous mutations in non-BRCA FA pathway genes (e.g. FANCD2, FANCG, FANCM) were enriched for luminal progenitor-like and basal-like profiles, and were more often HR$-$ compared to tumors from FA-pathway wild-type individuals. This suggests that defects in DNA damage repair pathways are linked to expansion of progenitor-like epithelial compartments that are predisposed to form HR$-$ / TNBC-like disease.
+\end{itemize}
+These results indicate that breast epithelial composition, as estimated from DNA methylation arrays such as GSE69914, reflects clinically relevant biology: specifically, the enrichment of luminal progenitor-like cells in tissues at risk for aggressive, HR$-$ phenotypes.
+
+\paragraph{Relevance to GSE69914 / replication notes}
+The study explicitly uses Illumina HumanMethylation450K data from TCGA and GEO (including GSE69914) to estimate epithelial subtype proportions in bulk breast tissue. The pipeline is directly reproducible on GSE69914 data:
+\begin{enumerate}
+    \item Preprocess 450K methylation data (background correction, removal of probes with $<95\%$ coverage, $k$NN imputation with $k=5$ for loci with detection $p>0.05$).
+    \item Extract $\beta$-values at the 58 informative CpGs that define the epithelial subtype reference matrix $A$.
+    \item Estimate broad compartments (epithelial, adipose, fibroblast, immune).
+    \item Within the epithelial compartment, solve $X \approx A W$ using the robust linear-model pseudoinverse (RLM-PI) to obtain luminal progenitor / luminal mature / basal proportions for each sample.
+    \item Optionally, model subtype proportions against clinical covariates such as hormone receptor status, BRCA1/FA-pathway mutation status, age, and tumor stage using standard linear regression.
+\end{enumerate}
+In short, this method turns bulk 450K methylation data into an approximate ``cell-type mixture profile'' for luminal progenitor, luminal mature, and basal epithelium. These proportions can then be correlated with tumor subtype, risk group, or mutation carrier status.
+
+\paragraph{Conclusion}
+The paper shows that DNA methylation arrays (including GSE69914) can be used not only for CpG-level differential methylation analysis, but also to infer biologically meaningful cell-type composition of the breast epithelium at scale. The deconvolution framework links high luminal progenitor content to HR$-$ / TNBC-like biology, BRCA1/FANCS carrier status, and FA-pathway defects, suggesting that subtype proportion estimates derived from bulk methylation are informative early indicators of aggressive tumor potential and may support risk stratification.
+
+
+\section{An improved epigenetic counter to track mitotic age in normal and precancerous tissues}
+
+\paragraph{Keywords}
+DNA methylation, Illumina 450K/EPIC, mitotic age, stem cell divisions, field defects, normal-adjacent tissue, TCGA, risk prediction, GSE69914-like breast cohorts~\cite{zhu2024stemtoc}.
+
+\paragraph{Aim and conceptual framework}
+The study develops and validates an epigenetic mitotic-age estimator called \textbf{stemTOC} (Stochastic Epigenetic Mitotic Timer of Cancer). stemTOC is designed to measure the cumulative number of stem-cell divisions (``mitotic age'') in a tissue sample, which is considered a key determinant of cancer risk and early malignant progression. The work focuses on using DNA methylation (DNAm) rather than somatic mutations to quantify mitotic age in normal tissues, precancerous lesions, and tumors across many organs, including breast.
+
+\paragraph{Data sources and link to breast cancer / GSE69914-type data}
+The method is trained and evaluated on large Illumina HumanMethylation450K / EPIC BeadChip datasets, including:
+\begin{itemize}[label=-]
+  \item normal breast tissue from cancer-free donors (\textit{``normal-healthy''}) vs. histologically normal breast tissue sampled adjacent to an invasive breast tumor (\textit{``normal-adjacent''}), using the same type of paired design as in GSE69914 and related Teschendorff breast cohorts (50 normal-healthy vs.\ 42 normal-adjacent samples),
+  \item TCGA normal-adjacent tissues and tumors across $\sim$15 cancer types,
+  \item precancerous lesions (e.g.\ ductal carcinoma in situ in breast, colon adenomas, Barrett's esophagus),
+  \item additional exposure/risk datasets (e.g.\ buccal swabs from smokers, liver tissue in obese individuals with NAFLD).
+\end{itemize}
+This makes the approach directly reusable for breast 450K datasets where ``normal-healthy'', ``normal-adjacent'', and tumor tissue are available, such as GSE69914-like designs.
+
+\paragraph{How stemTOC is constructed}
+The pipeline to build stemTOC is explicitly designed to avoid common confounders like cell-type heterogeneity and pure chronological age:
+\begin{enumerate}[label=\arabic*)]
+  \item \textbf{CpG preselection:} start from $\sim$30{,}000 CpG sites located near promoters (TSS200) that are \textit{consistently unmethylated} (DNAm $\beta<0.2$) across 86 fetal/neonatal tissue samples covering 13 tissue types. These CpGs represent an ``epigenetic ground state'' shared across cell types.
+  \item \textbf{In vitro mitotic filter:} keep only CpGs that \textit{gain} methylation (hypermethylate) as normal cells divide in culture (i.e.\ increasing population doublings), but \textit{do not} gain methylation under growth arrest (mitomycin or low serum). This yields 629 ``vitro-mitCpGs'' that seem to respond to cell division itself, not just time.
+  \item \textbf{In vivo aging filter:} further restrict to CpGs that also gain methylation with chronological age \textit{in vivo} in large whole-blood datasets, after adjusting for detailed immune cell composition. This step removes culture artefacts and keeps CpGs whose methylation realistically accumulates with stem/progenitor divisions in living tissue. This results in a final panel of 371 CpGs, called ``stemTOC CpGs''
+  \item \textbf{Handling stochasticity / field defects:} in real tissue, early carcinogenic changes are mosaic and heterogeneous: only a subset of cells in a ``normal-adjacent'' sample may carry epigenetic damage. Instead of averaging methylation across all 371 CpGs, stemTOC defines mitotic age for a sample as the \textbf{95th percentile (upper quantile)} of the $\beta$-values across those CpGs. This emphasizes the most advanced subclone(s) in that tissue. The optimal 95\% cut-off is calibrated by maximizing separation between normal-healthy vs.\ normal-adjacent breast tissue (50 vs.\ 42 samples from the breast dataset described above).
+\end{enumerate}
+
+\paragraph{Core results (biological validation)}
+Once defined, stemTOC is tested in multiple ways:
+\begin{itemize}[label=-]
+  \item \textbf{Chronological age vs.\ mitotic age in normal tissues:} in normal-adjacent tissues from TCGA, stemTOC correlates strongly with chronological age in high–self-renewal tissues such as colon/rectum, but shows weaker or no correlation in slowly cycling, hormone-sensitive tissues such as breast and endometrium. This matches the idea that tissues with faster stem-cell turnover accumulate mitotic divisions more linearly with age.
+  \item \textbf{Discriminating early-risk tissue:} stemTOC is consistently higher in \textit{normal-adjacent} breast tissue than in matched normal-healthy breast tissue, and similarly higher in other pre-invasive states (ductal carcinoma in situ in breast; colon adenoma; Barrett’s esophagus; gastric intestinal metaplasia; NAFLD-associated premalignant liver). Thus, the DNAm-based mitotic age is already elevated before full malignancy.
+  \item \textbf{Tumor purity / cell-of-origin:} in TCGA tumors across many cancer types (including breast ER+ and basal-like, colon, liver, pancreas, prostate, lung), stemTOC correlates with the inferred fraction of the tumor cell-of-origin (for example, luminal epithelial fraction in luminal breast cancer, hepatocyte fraction in liver cancer, basal epithelial fraction in lung squamous carcinoma). This indicates that higher mitotic age tracks expansion of the transformed lineage within the sample.
+  \item \textbf{Exposure to risk factors:} stemTOC increases with known carcinogenic exposures:
+    \begin{itemize}[label=-]
+      \item higher mitotic age in buccal epithelium of smokers vs.\ never-smokers (all same chronological age),
+      \item higher mitotic age in normal lung tissue from smokers vs.\ non-smokers after adjusting for epithelial content,
+      \item higher mitotic age in obese liver tissue with advanced NAFLD/fibrosis compared to non-fibrotic obese liver. 
+    \end{itemize}
+    This supports the interpretation that carcinogenic stressors accelerate mitotic age in the relevant epithelial compartment.
+  \item \textbf{Comparison to other epigenetic/replicative clocks:} stemTOC is benchmarked against previously published DNAm mitotic clocks (epiTOC, epiTOC2, EpiCMIT, HypoClock, RepliTali). It generally shows:
+    \begin{itemize}[label=-]
+      \item stronger association with tissue stem-cell division rate,
+      \item better discrimination between normal-healthy vs.\ normal-adjacent / precancerous tissue,
+      \item tighter coupling to tumor cell-of-origin fraction,
+      \item reduced sensitivity to shifts in cell-type composition.
+    \end{itemize}
+    This suggests that stemTOC is more specific to mitotic history than earlier clocks.
+  \item \textbf{Relation to mutational ``clock-like'' signatures:} stemTOC aligns with the burden of SBS1-type (MS1) somatic mutations, which are known to arise from deamination at methylated CpGs and scale with stem-cell division history, but not with SBS5-type (MS5) signatures. This supports that stemTOC is genuinely mitotic in nature.
+\end{itemize}
+
+\paragraph{Relevance for re-analysis of Illumina 450K breast data}
+For a breast 450K dataset containing (i) normal-healthy, (ii) normal-adjacent epithelium, and (iii) tumor, the study shows a practical recipe:
+\begin{itemize}[label=-]
+  \item quantify mitotic age per sample using the 371 stemTOC CpGs and the 95th-percentile rule,
+  \item confirm that normal-adjacent tissue already shows elevated mitotic age (i.e.\ early ``field defect''),
+  \item test whether mitotic age increases further in tumor,
+  \item relate mitotic age to inferred epithelial/tumor cell fraction and to clinical covariates (grade, proliferation, etc.).
+\end{itemize}
+This is exactly the scenario of GSE69914-like breast cohorts, where matched normal-adjacent tissue is available and field defects have already been described. The work therefore suggests that mitotic-age scoring (stemTOC) can be directly layered on top of that dataset to quantify early risk and clonal expansion in histologically normal breast tissue.
+
+\paragraph{Conclusion}
+In summary, stemTOC provides an Illumina 450K/EPIC-compatible DNAm score that captures mitotic age in both normal and precancerous tissue. It separates truly healthy tissue from ``normal-adjacent at risk'', scales with stem/progenitor expansion, correlates with tumor cell-of-origin content across many cancers (including breast), and increases with exposure to carcinogenic stressors such as smoking and obesity. This makes it a directly applicable framework to interpret early epigenetic damage and field defects in datasets like GSE69914.
+
+
+\section{Genome-wide discovery of circulating cell-free DNA methylation signatures for the differential diagnosis of triple-negative breast cancer}
+
+\paragraph{Keywords}
+Triple-negative breast cancer (TNBC), DNA methylation, circulating cell-free DNA (cfDNA), Illumina 450K / EPIC arrays, differential methylation, LASSO feature selection, logistic regression score, droplet digital PCR, subtype discrimination, GSE69914, TCGA. \cite{gao2025cfdna}.
+\paragraph{Aim and clinical motivation}
+Triple-negative breast cancer (TNBC) is clinically aggressive and lacks targeted endocrine/HER2 therapies, so deciding early (pre-surgery) whether a lesion is TNBC or a different subtype (non-TNBC) directly affects neoadjuvant strategy, prognosis counseling, and surgical planning. Current subtype calls rely on immunohistochemistry on tissue biopsy, which is invasive and slow. The study by Gao \textit{et al.} proposes a minimally invasive alternative: use DNA methylation patterns, measured either in tumor tissue or in plasma cfDNA, to \textbf{distinguish TNBC from non-TNBC}. 
+
+\paragraph{Study design overview}
+The workflow has four main steps:
+\begin{enumerate}
+    \item \textbf{Discovery in tumor tissue}: call differentially methylated CpG sites (DMCs) between TNBC and non-TNBC tumors from genome-wide arrays.
+    \item \textbf{Cross-cohort filtering / validation}: keep only CpGs that also separate TNBC vs.\ non-TNBC in a large external cohort, and remove CpGs methylated in blood leukocytes (to make them usable in cfDNA).
+    \item \textbf{Marker selection}: compress the CpGs to a minimal diagnostic panel using LASSO and build a methylation diagnostic score (MDS) with logistic regression.
+    \item \textbf{Liquid biopsy implementation}: translate the best markers into a multiplex droplet digital PCR (mddPCR) assay on plasma cfDNA, and test diagnostic power. 
+\end{enumerate}
+
+A crucial point is that one of the independent validation datasets is \textbf{GSE69914}, which is the breast tissue 450K dataset we are studying. This means GSE69914 has already been used to benchmark subtype-separating CpG signatures and to test whether TNBC methylation is distinguishable from other breast cancer subtypes. 
+
+\paragraph{Cohorts and preprocessing}
+\begin{itemize}[label=-]
+    \item \textbf{In-house discovery set}: 5 TNBC vs.\ 9 non-TNBC primary breast tumor tissues. DNA methylation was profiled on the Illumina HumanMethylationEPIC (850K) BeadChip. After QC (filtering, correction, normalization), CpGs with \(|\Delta \beta| > 0.10\) and \(p < 0.05\) were called differentially methylated between TNBC and non-TNBC. This lenient cutoff was chosen because the discovery set was small. This yielded 32{,}787 DMCs: about 28\% hypermethylated in TNBC and about 72\% hypomethylated in TNBC. Pathway enrichment of these DMCs highlighted signaling programs such as WNT, PI3K--AKT, MAPK, Ras, Rap1, focal adhesion, etc., which are relevant to invasion, survival, and metastasis. 
+    %
+    \item \textbf{TCGA validation set}: 83 TNBC vs.\ 691 non-TNBC tumors from TCGA (Illumina 450K). Here they applied a \textit{stricter} cutoff \(|\Delta \beta| > 0.25\) and \(p < 0.05\) to confirm which CpGs from discovery still show strong subtype-specific differential methylation in a large cohort. This reduced the list to 1{,}130 robust TNBC-vs-non-TNBC CpGs. 
+    %
+    \item \textbf{Blood background filter}: Because the final goal is a \textit{plasma cfDNA} test, they removed CpGs that are heavily methylated or unmethylated in white blood cells (WBC), to avoid background noise in liquid biopsy. Using WBC methylomes (GSE50132, \(n=233\)), they \emph{kept only} CpGs whose average \(\beta < 0.10\) or \(\beta > 0.90\) in WBC (i.e.\ nearly fully unmethylated or fully methylated in leukocytes). After this leukocyte filter, 113 CpGs remained as high-quality TNBC-vs-non-TNBC candidates. 
+    %
+    \item \textbf{Cross-cohort external datasets}: Besides TCGA, they used GEO breast cancer methylation datasets, including \textbf{GSE69914}, as an \textit{independent validation} cohort (342 tumors total are mentioned across GEO sets; GSE69914 provides Illumina 450K \(\beta\)-values for paired normal-adjacent and tumor samples and is widely used in breast methylation field-defect studies). 
+\end{itemize}
+
+\paragraph{Feature reduction and final marker panel}
+Even 113 CpGs are too many for a clinical test. Therefore:
+\begin{enumerate}
+    \item They examined pairwise correlations among the 113 CpGs and then ran LASSO (least absolute shrinkage and selection operator) with 10-fold cross-validation on the TCGA cohort to deal with multicollinearity and pick the minimal discriminative subset.
+    \item LASSO retained \textbf{8 CpG sites} with non-zero coefficients:
+    \begin{itemize}[label=-]
+        \item cg19758859 (in \textit{SASH1}, chr6, body)
+        \item cg01095157 (\textit{GORASP2}, chr2, TSS1500)
+        \item cg14534279 (no gene symbol assigned, chr10, intergenic region)
+        \item cg17588293 (\textit{ZBTB7B}, chr1, 5$^\prime$UTR)
+        \item cg06268921 (intergenic on chr1)
+        \item cg04016621 (\textit{GRK7}, chr3, TSS1500)
+        \item cg23247845 (intergenic on chr10)
+        \item cg02096552 (\textit{DISP1}, chr1, body)
+    \end{itemize}
+    Six of these CpGs were \textbf{hypomethylated} in TNBC vs.\ non-TNBC, and two were \textbf{hypermethylated} in TNBC. 
+    \item Using these 8 CpGs, they built a linear \textbf{Methylation Diagnostic Score (MDS)} by logistic regression:
+    \[
+        \mathrm{MDS} = \sum_i (\beta_i \times \text{coefficient}_i) + \text{intercept},
+    \]
+    where \(\beta_i\) is the methylation level (\(\beta\)-value) of CpG \(i\). 
+\end{enumerate}
+
+\paragraph{Diagnostic performance in tissues (TCGA and GSE69914)}
+The 8-CpG MDS cleanly separated TNBC from non-TNBC tumors:
+\begin{itemize}[label=-]
+    \item \textbf{In TCGA}: area under the ROC curve (AUC) \(= 0.922\) (95\% CI 0.895--0.950). With a decision cutoff of \(-2.51\), sensitivity was \(\sim 94\%\) in stage~I/II TNBC and \(\sim 82\%\) in stage~III/IV TNBC, at specificity \(\sim 85\%\) against non-TNBC. Importantly, the score also worked specifically in early-stage disease (stage~I/II TNBC vs.\ non-TNBC), where AUC remained above 0.93. 
+    %
+    \item \textbf{In GSE69914 (external validation)}: applying \emph{the same 8-CpG formula and the same cutoff}, the MDS still showed a clear TNBC vs.\ non-TNBC difference. The AUC was \(0.875\) (95\% CI 0.789--0.961), with sensitivity \(\sim 87\%\) and specificity \(\sim 90\%\). 
+\end{itemize}
+
+This is very important for me: \textbf{GSE69914 was explicitly used as an independent validation cohort for the subtype-classifier.}  
+In other words, GSE69914 is not just ``tumor vs.\ normal''---it was mined to show that specific CpG patterns reliably distinguish \emph{TNBC tumors} from \emph{non-TNBC tumors}, and that this can be summarized into a portable 8-CpG score. That score generalized across platforms (EPIC 850K discovery \(\rightarrow\) 450K validation) and across cohorts. 
+
+\paragraph{Prognostic signal in TNBC tissue}
+They next asked if any of these CpGs also stratify outcome \textit{within} TNBC. In TCGA TNBC cases:
+\begin{itemize}[label=-]
+    \item CpG \textbf{cg06268921} was significantly associated with both overall survival (OS) and disease-free survival (DFS). Patients with \emph{lower} methylation at cg06268921 had \emph{worse} survival.
+    \item In multivariable Cox models adjusting for age and clinical stage, cg06268921 remained an independent prognostic marker for TNBC, with hazard ratio (HR) \(\approx 0.25\) for OS and \(\approx 0.19\) for DFS when comparing high- vs.\ low-methylation groups (cutoff \(\beta = 0.50\)). Lower methylation was linked to poorer outcome. 
+\end{itemize}
+
+An external TNBC cohort (GSE72251) did not replicate this survival signal at strong significance, likely due to small size and heterogeneity, but the trend motivated trying to detect cg06268921 in plasma. 
+
+\paragraph{Translation to plasma: cfDNA assay and analytical sensitivity}
+To move toward a non-invasive clinical test, the authors developed a \textbf{multiplex droplet digital PCR (mddPCR)} assay targeting two of the 8 CpGs (cg06268921 and cg23247845) plus an internal control (\textit{ACTB}). Key technical points:
+\begin{itemize}[label=-]
+    \item Plasma cfDNA was isolated from 1--2 mL of blood from 33 TNBC and 80 non-TNBC patients.
+    \item Primers/probes were designed after bisulfite conversion. The ddPCR platform partitions DNA into droplets and counts methylated copies directly.
+    \item The assay limit of quantification (LOQ) for cg06268921 methylation was \(\sim 0.01\%\) (i.e.\ it can detect 1 methylated molecule among \(\sim 10{,}000\) unmethylated), which is vastly more sensitive than standard multiplex qMSP (\(\sim 5\%\) LOQ). 
+\end{itemize}
+
+\paragraph{cfDNA-based classification performance}
+In plasma cfDNA:
+\begin{itemize}[label=-]
+    \item \textbf{cg06268921} alone was significantly hypermethylated in TNBC vs.\ non-TNBC cfDNA (AUC \(\approx 0.72\)).
+    \item cg23247845 alone was weaker.
+    \item Combining them into a cfDNA methylation diagnostic score (\textbf{cf-MDS}) still significantly separated TNBC vs.\ non-TNBC in blood, with AUC \(\approx 0.73\), specificity \(\sim 82\%\), and sensitivity \(\sim 55\%\). Importantly, this still worked in early-stage (I/II) TNBC.
+    
+\end{itemize}
+
+So they effectively \textit{exported} tumor-tissue methylation logic into a liquid biopsy signature for subtype discrimination, using only milliliters of blood and without sequencing.
+
+\paragraph{What this means for my dataset (GSE69914)}
+For my thesis context:
+\begin{itemize}[label=-]
+    \item \textbf{GSE69914 is already treated as a benchmark cohort} for differential DNA methylation in breast cancer, not only normal vs.\ tumor, but also TNBC vs.\ non-TNBC subtypes.
+    \item The authors trained their 8-CpG TNBC classifier on TCGA and successfully validated it on GSE69914 using the same coefficients and cutoff. This means:
+    \begin{enumerate}
+        \item Preprocessing of GSE69914 in this paper assumes high-quality Illumina 450K \(\beta\)-values, comparable to TCGA after normalization.
+        \item At least some samples in GSE69914 are labeled by subtype (TNBC vs.\ non-TNBC) in a way consistent enough to reproduce high AUC (\(>0.85\)).
+        \item The signal is \textit{subtype-specific}, not just ``tumor vs.\ normal'': CpGs such as cg06268921, cg19758859 (\textit{SASH1}), cg17588293 (\textit{ZBTB7B}), etc., capture biology unique to TNBC compared to other breast cancers.
+    \end{enumerate}
+    \item Biologically, many of these CpGs sit in or near genes involved in cell signaling, transcriptional control, adhesion, or chromatin state; pathway enrichment of the broader DMC set implicates WNT, PI3K--AKT, MAPK, focal adhesion, and cytoskeleton regulation --- pathways known to drive invasiveness and poor prognosis in TNBC.
+    \item Clinically, one of the CpGs (cg06268921) also carries prognostic information for TNBC survival in TCGA, suggesting that subtype-defining methylation may also stratify risk within TNBC.
+\end{itemize}
+In short, GSE69914 has already been mined to (i) define CpG markers that distinguish TNBC from non-TNBC with high accuracy, (ii) validate that this signal generalizes across platforms, and (iii) motivate liquid biopsy translation. 
+
+\paragraph{Take-home for replication}
+If I want to replicate or extend this for my own analysis of GSE69914 (or integrate with cfDNA):
+\begin{enumerate}
+    \item Separate samples by molecular subtype (TNBC vs.\ other) \emph{within tumor tissue}.
+    \item Compute per-CpG \(\Delta \beta\) between subtypes and keep only CpGs with strong, consistent shifts.
+    \item Optionally filter out CpGs that are noisy in blood (for liquid biopsy purposes) using leukocyte methylation references.
+    \item Use penalized regression (LASSO) to down-select to a minimal CpG panel.
+    \item Build a logistic regression score (MDS) and test its AUC within GSE69914 as an ``external'' cohort, exactly as Gao \textit{et al.} did.
+    \item For translational relevance: design targeted ddPCR assays for the top CpGs (such as cg06268921) and measure them in cfDNA.
+\end{enumerate}
+Methodologically, this is a clean blueprint for turning subtype-specific tumor methylation into a blood-based assay --- and GSE69914 is already proven useful for that validation step. 
+
+\paragraph{Conclusion}
+Gao \textit{et al.} showed that:
+\begin{itemize}[label=-]
+    \item TNBC vs.\ non-TNBC tumors have reproducible subtype-specific DNA methylation differences that persist across platforms and cohorts, including GSE69914.
+    \item A compact 8-CpG tissue panel (MDS) distinguishes TNBC from non-TNBC with AUC \(\approx 0.9\) in TCGA and \(\approx 0.88\) in GSE69914.
+    \item One CpG (cg06268921) is also prognostic within TNBC.
+    \item A two-CpG cfDNA ddPCR panel retains discriminatory power in plasma (AUC \(\approx 0.73\)), even for early-stage disease, suggesting a feasible non-invasive test.
+\end{itemize}
+The key message is that \textbf{my dataset (GSE69914) has already been leveraged to validate a subtype-specific methylation classifier for TNBC}, and specific CpGs from that classifier (notably cg06268921) are already being pushed toward a blood test for pre-operative subtype calling. 
 
 
 \printbibliography
