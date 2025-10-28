@@ -1,0 +1,368 @@
+\documentclass[10pt]{extarticle}
+
+% Lingua e matematica
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,amsthm}
+
+% Grafica e tabelle
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{siunitx}
+
+% Codice (opzionale)
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.98,0.98,0.98}
+\lstdefinestyle{mystyle}{
+  backgroundcolor=\color{backcolour},
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true, keepspaces=true, numbers=none, tabsize=2
+}
+\lstset{style=mystyle}
+
+% Margini
+\usepackage[margin=0.6in]{geometry}
+\usepackage{ragged2e}
+\usepackage{enumitem}
+\usepackage[utf8]{inputenc} % per caratteri UTF-8 nei .tex e nel .bib
+\usepackage{csquotes}       % consigliato da biblatex (evita warning e parse strani)
+
+
+
+% Bibliografia (biblatex + biber)
+\usepackage[backend=biber,style=ieee]{biblatex}
+\addbibresource{references.bib}
+
+% TOC: includi anche \paragraph e numerali
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+
+% Hyperref (sempre *dopo* gli altri pacchetti)
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=teal,urlcolor=magenta]{hyperref}
+
+
+\begin{document}
+
+% Custom header without a separate titlepage
+\noindent
+\begin{minipage}{0.3\textwidth}
+    \includegraphics[width=1.3\linewidth]{Figures/polito_logo_2021_blu.jpg}
+\end{minipage}
+\hfill
+\begin{minipage}{0.68\textwidth}
+    \raggedleft
+    {\LARGE \textbf{Politecnico di Torino}}\\[0.2cm]
+    {\large Master's Degree in Mathematical Engineering}\\[0.7cm]
+    {\large \textbf{Material for Thesis}}\\[0.2cm]
+    {\large 3-- About GSE67919's Application }\\[0.7cm]
+    \begin{tabular}{rl}
+        Elisabetta Roviera & \texttt{s328422} \\
+    \end{tabular}
+\end{minipage}
+
+\vspace{1cm}
+\hrule
+\vspace{0.5cm}
+
+\tableofcontents
+
+\vspace{0.5cm}
+\hrule
+\vspace{1cm}
+
+
+% Main content begins here, on the same page
+\justifying
+
+\paragraph{Note} 
+The papers summarized in this report represent the main references related to the GSE69914 dataset and to the preliminary filtering and quality control of CpG sites performed prior to the core analyses. These studies provide the methodological and technical background necessary to understand probe reliability, normalization strategies, and preprocessing pipelines applied to Illumina HumanMethylation450 data. Additional references may be integrated in the future to refine specific analytical steps. For a complete understanding of the concepts and results discussed, please refer to the original publications cited in the bibliography of this document.
+
+\section{Discovery of cross-reactive probes and polymorphic CpGs in the Illumina Infinium HumanMethylation450 microarray}
+
+\paragraph{Keywords}
+DNA methylation, CpG sites, Illumina 450K array, cross-reactive probes, polymorphic CpGs, SNPs, microarray reliability, sex-associated methylation, probe specificity~\cite{chen2013crossreactive}
+
+\paragraph{Cross-reactive probes}
+Approximately 6\% of the probes on the Illumina HumanMethylation450 array hybridize to multiple genomic regions with high sequence similarity ($\geq$94\%). These cross-reactive probes can generate spurious methylation signals, particularly in autosomal sites that co-hybridize with sex chromosomes. As a result, apparent sex-associated methylation differences may arise as technical artifacts rather than biological effects. Probes showing $\geq$47 matched bases to unintended genomic loci were classified as cross-reactive and should be excluded from downstream analyses.
+
+\paragraph{Polymorphic CpGs}
+About 13.8\% of probes overlap known single nucleotide polymorphisms (SNPs), affecting either the cytosine, guanine, or the base immediately preceding the CpG site. These polymorphic CpGs reflect underlying genetic variation instead of true methylation differences. Their inclusion can distort methylation quantitative trait loci (mQTL) analyses or group comparisons if genotype effects are not accounted for.
+
+\paragraph{Implications for preprocessing}
+Cross-reactive and polymorphic probes can introduce false biological associations and reduce reproducibility. For accurate methylation profiling, these probes must be filtered before normalization and statistical modeling. The lists provided by Chen et al. are now widely used as reference sets in preprocessing pipelines for datasets such as GSE69914.
+
+\paragraph{Impact on Illumina 450K analysis}
+This study established essential quality-control guidelines for HumanMethylation450 data. By identifying unreliable probes and defining sequence-based exclusion criteria, it laid the groundwork for standardized preprocessing workflows and for accurate biological interpretation of CpG methylation patterns.
+
+
+\section{DNA methylation outliers in normal breast tissue identify field defects that are enriched in cancer}
+
+
+\paragraph{Keywords}
+Breast cancer, field defects, DNA methylation, Illumina 450K, epigenetic outliers, differential variability, iEVORA, DVMCs, adipose deconvolution, WNT signaling, GSE69914~\cite{teschendorff2016fielddefects}.
+
+\paragraph{Study design and cohorts}
+Genome-wide DNA methylation (DNAm) was profiled using the Illumina HumanMethylation450 BeadChip in a total of 407 breast tissue samples. The core discovery set included: (i) 50 normal/benign breast tissue samples from cancer-free women, (ii) 42 normal breast tissue samples adjacent to invasive breast cancers from the same patients (``normal-adjacent''), and (iii) 305 breast cancer samples, including 42 that were matched to the normal-adjacent tissues. Additional independent cohorts were used for validation: normal breast from reduction mammoplasty, normal-adjacent tissue from other patients, ductal carcinoma in situ (DCIS), and TCGA breast cancers. The goal was to detect \textit{epigenetic field defects}: focal methylation alterations already present in histologically normal tissue near a tumor, potentially representing early clonal expansions that precede malignancy.
+
+\paragraph{Data preprocessing and quality control}
+DNA was bisulfite converted and hybridized to the Illumina 450K array following standard protocol. Raw IDATs were processed with the \texttt{minfi} Bioconductor package. Probes with detection $p > 0.01$ were set to missing; CpG sites with $>1\%$ missing values across all samples were removed. Remaining missing values were imputed using $k$-nearest neighbors ($k=5$). Because Infinium I and Infinium II chemistries have different signal distributions, each sample was normalized with BMIQ (Beta MIxture Quantile normalization) to correct the type-II probe bias. After intra-sample normalization, the data matrix contained $\sim$485{,}000 probes across 397 primary discovery samples. Inter-sample effects were evaluated using singular value decomposition (SVD): the leading components of variation tracked biological factors such as normal vs. tumor state rather than technical batches, indicating no dominant batch confounding. The dataset was later deposited as GEO accession GSE69914, which is the same platform and pipeline used in this thesis.
+
+\paragraph{Adjustment for adipose content (cell-type heterogeneity)}
+Normal breast tissue contains a large adipose component, so cellular composition can confound DNAm differences. A reference-based deconvolution strategy was implemented to estimate, per sample, the proportion of adipose vs. epithelial/stromal signal. Reference 450K methylation profiles were collected for human mammary epithelial cells (HMEC) and for adipose tissue, using ENCODE and independent fat tissue datasets. From these references, 1{,}320 CpGs were selected as markers: CpGs with absolute beta-value difference $>0.7$ between HMEC and adipose, and located in DNase hypersensitive regions (cell-type-informative, regulatory sites). For each mixed sample, constrained projection (CP) was applied to infer the relative fat fraction $w(\text{FAT})$ and the complementary HMEC/stromal fraction $w(\text{HMEC}) = 1 - w(\text{FAT})$. This deconvolution step was validated on independent adipose data and confirmed that the top global source of DNAm variation across normal tissues correlates with fat content. Importantly, fat content did \textit{not} differ significantly between normal and normal-adjacent samples, and adjusting for fat content did not yield genome-wide significant differentially methylated CpGs in standard mean-based testing. Therefore, large compositional shifts in adipose alone do not explain the epigenetic differences of interest.
+
+\paragraph{Differential variability vs. differential mean}
+Instead of assuming that early carcinogenic changes are uniform across all patients (which is the logic of standard differential methylation of the mean, DM), the analysis explicitly targeted \textit{heterogeneous, stochastic} alterations that may appear only in a subset of at-risk cells. For each CpG, two complementary statistics were considered comparing normal vs. normal-adjacent tissue: 
+\begin{enumerate}
+  \item Differential variability (DV): Bartlett’s test on variance of beta-values between the two groups.
+  \item Differential mean (DM): a standard two-sample $t$-test on group means.
+\end{enumerate}
+
+Classical DM alone (mean shifts) did \textit{not} detect any CpG at genome-wide significance after multiple testing (false discovery rate, FDR $\approx 0.3$). In contrast, testing DV revealed widespread CpGs whose \textit{variance} was significantly higher in normal-adjacent tissue, consistent with focal epigenetic hits present only in some cells or subclones.
+
+\paragraph{iEVORA algorithm and definition of DVMCs}
+To systematically extract these heterogeneous events, the study introduced \textbf{iEVORA} (improved Epigenetic Variable Outliers for Risk prediction Algorithm). The pipeline is: 
+\begin{enumerate}
+  \item For each CpG, run Bartlett’s test comparing variance in normal vs. normal-adjacent tissue. CpGs passing a stringent threshold FDR $< 0.001$ are called differentially variable CpGs (DVCs).
+  \item Because a single extreme outlier can inflate variance, DVCs are then re-ranked using the $t$-statistic for differential mean methylation between groups. Only CpGs with unadjusted $p < 0.05$ for the mean shift are retained.
+  \item The retained set are called \textbf{DVMCs} (Differentially Variable and Differentially Methylated CpGs): they are both more variable (i.e. show outlier behavior) and directionally shifted.
+\end{enumerate}
+Applying iEVORA to the 50 normal vs. 42 normal-adjacent samples yielded \textbf{7{,}318 DVMCs} ($\sim$1.5\% of all interrogated CpGs), with the majority showing \textbf{increased variance} and \textbf{hypermethylation} in normal-adjacent tissue. Typical patterns at these loci are not subtle drifts: they show $\sim$20--30\% jumps in beta-value in a subset of normal-adjacent samples, consistent with clonal epigenetic lesions. These lesions were often promoter-proximal (within 1.5 kb upstream of TSS) when hypermethylated, and enriched in regulatory regions controlling differentiation. The distribution of DVMC load per patient was highly uneven: most normal-adjacent samples had only a few altered CpGs, but some samples showed hundreds to thousands of altered loci, suggesting different levels of “field damage” around the tumor.
+
+\paragraph{Probe reliability and exclusion of technical artifacts}
+The analysis explicitly considered known Illumina 450K probe issues. Cross-reactive probes and polymorphic CpGs (as catalogued by Chen et al. 2013 for the 450K array) can create artificial methylation signals due to off-target hybridization or SNP overlap. Roughly 19\% of 450K probes fall into these problematic categories globally. Among the 7{,}318 DVMCs identified by iEVORA, only 923 overlapped the Chen blacklist, far fewer than expected by chance, and the most biologically interesting class (hypervariable + hypermethylated DVMCs) was strongly \textit{under}-enriched for problematic probes. All major downstream results remained valid after removing these potentially confounded probes. This supports that DVMCs represent true biological alterations, not array artifacts.
+
+\paragraph{Validation in independent cohorts and progression to cancer}
+The same DVMCs were tested in an \textit{independent} cohort containing normal breast tissue from cancer-free women and normal-adjacent tissue from other patients. Over 60\% of hypervariable DVMCs showed higher alteration frequency in normal-adjacent vs. normal also in this second dataset, confirming reproducibility.  
+Next, progression was assessed by comparing DNAm in invasive breast cancers to healthy normals, and also within matched normal-adjacent vs. tumor pairs. DVMCs (especially those hypervariable + hypermethylated in normal-adjacent tissue) showed markedly stronger methylation deviations in the cancers, and in many cases the same CpG sites became more uniformly hypermethylated across tumors. Up to $\sim$32\% of these hypervariable/hypermethylated DVMCs gained \textit{further} methylation in the tumor, while only $\sim$2\% reversed direction. This indicates that the outlier methylation changes seen in histologically normal tissue are not random noise: they expand and consolidate in the tumor, behaving like early epigenetic field defects that get clonally fixed during transformation.
+
+\paragraph{Pathway-level and regulatory context}
+The DVMCs are not randomly scattered. They are significantly enriched in binding sites of transcription factors (TFs) linked to chromatin architecture and Polycomb repression, including EZH2 and SUZ12 (PRC2 complex), as well as CTCF and RAD21. Regions bound by these factors tended to gain DNA methylation first in normal-adjacent tissue and then even more in cancer. Many DVMCs localize near promoters of genes involved in developmental and differentiation programs. Network-level enrichment analysis (FEM / EpiMod) showed coordinated hypermethylation in members of canonical pathways such as WNT and FGF signaling. Within a given patient, multiple genes in the same pathway (e.g. WNT ligands, FZD receptors, pathway modulators like \textit{SFRP1}, \textit{WIF1}) often showed concurrent promoter hypermethylation in the normal-adjacent sample, suggesting early, pathway-level epigenetic repression of differentiation signals.
+
+\paragraph{Clinical correlations}
+For each normal-adjacent sample and tumor, the study defined a progression score (a Z-score measuring how far the methylation profile at DVMCs deviates from the healthy normal baseline). Tumors with higher progression scores showed: 
+\begin{itemize}[label=-]
+  \item higher proliferation index (KI67),
+  \item larger tumor size,
+  \item poorer overall survival.
+\end{itemize}
+
+These associations were strongest for the DVMC class that is hypervariable and hypermethylated in normal-adjacent tissue. The same progression score replicated in an independent, untreated breast cancer cohort (TCGA), indicating prognostic relevance. In matched pairs, tumors with higher deviation from their own adjacent normal tissue were more likely to be HER2-positive, linking these field defects to aggressive subtypes.
+
+\paragraph{Practical takeaway for replication}
+To reproduce this analysis on a new 450K dataset (e.g. GSE69914): 
+\begin{enumerate}
+  \item Import raw IDATs, drop failed probes (detection $p>0.01$) and samples with poor control metrics.
+  \item Impute missing values ($k$NN), apply BMIQ per sample to correct type-II bias.
+  \item (Optional but recommended) Estimate adipose fraction using constrained projection on cell-type-informative CpGs; record fat content as a covariate.
+  \item Remove probes known to be cross-reactive / SNP-overlapping if desired, or at minimum flag them.
+  \item Split samples into biologically defined groups: e.g. healthy normal vs. “at-risk” normal (adjacent) vs. tumor.
+  \item Run iEVORA: 
+    \begin{itemize}[label=-]
+      \item Bartlett’s test for variance (normal vs. adjacent), control FDR $<0.001$ to define DVCs.
+      \item Re-rank DVCs by $t$-test on mean difference; keep CpGs with unadjusted $p<0.05$.
+      \item The retained CpGs are DVMCs (candidate field defects).
+    \end{itemize}
+  \item For each DVMC and each sample, compute deviation from the healthy-normal mean in units of standard deviations (z-score). Count significant outliers.
+  \item Test whether those deviations increase in matched tumors, and whether they concentrate in known regulatory elements or pathways (e.g. WNT, FGF).
+  \item Build per-sample progression scores and correlate with phenotype (stage, KI67, HER2, survival). 
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{Figures/Enrichment of EZH2 TF-binding sites among DNA methylation field defects..jpg} % o .png, .pdf, .eps...
+    \caption{EZH2-associated DNA methylation patterns
+CpG probes located within EZH2-binding sites show consistent hypermethylation in normal-adjacent breast tissue compared with normal tissue, indicating early Polycomb-associated epigenetic changes. The density and regional plots reveal a gradual methylation increase along the normal → adjacent → cancer sequence, exemplified by the \textit{SOX17} locus, where EZH2-bound CpGs gain methylation progressively. These patterns suggest that PRC2 targets undergo early and coordinated epigenetic activation preceding tumor development.}
+    \label{fig:DNA_methylation_patters}
+\end{figure}
+
+
+\section{The integrative epigenomic-transcriptomic landscape of ER-positive breast cancer}
+
+\paragraph{Keywords}
+ER-positive breast cancer, DNA methylation, RNA-Seq, Illumina 450K, TCGA, FEM algorithm, iCluster, luminal-A/B subtypes, WNT signaling, TGF-beta pathway, differential methylation, network analysis~\cite{gao2015integrative}.
+
+\paragraph{Study design and rationale}
+The study integrated DNA methylation (Illumina 450K) and RNA-Seq data from 724 estrogen receptor–positive (ER+) breast cancers and 111 normal adjacent tissues from the TCGA dataset to define functional epigenetic alterations driving tumor subtypes. Using the \textbf{Functional Epigenetic Modules (FEM)} algorithm, the authors identified network-level hotspots of coordinated DNA methylation and gene-expression changes, focusing on how epigenetic regulation contributes to luminal-A and luminal-B classification.
+
+\paragraph{Data preprocessing and integration}
+Methylation data (395,775 CpGs) and RNA-Seq expression data (20,531 genes) were preprocessed using standard Illumina and \texttt{limma} normalization procedures. Genes were assigned promoter methylation values by averaging probes mapping to TSS200 or first exon regions; if unavailable, TSS1500 was used. Probes mapping to gene bodies were excluded to focus on regulatory methylation. Empirical Bayes statistics (\texttt{limma}) were computed for differential methylation and expression between normal and ER+ samples. These gene-level statistics were integrated into a protein–protein interaction (PPI) network derived from high-confidence interactomes.
+
+\paragraph{The FEM algorithm}
+Each PPI edge connecting genes \( g, h \) was weighted using an anti-correlation rule combining differential methylation (\( t^D_g \)) and expression (\( t^R_g \)):
+\[
+w_{gh} = \frac{1}{2} \left( t^I_g + t^I_h \right), \quad 
+t^I_g = H(t^D_g)H(-t^R_g) + H(-t^D_g)H(t^R_g),
+\]
+where \(H(x)\) is the Heaviside step function.
+The network was scanned for dense subnetworks (“modules”) maximizing average edge weight (local modularity) using a spin-glass community detection algorithm. Significant modules were validated via permutation tests and comparison to null networks.
+
+\paragraph{Identified FEM modules}
+Nine significant FEMs were detected, encompassing 257 unique genes (146 both differentially methylated and expressed, 99 showing anti-correlation). Each FEM corresponded to a biologically meaningful hotspot. Representative examples include:
+\begin{itemize}[label=-]
+\item \textbf{CAV1 module} – enriched in WNT signaling genes (e.g., \textit{WIF1}, \textit{WNT3A}, \textit{SFRP1}), showing promoter hypermethylation and transcriptional repression.
+\item \textbf{FSTL1 module} – enriched in TGF-$\beta$/BMP signaling members (\textit{BMP2}, \textit{BMP6}, \textit{BMP7}, \textit{TGFB2}), with widespread hypermethylation of tumor suppressor components.
+\item \textbf{CCL11 and LEP modules} – involved in chemokine and GPCR signaling, with hypomethylation and overexpression consistent with enhanced metastatic potential.
+\item \textbf{PROC and MME modules} – linked to coagulation and endothelin pathways, known to support tumor cell migration and proliferation.
+\end{itemize}
+
+\paragraph{Validation and reproducibility}
+Independent datasets (Germany: 254 ER+ and 49 normal tissues; Yu: 110 ER+ and 13 normals) confirmed the FEM hotspots by network modularity and directional consistency of methylation and expression \(t\)-statistics. Four of nine FEMs achieved significant validation (\(p<0.05\)), and all showed concordant differential patterns across cohorts. Methylation datasets included GEO accession GSE69914, confirming overlap with the platform used in the present thesis.
+
+\paragraph{Integrative clustering (iCluster analysis)}
+Joint latent variable modeling (\texttt{iCluster}) of 463 ER+ TCGA tumors with matched DNAm and mRNA data (FEM genes only) identified exactly two integrative clusters (\(k=2\)), strongly corresponding to luminal-A and luminal-B subtypes (Fisher test \(p < 10^{-10}\)).  
+Luminal-B tumors exhibited significantly higher deviation scores from the normal reference in both methylation and expression, indicating stronger epigenetic deregulation rather than distinct pathway activation. A similar two-cluster structure persisted when extending the input to 4311 anti-correlated genes genome-wide, confirming the homogeneity of ER+ epigenetic architecture.
+
+\paragraph{Deviation scoring and prognosis}
+A per-sample FEM deviation score quantified the combined distance (Z-normalized) of each gene’s methylation and expression from the normal baseline:
+\[
+FEM_s = \frac{1}{m} \sum_{g=1}^{m} |Z^D_{gs} - \alpha Z^R_{gs}|,
+\]
+with \(\alpha = \sigma_Z^D / \sigma_Z^R\) scaling data-type variance.  
+Luminal-B samples displayed higher deviation scores than luminal-A in all modules (\(p<10^{-5}\)). Prognostic modeling (Cox regression across TCGA, METABRIC, and Fleischer datasets) showed that higher FEM scores and cluster membership were associated with worse survival (meta-analysis \(p=0.013\) for DNAm-based classifier).
+
+\paragraph{Coordination of methylation–expression changes}
+Unlike copy number alterations, methylation changes across FEM genes were found to be \textbf{coordinated}, not mutually exclusive, within tumors. Binary matrices of gene activation (1) vs normal-like (0) states revealed significantly smaller Manhattan distances between FEM genes than expected under random permutation (\(p<0.001\)), demonstrating intra-tumor coherence of epigenetic deregulation.
+
+\paragraph{Biological interpretation}
+ER+ luminal-A and luminal-B cancers share the same deregulated epigenetic pathways, dominated by silencing of WNT and BMP/TGF-$beta$ signaling antagonists. Luminal-B tumors exhibit larger magnitude deviations—reflecting stronger pathway repression, higher proliferation (correlation of FEM score with PCNA \(r \approx 0.38\)), and worse clinical outcomes.  
+Epigenetic silencing of \textit{WIF1}, \textit{SFRP1}, and \textit{FSTL1} likely enhances WNT/TGF-$\beta$ signaling activity, promoting cell self-renewal and EMT. Additional deregulation in chemokine and endothelin pathways underscores a coordinated shift toward proliferative and migratory phenotypes.
+
+\paragraph{Summary of methodology for replication}
+To reproduce the FEM-based integration in a 450K dataset (e.g., GSE69914):
+\begin{enumerate}
+\item Preprocess IDATs (filter detection $p>0.01$; impute missing values $k=5$; exclude body probes).
+\item Compute per-gene differential methylation and expression using empirical Bayes (\texttt{limma}).
+\item Build a weighted PPI using the Heaviside anti-correlation rule.
+\item Apply spin-glass modularity optimization to extract FEMs; validate with 1000 permutations.
+\item Perform pathway enrichment (MSigDB) and compute per-sample FEM deviation scores.
+\item Integrate FEM DNAm and mRNA matrices via \texttt{iCluster} to identify subtypes ($k=2$).
+\item Optionally, compare FEM-derived subtypes to luminal-A/B and assess prognostic value.
+\end{enumerate}
+
+\paragraph{Conclusion}
+The integrative analysis reveals that ER+ breast cancers form two principal epigenetic clusters corresponding to luminal-A and luminal-B phenotypes. Both subtypes share deregulated WNT and TGF-$\beta$/BMP networks, but luminal-B tumors exhibit greater magnitude of methylation-driven transcriptional repression. The study establishes a reproducible, network-based framework for identifying epigenetic driver modules and for quantifying coordinated methylation–expression shifts in large-scale 450K datasets.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{Figures/Examples of two FEMs centred around seed genes CAV1 and FSTL1 in ER+ breast cancer.jpg} % o .png, .pdf, .eps...
+    \caption{Examples of two FEMs centred around seed genes CAV1 and FSTL1 in ER+ breast cancer.}
+    \label{fig:FEMs}
+\end{figure}
+
+
+\section{Integrative analysis identifies potential DNA methylation biomarkers for pan-cancer diagnosis and prognosis}
+
+\paragraph{Keywords}
+DNA methylation, pan-cancer analysis, CpG biomarkers, TCGA, XGBoost, logistic regression, diagnostic classifier, prognostic model, differential methylation, feature selection, GSE69914~\cite{ding2019pancancer}.
+
+\paragraph{Study design and objectives}
+This large-scale integrative study aimed to identify CpG-based DNA methylation biomarkers with diagnostic and prognostic potential across multiple cancer types. The authors systematically analyzed genome-wide methylation data from 26 cancer types in The Cancer Genome Atlas (TCGA), covering 9,685 tumor samples and 729 matched normal tissues. The central goal was to develop a minimal CpG signature able to accurately (i) distinguish tumors from normal samples across cancers, (ii) identify the tissue of origin, and (iii) predict patient prognosis.
+
+\paragraph{Data preprocessing and feature selection}
+DNA methylation $\beta$-values (Illumina HumanMethylation450K array) were retrieved from TCGA. CpG probes with missing values in more than 20\% of samples or low variance ($\sigma^2 < 0.01$) were removed, leaving approximately 350,000 high-quality CpGs. Batch effects were minimized through quantile normalization and cross-cancer scaling of $\beta$-values to the [0,1] range.  
+For each cancer type, differentially methylated CpGs (DMCs) were identified using a two-sided $t$-test comparing tumor vs. normal samples, controlling false discovery rate (FDR $<0.05$) and $|\Delta\beta| > 0.2$. These DMCs were pooled across cancers to obtain a global candidate set of $\sim$3,500 CpGs, which served as input for model training.
+
+\paragraph{Diagnostic model construction (XGBoost + logistic regression)}
+An extreme gradient boosting (\textbf{XGBoost}) model was used for feature selection to capture non-linear relationships among CpG methylation levels. The dataset was split into training (70\%) and testing (30\%) sets while maintaining cancer type stratification. Each CpG feature was assigned an importance score based on gain and coverage metrics from XGBoost iterations.  
+The top 30 CpGs with the highest feature importance were retained, and a multivariate \textbf{logistic regression classifier} was trained on their $\beta$-values. Recursive feature elimination was then applied to minimize redundancy, resulting in a final diagnostic signature of \textbf{seven CpGs}.  
+These seven CpGs achieved an average area under the ROC curve (AUC) of 0.982 in 10-fold cross-validation, and above 0.95 in nine independent cancer cohorts. Validation was also conducted on external GEO datasets, including breast tissue datasets such as GSE69914 and GSE76938, confirming the robustness of the selected CpGs across platforms.
+
+\paragraph{Functional and genomic annotation of the 7 CpGs} These 7 CpGs function as a universal “epigenetic fingerprint” that clearly separates the methylation profiles of healthy tissues from those of tumors.
+The 7 CpG sites are distributed across genes involved in tumorigenesis and transcriptional regulation:
+\begin{itemize}[label=-]
+\item \textbf{cg08244313 (ANKRD11)} – located in the promoter of a chromatin remodeling gene frequently mutated in breast and lung cancer; hypermethylation leads to transcriptional silencing and impaired cell differentiation.
+\item \textbf{cg17735539 (ZNF582)} – located in a zinc-finger transcription factor promoter; hypermethylation is recurrent in cervical, colon, and breast cancers, acting as a universal tumor suppressor marker.
+\item \textbf{cg21361244 (TRIM15)} – associated with ubiquitin-mediated protein degradation; its hypomethylation correlates with higher expression in invasive tumors.
+\item \textbf{cg26157345 (CCDC181)} – localized in the gene body of a microtubule-associated protein; consistent hypermethylation across epithelial cancers suggests a pan-epithelial marker.
+\item \textbf{cg11510243 (PDLIM4)} – involved in cytoskeletal anchoring and tumor suppression; promoter hypermethylation represses expression and promotes migration and metastasis.
+\item \textbf{cg12542207 (SPG20)} – regulates cell cycle and WNT signaling; hypermethylated in multiple carcinomas, including breast, liver, and colon.
+\item \textbf{cg18081940 (ZSCAN18)} – zinc-finger transcription regulator; hypermethylated in breast and endometrial cancers, associated with chromatin repression and proliferation.
+\end{itemize}
+Collectively, these CpGs represent \textbf{pan-cancer epigenetic switches} targeting genes involved in chromatin regulation, cytoskeletal integrity, and transcriptional control—biological processes frequently altered in early tumorigenesis. Their hypermethylation consistently marks the transition from normal to malignant epigenetic states.
+
+\paragraph{Model validation and cross-cancer generalization}
+To evaluate generalizability, the seven-CpG classifier was tested on unseen TCGA cancers (e.g., prostate, ovarian, kidney, brain). All achieved diagnostic AUC $>$ 0.97, confirming that the same CpG panel discriminates tumors from normals regardless of tissue origin.  
+Moreover, an extended classifier including 12 additional CpGs was trained to predict cancer type (i.e., tissue of origin). This model achieved a macro-AUC of 0.95 across 26 TCGA cancers, correctly classifying both primary and metastatic samples in over 90\% of cases. The consistency of CpG methylation patterns across datasets and tissues underscores the universality of these epigenetic changes.
+
+\paragraph{Prognostic analysis}
+To assess survival relevance, patients were divided into high- and low-risk groups based on their mean methylation at the seven diagnostic CpGs. Kaplan–Meier and Cox proportional hazards analyses revealed that higher methylation of these CpGs correlated with shorter overall survival in seven cancer types, notably in breast, colon, and lung cancers (log-rank $p < 0.001$). The prognostic classifier demonstrated stable performance across cohorts, indicating that CpG methylation at these loci reflects tumor aggressiveness and progression dynamics.
+
+\paragraph{Interpretation and reproducibility}
+The seven identified CpGs form a minimal yet highly predictive signature of cancer-specific methylation. Their diagnostic capacity stems from consistent hypermethylation of regulatory promoters and transcription factor binding regions across epithelial cancers. Importantly, these CpGs can be measured on the Illumina 450K or EPIC arrays, allowing direct replication in datasets such as GSE69914. The pipeline—DMC selection, XGBoost feature ranking, logistic regression training, and ROC-based validation—offers a reproducible framework for building multi-cancer methylation classifiers.
+
+\paragraph{Conclusion}
+This integrative analysis demonstrates that DNA methylation profiling can yield robust, universal biomarkers for cancer detection and prognosis. The seven CpGs identified by Ding et al. serve as a compact and biologically interpretable panel capturing core epigenetic alterations across multiple tumor types. Their consistent hypermethylation patterns make them ideal candidates for clinical diagnostic assays and for cross-dataset validation in studies such as the present thesis.
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.3\textwidth]{Figures/Validation of tumor specific classifier in tumors with metastases.jpg} % o .png, .pdf, .eps...
+    \caption{Validation of tumor specific classifier in tumors with metastases. ROC curve of multiclass tumor specific classifier in
+metastatic breast cancer (GSE58999) and metastatic prostate cancer (GSE73549 and GSE38240).}
+    \label{fig:ROC}
+\end{figure}
+
+\section{DNA Methylation Patterns in Normal Tissue Correlate more Strongly with Breast Cancer Status than Copy-Number Variants}
+
+\paragraph{Keywords}
+DNA methylation, copy-number variants (CNVs), breast cancer, epigenetic field defects, iEVORA algorithm, EpiDISH, cell-type deconvolution, GSE67919, GSE69914, risk prediction~\cite{gao2018dnamethylation}.
+
+\paragraph{Study objectives}
+Gao, Widschwendter and Teschendorff (2018) investigated whether epigenetic or genetic alterations in normal breast tissue are more predictive of cancer risk. Specifically, they compared the ability of DNA methylation (DNAm) and copy-number variation (CNV) profiles—obtained from the same Illumina HumanMethylation450K arrays—to discriminate between \textbf{normal-healthy}, \textbf{normal-adjacent to tumor}, and \textbf{cancerous} breast samples. The analysis aimed to test whether DNAm changes in the normal epithelium better reflect cancer field defects than CNV alterations.
+
+\paragraph{Datasets and preprocessing}
+Two independent breast tissue cohorts were analyzed:
+\begin{itemize}[label=-]
+\item The \textbf{Erlangen cohort}: 50 normal-healthy, 42 normal-adjacent, and 305 breast cancers, profiled on the Illumina 450K array.
+\item The \textbf{Validation cohort (GSE67919)}: 18 normal-healthy (from reduction mammoplasty) and 70 normal-adjacent samples.
+\end{itemize}
+Data normalization and background correction were performed using the \texttt{minfi} R package. CNV inference was derived directly from methylation signal intensities using the \texttt{conumee} package, ensuring both methylation and copy-number profiles were obtained from identical assays, avoiding batch effects.
+
+\paragraph{Cell-type deconvolution and reference construction}
+Given the cellular heterogeneity of breast tissue (epithelial, adipose, immune), the authors built a reference DNAm database of 349 CpGs discriminating nine major cell types (epithelial, adipocytes, and seven immune subtypes). The reference was validated using:
+(i) independent datasets (ENCODE, Blueprint), 
+(ii) in-silico mixed cell populations, and 
+(iii) purified cell samples.  
+Using this reference, the \textbf{EpiDISH algorithm} estimated epithelial, adipose, and immune-cell fractions for each sample. This correction allowed methylation changes to be attributed to true epithelial alterations rather than cell composition shifts.
+
+\paragraph{Identification of differentially variable CpGs (DVMCs)}
+To detect epigenetic field defects, the authors applied their \textbf{iEVORA algorithm}, designed to identify CpGs with differential variance rather than mean-level differences. Between normal-healthy and normal-adjacent tissues:
+\begin{itemize}[label=-]
+\item CpGs with significant differential variance (FDR $< 0.001$, Bartlett’s test) and mean difference ($p < 0.05$, t-test) were selected as \textbf{differentially variable and methylated CpGs (DVMCs)}.
+\item The majority showed increased variance (“hyperV DVMCs”) in normal-adjacent samples, suggesting stochastic epigenetic deregulation in tissue at risk.
+\end{itemize}
+HyperV DVMCs were confirmed to be independent of cell-type fraction changes and to localize preferentially within epithelial genomic regions, indicating that they reflect true epigenetic instability rather than compositional artifacts.
+
+\paragraph{CNV calling and comparative analysis}
+CNV profiles were inferred using \texttt{conumee}, followed by segmentation via circular binary segmentation (CBS). Copy-number states (gain/loss) were determined with adaptive, sample-specific thresholds accounting for stromal contamination.  
+Differential CN analysis between normal and normal-adjacent tissue revealed no genome-wide significant differences; only marginal gains were detected. While 2,845 genes exhibited CN changes exclusively in normal-adjacent samples, these alterations were weaker and less consistent than methylation changes. Both CN and DNAm alterations were enriched in the matched cancers, but only DNAm patterns were strong enough to separate tissue classes.
+
+\paragraph{Risk prediction and model validation}
+Cancer risk predictors were trained independently on DNAm and CNV features using five-fold cross-validation and an adaptive-index algorithm:
+\begin{itemize}[label=-]
+\item \textbf{DNAm-based classifier}: achieved AUC = 0.94 (95\% CI: 0.88–1.0) in the discovery set and AUC = 0.84 (0.74–0.94) in the validation cohort (GSE67919).
+\item \textbf{CNV-based classifier}: failed to discriminate normal vs. normal-adjacent tissue (AUC = 0.60 and 0.50, respectively).
+\end{itemize}
+Alternative CNV-calling pipelines (\texttt{cnAnalysis450k}, bin-level analysis, probe-level Elastic Net classifiers) confirmed the poor predictive performance of CNVs, indicating that the observed differences were not due to technical segmentation bias but reflect a genuine biological contrast.
+
+\paragraph{Interpretation and implications}
+DNAm alterations in normal-adjacent tissue mirror early “field defects” that are propagated and intensified in corresponding cancers. In contrast, CNVs—though enriched in tumors—show no significant discriminative power at the pre-cancer stage. The authors conclude that \textbf{epigenetic variability in normal cells better captures early carcinogenic processes} and thus provides a more sensitive predictor of breast cancer risk.  
+The identified hyperV DVMCs often overlap with Polycomb (PRC2) target regions and developmental transcription factor binding sites, suggesting that aberrant methylation at these loci represents an early, reversible step toward neoplastic transformation.
+
+\paragraph{Conclusion}
+This work provides quantitative evidence that DNA methylation changes in histologically normal tissue are more predictive of cancer risk than copy-number variations. The methodological framework—EpiDISH correction, iEVORA feature selection, and risk-score modeling—demonstrates a reproducible way to extract early epigenetic markers from array data (e.g., GSE67919, GSE69914). The findings support a model where epigenetic instability precedes and possibly drives genetic alterations during tumor initiation.
+
+
+
+\printbibliography
+\end{document}

@@ -1,0 +1,53 @@
+\babel@toc {english}{}\relax 
+\contentsline {paragraph}{Note}{1}{section*.2}%
+\contentsline {section}{\numberline {1}Discovery of cross-reactive probes and polymorphic CpGs in the Illumina Infinium HumanMethylation450 microarray}{1}{section.1}%
+\contentsline {paragraph}{Keywords}{1}{section*.3}%
+\contentsline {paragraph}{Cross-reactive probes}{1}{section*.4}%
+\contentsline {paragraph}{Polymorphic CpGs}{1}{section*.5}%
+\contentsline {paragraph}{Implications for preprocessing}{2}{section*.6}%
+\contentsline {paragraph}{Impact on Illumina 450K analysis}{2}{section*.7}%
+\contentsline {section}{\numberline {2}DNA methylation outliers in normal breast tissue identify field defects that are enriched in cancer}{2}{section.2}%
+\contentsline {paragraph}{Keywords}{2}{section*.8}%
+\contentsline {paragraph}{Study design and cohorts}{2}{section*.9}%
+\contentsline {paragraph}{Data preprocessing and quality control}{2}{section*.10}%
+\contentsline {paragraph}{Adjustment for adipose content (cell-type heterogeneity)}{2}{section*.11}%
+\contentsline {paragraph}{Differential variability vs. differential mean}{2}{section*.12}%
+\contentsline {paragraph}{iEVORA algorithm and definition of DVMCs}{3}{section*.13}%
+\contentsline {paragraph}{Probe reliability and exclusion of technical artifacts}{3}{section*.14}%
+\contentsline {paragraph}{Validation in independent cohorts and progression to cancer}{3}{section*.15}%
+\contentsline {paragraph}{Pathway-level and regulatory context}{3}{section*.16}%
+\contentsline {paragraph}{Clinical correlations}{3}{section*.17}%
+\contentsline {paragraph}{Practical takeaway for replication}{4}{section*.18}%
+\contentsline {section}{\numberline {3}The integrative epigenomic-transcriptomic landscape of ER-positive breast cancer}{4}{section.3}%
+\contentsline {paragraph}{Keywords}{4}{section*.20}%
+\contentsline {paragraph}{Study design and rationale}{5}{section*.21}%
+\contentsline {paragraph}{Data preprocessing and integration}{5}{section*.22}%
+\contentsline {paragraph}{The FEM algorithm}{5}{section*.23}%
+\contentsline {paragraph}{Identified FEM modules}{5}{section*.24}%
+\contentsline {paragraph}{Validation and reproducibility}{5}{section*.25}%
+\contentsline {paragraph}{Integrative clustering (iCluster analysis)}{5}{section*.26}%
+\contentsline {paragraph}{Deviation scoring and prognosis}{5}{section*.27}%
+\contentsline {paragraph}{Coordination of methylation–expression changes}{6}{section*.28}%
+\contentsline {paragraph}{Biological interpretation}{6}{section*.29}%
+\contentsline {paragraph}{Summary of methodology for replication}{6}{section*.30}%
+\contentsline {paragraph}{Conclusion}{6}{section*.31}%
+\contentsline {section}{\numberline {4}Integrative analysis identifies potential DNA methylation biomarkers for pan-cancer diagnosis and prognosis}{6}{section.4}%
+\contentsline {paragraph}{Keywords}{6}{section*.33}%
+\contentsline {paragraph}{Study design and objectives}{6}{section*.34}%
+\contentsline {paragraph}{Data preprocessing and feature selection}{7}{section*.35}%
+\contentsline {paragraph}{Diagnostic model construction (XGBoost + logistic regression)}{7}{section*.36}%
+\contentsline {paragraph}{Functional and genomic annotation of the 7 CpGs}{7}{section*.37}%
+\contentsline {paragraph}{Model validation and cross-cancer generalization}{7}{section*.38}%
+\contentsline {paragraph}{Prognostic analysis}{7}{section*.39}%
+\contentsline {paragraph}{Interpretation and reproducibility}{8}{section*.40}%
+\contentsline {paragraph}{Conclusion}{8}{section*.41}%
+\contentsline {section}{\numberline {5}DNA Methylation Patterns in Normal Tissue Correlate more Strongly with Breast Cancer Status than Copy-Number Variants}{8}{section.5}%
+\contentsline {paragraph}{Keywords}{8}{section*.43}%
+\contentsline {paragraph}{Study objectives}{8}{section*.44}%
+\contentsline {paragraph}{Datasets and preprocessing}{8}{section*.45}%
+\contentsline {paragraph}{Cell-type deconvolution and reference construction}{9}{section*.46}%
+\contentsline {paragraph}{Identification of differentially variable CpGs (DVMCs)}{9}{section*.47}%
+\contentsline {paragraph}{CNV calling and comparative analysis}{9}{section*.48}%
+\contentsline {paragraph}{Risk prediction and model validation}{9}{section*.49}%
+\contentsline {paragraph}{Interpretation and implications}{9}{section*.50}%
+\contentsline {paragraph}{Conclusion}{9}{section*.51}%
