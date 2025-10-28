@@ -104,6 +104,79 @@ Cross-reactive and polymorphic probes can introduce false biological association
 \paragraph{Impact on Illumina 450K analysis}
 This study established essential quality-control guidelines for HumanMethylation450 data. By identifying unreliable probes and defining sequence-based exclusion criteria, it laid the groundwork for standardized preprocessing workflows and for accurate biological interpretation of CpG methylation patterns.
 
+\section{The integrative epigenomic-transcriptomic landscape of ER-positive breast cancer}
+
+\paragraph{Keywords}
+ER-positive breast cancer, DNA methylation, RNA-Seq, Illumina 450K, TCGA, FEM algorithm, iCluster, luminal-A/B subtypes, WNT signaling, TGF-beta pathway, differential methylation, network analysis~\cite{gao2015integrative}.
+
+\paragraph{Study design and rationale}
+The study integrated DNA methylation (Illumina 450K) and RNA-Seq data from 724 estrogen receptor–positive (ER+) breast cancers and 111 normal adjacent tissues from the TCGA dataset to define functional epigenetic alterations driving tumor subtypes. Using the \textbf{Functional Epigenetic Modules (FEM)} algorithm, the authors identified network-level hotspots of coordinated DNA methylation and gene-expression changes, focusing on how epigenetic regulation contributes to luminal-A and luminal-B classification.
+
+\paragraph{Data preprocessing and integration}
+Methylation data (395,775 CpGs) and RNA-Seq expression data (20,531 genes) were preprocessed using standard Illumina and \texttt{limma} normalization procedures. Genes were assigned promoter methylation values by averaging probes mapping to TSS200 or first exon regions; if unavailable, TSS1500 was used. Probes mapping to gene bodies were excluded to focus on regulatory methylation. Empirical Bayes statistics (\texttt{limma}) were computed for differential methylation and expression between normal and ER+ samples. These gene-level statistics were integrated into a protein–protein interaction (PPI) network derived from high-confidence interactomes.
+
+\paragraph{The FEM algorithm}
+Each PPI edge connecting genes \( g, h \) was weighted using an anti-correlation rule combining differential methylation (\( t^D_g \)) and expression (\( t^R_g \)):
+\[
+w_{gh} = \frac{1}{2} \left( t^I_g + t^I_h \right), \quad 
+t^I_g = H(t^D_g)H(-t^R_g) + H(-t^D_g)H(t^R_g),
+\]
+where \(H(x)\) is the Heaviside step function.
+The network was scanned for dense subnetworks (“modules”) maximizing average edge weight (local modularity) using a spin-glass community detection algorithm. Significant modules were validated via permutation tests and comparison to null networks.
+
+\paragraph{Identified FEM modules}
+Nine significant FEMs were detected, encompassing 257 unique genes (146 both differentially methylated and expressed, 99 showing anti-correlation). Each FEM corresponded to a biologically meaningful hotspot. Representative examples include:
+\begin{itemize}[label=-]
+\item \textbf{CAV1 module} – enriched in WNT signaling genes (e.g., \textit{WIF1}, \textit{WNT3A}, \textit{SFRP1}), showing promoter hypermethylation and transcriptional repression.
+\item \textbf{FSTL1 module} – enriched in TGF-$\beta$/BMP signaling members (\textit{BMP2}, \textit{BMP6}, \textit{BMP7}, \textit{TGFB2}), with widespread hypermethylation of tumor suppressor components.
+\item \textbf{CCL11 and LEP modules} – involved in chemokine and GPCR signaling, with hypomethylation and overexpression consistent with enhanced metastatic potential.
+\item \textbf{PROC and MME modules} – linked to coagulation and endothelin pathways, known to support tumor cell migration and proliferation.
+\end{itemize}
+
+\paragraph{Validation and reproducibility}
+Independent datasets (Germany: 254 ER+ and 49 normal tissues; Yu: 110 ER+ and 13 normals) confirmed the FEM hotspots by network modularity and directional consistency of methylation and expression \(t\)-statistics. Four of nine FEMs achieved significant validation (\(p<0.05\)), and all showed concordant differential patterns across cohorts. Methylation datasets included GEO accession GSE69914, confirming overlap with the platform used in the present thesis.
+
+\paragraph{Integrative clustering (iCluster analysis)}
+Joint latent variable modeling (\texttt{iCluster}) of 463 ER+ TCGA tumors with matched DNAm and mRNA data (FEM genes only) identified exactly two integrative clusters (\(k=2\)), strongly corresponding to luminal-A and luminal-B subtypes (Fisher test \(p < 10^{-10}\)).  
+Luminal-B tumors exhibited significantly higher deviation scores from the normal reference in both methylation and expression, indicating stronger epigenetic deregulation rather than distinct pathway activation. A similar two-cluster structure persisted when extending the input to 4311 anti-correlated genes genome-wide, confirming the homogeneity of ER+ epigenetic architecture.
+
+\paragraph{Deviation scoring and prognosis}
+A per-sample FEM deviation score quantified the combined distance (Z-normalized) of each gene’s methylation and expression from the normal baseline:
+\[
+FEM_s = \frac{1}{m} \sum_{g=1}^{m} |Z^D_{gs} - \alpha Z^R_{gs}|,
+\]
+with \(\alpha = \sigma_Z^D / \sigma_Z^R\) scaling data-type variance.  
+Luminal-B samples displayed higher deviation scores than luminal-A in all modules (\(p<10^{-5}\)). Prognostic modeling (Cox regression across TCGA, METABRIC, and Fleischer datasets) showed that higher FEM scores and cluster membership were associated with worse survival (meta-analysis \(p=0.013\) for DNAm-based classifier).
+
+\paragraph{Coordination of methylation–expression changes}
+Unlike copy number alterations, methylation changes across FEM genes were found to be \textbf{coordinated}, not mutually exclusive, within tumors. Binary matrices of gene activation (1) vs normal-like (0) states revealed significantly smaller Manhattan distances between FEM genes than expected under random permutation (\(p<0.001\)), demonstrating intra-tumor coherence of epigenetic deregulation.
+
+\paragraph{Biological interpretation}
+ER+ luminal-A and luminal-B cancers share the same deregulated epigenetic pathways, dominated by silencing of WNT and BMP/TGF-$beta$ signaling antagonists. Luminal-B tumors exhibit larger magnitude deviations—reflecting stronger pathway repression, higher proliferation (correlation of FEM score with PCNA \(r \approx 0.38\)), and worse clinical outcomes.  
+Epigenetic silencing of \textit{WIF1}, \textit{SFRP1}, and \textit{FSTL1} likely enhances WNT/TGF-$\beta$ signaling activity, promoting cell self-renewal and EMT. Additional deregulation in chemokine and endothelin pathways underscores a coordinated shift toward proliferative and migratory phenotypes.
+
+\paragraph{Summary of methodology for replication}
+To reproduce the FEM-based integration in a 450K dataset (e.g., GSE69914):
+\begin{enumerate}
+\item Preprocess IDATs (filter detection $p>0.01$; impute missing values $k=5$; exclude body probes).
+\item Compute per-gene differential methylation and expression using empirical Bayes (\texttt{limma}).
+\item Build a weighted PPI using the Heaviside anti-correlation rule.
+\item Apply spin-glass modularity optimization to extract FEMs; validate with 1000 permutations.
+\item Perform pathway enrichment (MSigDB) and compute per-sample FEM deviation scores.
+\item Integrate FEM DNAm and mRNA matrices via \texttt{iCluster} to identify subtypes ($k=2$).
+\item Optionally, compare FEM-derived subtypes to luminal-A/B and assess prognostic value.
+\end{enumerate}
+
+\paragraph{Conclusion}
+The integrative analysis reveals that ER+ breast cancers form two principal epigenetic clusters corresponding to luminal-A and luminal-B phenotypes. Both subtypes share deregulated WNT and TGF-$\beta$/BMP networks, but luminal-B tumors exhibit greater magnitude of methylation-driven transcriptional repression. The study establishes a reproducible, network-based framework for identifying epigenetic driver modules and for quantifying coordinated methylation–expression shifts in large-scale 450K datasets.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{Figures/Examples of two FEMs centred around seed genes CAV1 and FSTL1 in ER+ breast cancer.jpg} % o .png, .pdf, .eps...
+    \caption{Examples of two FEMs centred around seed genes CAV1 and FSTL1 in ER+ breast cancer.}
+    \label{fig:FEMs}
+\end{figure}
+
 
 \section{DNA methylation outliers in normal breast tissue identify field defects that are enriched in cancer}
 
@@ -185,132 +258,6 @@ CpG probes located within EZH2-binding sites show consistent hypermethylation in
     \label{fig:DNA_methylation_patters}
 \end{figure}
 
-
-\section{The integrative epigenomic-transcriptomic landscape of ER-positive breast cancer}
-
-\paragraph{Keywords}
-ER-positive breast cancer, DNA methylation, RNA-Seq, Illumina 450K, TCGA, FEM algorithm, iCluster, luminal-A/B subtypes, WNT signaling, TGF-beta pathway, differential methylation, network analysis~\cite{gao2015integrative}.
-
-\paragraph{Study design and rationale}
-The study integrated DNA methylation (Illumina 450K) and RNA-Seq data from 724 estrogen receptor–positive (ER+) breast cancers and 111 normal adjacent tissues from the TCGA dataset to define functional epigenetic alterations driving tumor subtypes. Using the \textbf{Functional Epigenetic Modules (FEM)} algorithm, the authors identified network-level hotspots of coordinated DNA methylation and gene-expression changes, focusing on how epigenetic regulation contributes to luminal-A and luminal-B classification.
-
-\paragraph{Data preprocessing and integration}
-Methylation data (395,775 CpGs) and RNA-Seq expression data (20,531 genes) were preprocessed using standard Illumina and \texttt{limma} normalization procedures. Genes were assigned promoter methylation values by averaging probes mapping to TSS200 or first exon regions; if unavailable, TSS1500 was used. Probes mapping to gene bodies were excluded to focus on regulatory methylation. Empirical Bayes statistics (\texttt{limma}) were computed for differential methylation and expression between normal and ER+ samples. These gene-level statistics were integrated into a protein–protein interaction (PPI) network derived from high-confidence interactomes.
-
-\paragraph{The FEM algorithm}
-Each PPI edge connecting genes \( g, h \) was weighted using an anti-correlation rule combining differential methylation (\( t^D_g \)) and expression (\( t^R_g \)):
-\[
-w_{gh} = \frac{1}{2} \left( t^I_g + t^I_h \right), \quad 
-t^I_g = H(t^D_g)H(-t^R_g) + H(-t^D_g)H(t^R_g),
-\]
-where \(H(x)\) is the Heaviside step function.
-The network was scanned for dense subnetworks (“modules”) maximizing average edge weight (local modularity) using a spin-glass community detection algorithm. Significant modules were validated via permutation tests and comparison to null networks.
-
-\paragraph{Identified FEM modules}
-Nine significant FEMs were detected, encompassing 257 unique genes (146 both differentially methylated and expressed, 99 showing anti-correlation). Each FEM corresponded to a biologically meaningful hotspot. Representative examples include:
-\begin{itemize}[label=-]
-\item \textbf{CAV1 module} – enriched in WNT signaling genes (e.g., \textit{WIF1}, \textit{WNT3A}, \textit{SFRP1}), showing promoter hypermethylation and transcriptional repression.
-\item \textbf{FSTL1 module} – enriched in TGF-$\beta$/BMP signaling members (\textit{BMP2}, \textit{BMP6}, \textit{BMP7}, \textit{TGFB2}), with widespread hypermethylation of tumor suppressor components.
-\item \textbf{CCL11 and LEP modules} – involved in chemokine and GPCR signaling, with hypomethylation and overexpression consistent with enhanced metastatic potential.
-\item \textbf{PROC and MME modules} – linked to coagulation and endothelin pathways, known to support tumor cell migration and proliferation.
-\end{itemize}
-
-\paragraph{Validation and reproducibility}
-Independent datasets (Germany: 254 ER+ and 49 normal tissues; Yu: 110 ER+ and 13 normals) confirmed the FEM hotspots by network modularity and directional consistency of methylation and expression \(t\)-statistics. Four of nine FEMs achieved significant validation (\(p<0.05\)), and all showed concordant differential patterns across cohorts. Methylation datasets included GEO accession GSE69914, confirming overlap with the platform used in the present thesis.
-
-\paragraph{Integrative clustering (iCluster analysis)}
-Joint latent variable modeling (\texttt{iCluster}) of 463 ER+ TCGA tumors with matched DNAm and mRNA data (FEM genes only) identified exactly two integrative clusters (\(k=2\)), strongly corresponding to luminal-A and luminal-B subtypes (Fisher test \(p < 10^{-10}\)).  
-Luminal-B tumors exhibited significantly higher deviation scores from the normal reference in both methylation and expression, indicating stronger epigenetic deregulation rather than distinct pathway activation. A similar two-cluster structure persisted when extending the input to 4311 anti-correlated genes genome-wide, confirming the homogeneity of ER+ epigenetic architecture.
-
-\paragraph{Deviation scoring and prognosis}
-A per-sample FEM deviation score quantified the combined distance (Z-normalized) of each gene’s methylation and expression from the normal baseline:
-\[
-FEM_s = \frac{1}{m} \sum_{g=1}^{m} |Z^D_{gs} - \alpha Z^R_{gs}|,
-\]
-with \(\alpha = \sigma_Z^D / \sigma_Z^R\) scaling data-type variance.  
-Luminal-B samples displayed higher deviation scores than luminal-A in all modules (\(p<10^{-5}\)). Prognostic modeling (Cox regression across TCGA, METABRIC, and Fleischer datasets) showed that higher FEM scores and cluster membership were associated with worse survival (meta-analysis \(p=0.013\) for DNAm-based classifier).
-
-\paragraph{Coordination of methylation–expression changes}
-Unlike copy number alterations, methylation changes across FEM genes were found to be \textbf{coordinated}, not mutually exclusive, within tumors. Binary matrices of gene activation (1) vs normal-like (0) states revealed significantly smaller Manhattan distances between FEM genes than expected under random permutation (\(p<0.001\)), demonstrating intra-tumor coherence of epigenetic deregulation.
-
-\paragraph{Biological interpretation}
-ER+ luminal-A and luminal-B cancers share the same deregulated epigenetic pathways, dominated by silencing of WNT and BMP/TGF-$beta$ signaling antagonists. Luminal-B tumors exhibit larger magnitude deviations—reflecting stronger pathway repression, higher proliferation (correlation of FEM score with PCNA \(r \approx 0.38\)), and worse clinical outcomes.  
-Epigenetic silencing of \textit{WIF1}, \textit{SFRP1}, and \textit{FSTL1} likely enhances WNT/TGF-$\beta$ signaling activity, promoting cell self-renewal and EMT. Additional deregulation in chemokine and endothelin pathways underscores a coordinated shift toward proliferative and migratory phenotypes.
-
-\paragraph{Summary of methodology for replication}
-To reproduce the FEM-based integration in a 450K dataset (e.g., GSE69914):
-\begin{enumerate}
-\item Preprocess IDATs (filter detection $p>0.01$; impute missing values $k=5$; exclude body probes).
-\item Compute per-gene differential methylation and expression using empirical Bayes (\texttt{limma}).
-\item Build a weighted PPI using the Heaviside anti-correlation rule.
-\item Apply spin-glass modularity optimization to extract FEMs; validate with 1000 permutations.
-\item Perform pathway enrichment (MSigDB) and compute per-sample FEM deviation scores.
-\item Integrate FEM DNAm and mRNA matrices via \texttt{iCluster} to identify subtypes ($k=2$).
-\item Optionally, compare FEM-derived subtypes to luminal-A/B and assess prognostic value.
-\end{enumerate}
-
-\paragraph{Conclusion}
-The integrative analysis reveals that ER+ breast cancers form two principal epigenetic clusters corresponding to luminal-A and luminal-B phenotypes. Both subtypes share deregulated WNT and TGF-$\beta$/BMP networks, but luminal-B tumors exhibit greater magnitude of methylation-driven transcriptional repression. The study establishes a reproducible, network-based framework for identifying epigenetic driver modules and for quantifying coordinated methylation–expression shifts in large-scale 450K datasets.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.5\textwidth]{Figures/Examples of two FEMs centred around seed genes CAV1 and FSTL1 in ER+ breast cancer.jpg} % o .png, .pdf, .eps...
-    \caption{Examples of two FEMs centred around seed genes CAV1 and FSTL1 in ER+ breast cancer.}
-    \label{fig:FEMs}
-\end{figure}
-
-
-\section{Integrative analysis identifies potential DNA methylation biomarkers for pan-cancer diagnosis and prognosis}
-
-\paragraph{Keywords}
-DNA methylation, pan-cancer analysis, CpG biomarkers, TCGA, XGBoost, logistic regression, diagnostic classifier, prognostic model, differential methylation, feature selection, GSE69914~\cite{ding2019pancancer}.
-
-\paragraph{Study design and objectives}
-This large-scale integrative study aimed to identify CpG-based DNA methylation biomarkers with diagnostic and prognostic potential across multiple cancer types. The authors systematically analyzed genome-wide methylation data from 26 cancer types in The Cancer Genome Atlas (TCGA), covering 9,685 tumor samples and 729 matched normal tissues. The central goal was to develop a minimal CpG signature able to accurately (i) distinguish tumors from normal samples across cancers, (ii) identify the tissue of origin, and (iii) predict patient prognosis.
-
-\paragraph{Data preprocessing and feature selection}
-DNA methylation $\beta$-values (Illumina HumanMethylation450K array) were retrieved from TCGA. CpG probes with missing values in more than 20\% of samples or low variance ($\sigma^2 < 0.01$) were removed, leaving approximately 350,000 high-quality CpGs. Batch effects were minimized through quantile normalization and cross-cancer scaling of $\beta$-values to the [0,1] range.  
-For each cancer type, differentially methylated CpGs (DMCs) were identified using a two-sided $t$-test comparing tumor vs. normal samples, controlling false discovery rate (FDR $<0.05$) and $|\Delta\beta| > 0.2$. These DMCs were pooled across cancers to obtain a global candidate set of $\sim$3,500 CpGs, which served as input for model training.
-
-\paragraph{Diagnostic model construction (XGBoost + logistic regression)}
-An extreme gradient boosting (\textbf{XGBoost}) model was used for feature selection to capture non-linear relationships among CpG methylation levels. The dataset was split into training (70\%) and testing (30\%) sets while maintaining cancer type stratification. Each CpG feature was assigned an importance score based on gain and coverage metrics from XGBoost iterations.  
-The top 30 CpGs with the highest feature importance were retained, and a multivariate \textbf{logistic regression classifier} was trained on their $\beta$-values. Recursive feature elimination was then applied to minimize redundancy, resulting in a final diagnostic signature of \textbf{seven CpGs}.  
-These seven CpGs achieved an average area under the ROC curve (AUC) of 0.982 in 10-fold cross-validation, and above 0.95 in nine independent cancer cohorts. Validation was also conducted on external GEO datasets, including breast tissue datasets such as GSE69914 and GSE76938, confirming the robustness of the selected CpGs across platforms.
-
-\paragraph{Functional and genomic annotation of the 7 CpGs} These 7 CpGs function as a universal “epigenetic fingerprint” that clearly separates the methylation profiles of healthy tissues from those of tumors.
-The 7 CpG sites are distributed across genes involved in tumorigenesis and transcriptional regulation:
-\begin{itemize}[label=-]
-\item \textbf{cg08244313 (ANKRD11)} – located in the promoter of a chromatin remodeling gene frequently mutated in breast and lung cancer; hypermethylation leads to transcriptional silencing and impaired cell differentiation.
-\item \textbf{cg17735539 (ZNF582)} – located in a zinc-finger transcription factor promoter; hypermethylation is recurrent in cervical, colon, and breast cancers, acting as a universal tumor suppressor marker.
-\item \textbf{cg21361244 (TRIM15)} – associated with ubiquitin-mediated protein degradation; its hypomethylation correlates with higher expression in invasive tumors.
-\item \textbf{cg26157345 (CCDC181)} – localized in the gene body of a microtubule-associated protein; consistent hypermethylation across epithelial cancers suggests a pan-epithelial marker.
-\item \textbf{cg11510243 (PDLIM4)} – involved in cytoskeletal anchoring and tumor suppression; promoter hypermethylation represses expression and promotes migration and metastasis.
-\item \textbf{cg12542207 (SPG20)} – regulates cell cycle and WNT signaling; hypermethylated in multiple carcinomas, including breast, liver, and colon.
-\item \textbf{cg18081940 (ZSCAN18)} – zinc-finger transcription regulator; hypermethylated in breast and endometrial cancers, associated with chromatin repression and proliferation.
-\end{itemize}
-Collectively, these CpGs represent \textbf{pan-cancer epigenetic switches} targeting genes involved in chromatin regulation, cytoskeletal integrity, and transcriptional control—biological processes frequently altered in early tumorigenesis. Their hypermethylation consistently marks the transition from normal to malignant epigenetic states.
-
-\paragraph{Model validation and cross-cancer generalization}
-To evaluate generalizability, the seven-CpG classifier was tested on unseen TCGA cancers (e.g., prostate, ovarian, kidney, brain). All achieved diagnostic AUC $>$ 0.97, confirming that the same CpG panel discriminates tumors from normals regardless of tissue origin.  
-Moreover, an extended classifier including 12 additional CpGs was trained to predict cancer type (i.e., tissue of origin). This model achieved a macro-AUC of 0.95 across 26 TCGA cancers, correctly classifying both primary and metastatic samples in over 90\% of cases. The consistency of CpG methylation patterns across datasets and tissues underscores the universality of these epigenetic changes.
-
-\paragraph{Prognostic analysis}
-To assess survival relevance, patients were divided into high- and low-risk groups based on their mean methylation at the seven diagnostic CpGs. Kaplan–Meier and Cox proportional hazards analyses revealed that higher methylation of these CpGs correlated with shorter overall survival in seven cancer types, notably in breast, colon, and lung cancers (log-rank $p < 0.001$). The prognostic classifier demonstrated stable performance across cohorts, indicating that CpG methylation at these loci reflects tumor aggressiveness and progression dynamics.
-
-\paragraph{Interpretation and reproducibility}
-The seven identified CpGs form a minimal yet highly predictive signature of cancer-specific methylation. Their diagnostic capacity stems from consistent hypermethylation of regulatory promoters and transcription factor binding regions across epithelial cancers. Importantly, these CpGs can be measured on the Illumina 450K or EPIC arrays, allowing direct replication in datasets such as GSE69914. The pipeline—DMC selection, XGBoost feature ranking, logistic regression training, and ROC-based validation—offers a reproducible framework for building multi-cancer methylation classifiers.
-
-\paragraph{Conclusion}
-This integrative analysis demonstrates that DNA methylation profiling can yield robust, universal biomarkers for cancer detection and prognosis. The seven CpGs identified by Ding et al. serve as a compact and biologically interpretable panel capturing core epigenetic alterations across multiple tumor types. Their consistent hypermethylation patterns make them ideal candidates for clinical diagnostic assays and for cross-dataset validation in studies such as the present thesis.
-
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.3\textwidth]{Figures/Validation of tumor specific classifier in tumors with metastases.jpg} % o .png, .pdf, .eps...
-    \caption{Validation of tumor specific classifier in tumors with metastases. ROC curve of multiclass tumor specific classifier in
-metastatic breast cancer (GSE58999) and metastatic prostate cancer (GSE73549 and GSE38240).}
-    \label{fig:ROC}
-\end{figure}
 
 \section{DNA Methylation Patterns in Normal Tissue Correlate more Strongly with Breast Cancer Status than Copy-Number Variants}
 
@@ -426,12 +373,203 @@ To reproduce these findings:
 \paragraph{Conclusion}
 Croes et al.\ demonstrated that \textit{DFNA5} promoter hypermethylation and gene-body hypomethylation constitute a reproducible epigenetic signature in breast cancer. The 22 CpGs identified delineate functional regions with diagnostic and prognostic value. The 2-CpG logistic model (CpG12922093, CpG07504598) offers a compact, high-specificity classifier (AUC = 0.93). Gene-body methylation correlates with poor prognosis, suggesting that \textit{DFNA5} methylation captures both tumor presence and aggressiveness. These results position \textit{DFNA5} as a promising epigenetic biomarker for breast cancer detection and risk stratification.
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.7\textwidth]{Figures/The DFNA5 gene with annotation of the 22 CpGs..jpg} % o .png, .pdf, .eps...
     \caption{The DFNA5 gene with annotation of the 22 CpGs. The 10 exons and the promoter and gene body region of the DFNA5 gene are indicated.}
     \label{fig:22CpG}
 \end{figure}
+
+
+\section{Integrative analysis identifies potential DNA methylation biomarkers for pan-cancer diagnosis and prognosis}
+
+\paragraph{Keywords}
+DNA methylation, pan-cancer analysis, CpG biomarkers, TCGA, XGBoost, logistic regression, diagnostic classifier, prognostic model, differential methylation, feature selection, GSE69914~\cite{ding2019pancancer}.
+
+\paragraph{Study design and objectives}
+This large-scale integrative study aimed to identify CpG-based DNA methylation biomarkers with diagnostic and prognostic potential across multiple cancer types. The authors systematically analyzed genome-wide methylation data from 26 cancer types in The Cancer Genome Atlas (TCGA), covering 9,685 tumor samples and 729 matched normal tissues. The central goal was to develop a minimal CpG signature able to accurately (i) distinguish tumors from normal samples across cancers, (ii) identify the tissue of origin, and (iii) predict patient prognosis.
+
+\paragraph{Data preprocessing and feature selection}
+DNA methylation $\beta$-values (Illumina HumanMethylation450K array) were retrieved from TCGA. CpG probes with missing values in more than 20\% of samples or low variance ($\sigma^2 < 0.01$) were removed, leaving approximately 350,000 high-quality CpGs. Batch effects were minimized through quantile normalization and cross-cancer scaling of $\beta$-values to the [0,1] range.  
+For each cancer type, differentially methylated CpGs (DMCs) were identified using a two-sided $t$-test comparing tumor vs. normal samples, controlling false discovery rate (FDR $<0.05$) and $|\Delta\beta| > 0.2$. These DMCs were pooled across cancers to obtain a global candidate set of $\sim$3,500 CpGs, which served as input for model training.
+
+\paragraph{Diagnostic model construction (XGBoost + logistic regression)}
+An extreme gradient boosting (\textbf{XGBoost}) model was used for feature selection to capture non-linear relationships among CpG methylation levels. The dataset was split into training (70\%) and testing (30\%) sets while maintaining cancer type stratification. Each CpG feature was assigned an importance score based on gain and coverage metrics from XGBoost iterations.  
+The top 30 CpGs with the highest feature importance were retained, and a multivariate \textbf{logistic regression classifier} was trained on their $\beta$-values. Recursive feature elimination was then applied to minimize redundancy, resulting in a final diagnostic signature of \textbf{seven CpGs}.  
+These seven CpGs achieved an average area under the ROC curve (AUC) of 0.982 in 10-fold cross-validation, and above 0.95 in nine independent cancer cohorts. Validation was also conducted on external GEO datasets, including breast tissue datasets such as GSE69914 and GSE76938, confirming the robustness of the selected CpGs across platforms.
+
+\paragraph{Functional and genomic annotation of the 7 CpGs} These 7 CpGs function as a universal “epigenetic fingerprint” that clearly separates the methylation profiles of healthy tissues from those of tumors.
+The 7 CpG sites are distributed across genes involved in tumorigenesis and transcriptional regulation:
+\begin{itemize}[label=-]
+\item \textbf{cg08244313 (ANKRD11)} – located in the promoter of a chromatin remodeling gene frequently mutated in breast and lung cancer; hypermethylation leads to transcriptional silencing and impaired cell differentiation.
+\item \textbf{cg17735539 (ZNF582)} – located in a zinc-finger transcription factor promoter; hypermethylation is recurrent in cervical, colon, and breast cancers, acting as a universal tumor suppressor marker.
+\item \textbf{cg21361244 (TRIM15)} – associated with ubiquitin-mediated protein degradation; its hypomethylation correlates with higher expression in invasive tumors.
+\item \textbf{cg26157345 (CCDC181)} – localized in the gene body of a microtubule-associated protein; consistent hypermethylation across epithelial cancers suggests a pan-epithelial marker.
+\item \textbf{cg11510243 (PDLIM4)} – involved in cytoskeletal anchoring and tumor suppression; promoter hypermethylation represses expression and promotes migration and metastasis.
+\item \textbf{cg12542207 (SPG20)} – regulates cell cycle and WNT signaling; hypermethylated in multiple carcinomas, including breast, liver, and colon.
+\item \textbf{cg18081940 (ZSCAN18)} – zinc-finger transcription regulator; hypermethylated in breast and endometrial cancers, associated with chromatin repression and proliferation.
+\end{itemize}
+Collectively, these CpGs represent \textbf{pan-cancer epigenetic switches} targeting genes involved in chromatin regulation, cytoskeletal integrity, and transcriptional control—biological processes frequently altered in early tumorigenesis. Their hypermethylation consistently marks the transition from normal to malignant epigenetic states.
+
+\paragraph{Model validation and cross-cancer generalization}
+To evaluate generalizability, the seven-CpG classifier was tested on unseen TCGA cancers (e.g., prostate, ovarian, kidney, brain). All achieved diagnostic AUC $>$ 0.97, confirming that the same CpG panel discriminates tumors from normals regardless of tissue origin.  
+Moreover, an extended classifier including 12 additional CpGs was trained to predict cancer type (i.e., tissue of origin). This model achieved a macro-AUC of 0.95 across 26 TCGA cancers, correctly classifying both primary and metastatic samples in over 90\% of cases. The consistency of CpG methylation patterns across datasets and tissues underscores the universality of these epigenetic changes.
+
+\paragraph{Prognostic analysis}
+To assess survival relevance, patients were divided into high- and low-risk groups based on their mean methylation at the seven diagnostic CpGs. Kaplan–Meier and Cox proportional hazards analyses revealed that higher methylation of these CpGs correlated with shorter overall survival in seven cancer types, notably in breast, colon, and lung cancers (log-rank $p < 0.001$). The prognostic classifier demonstrated stable performance across cohorts, indicating that CpG methylation at these loci reflects tumor aggressiveness and progression dynamics.
+
+\paragraph{Interpretation and reproducibility}
+The seven identified CpGs form a minimal yet highly predictive signature of cancer-specific methylation. Their diagnostic capacity stems from consistent hypermethylation of regulatory promoters and transcription factor binding regions across epithelial cancers. Importantly, these CpGs can be measured on the Illumina 450K or EPIC arrays, allowing direct replication in datasets such as GSE69914. The pipeline—DMC selection, XGBoost feature ranking, logistic regression training, and ROC-based validation—offers a reproducible framework for building multi-cancer methylation classifiers.
+
+\paragraph{Conclusion}
+This integrative analysis demonstrates that DNA methylation profiling can yield robust, universal biomarkers for cancer detection and prognosis. The seven CpGs identified by Ding et al. serve as a compact and biologically interpretable panel capturing core epigenetic alterations across multiple tumor types. Their consistent hypermethylation patterns make them ideal candidates for clinical diagnostic assays and for cross-dataset validation in studies such as the present thesis.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\textwidth]{Figures/Validation of tumor specific classifier in tumors with metastases.jpg} % o .png, .pdf, .eps...
+    \caption{Validation of tumor specific classifier in tumors with metastases. ROC curve of multiclass tumor specific classifier in
+metastatic breast cancer (GSE58999) and metastatic prostate cancer (GSE73549 and GSE38240).}
+    \label{fig:ROC}
+\end{figure}
+
+
+\section{Prediction of Disease Genes Based on Stage-Specific Gene Regulatory Networks in Breast Cancer}
+
+\paragraph{Keywords}
+Breast cancer, DNA methylation, gene expression, stage-specific analysis, gene regulatory networks, WGCNA, hub genes, TCGA, GSE69914, GSE15852, candidate driver genes~\cite{fan2021stagegrn}.
+
+\paragraph{Study aim and rationale}
+This study proposes a computational framework to predict \textit{stage-specific} candidate disease genes in breast cancer by integrating transcriptomic and DNA methylation data with clinical staging information. Unlike many previous approaches that ignore stage and analyze tumors as a single group, this method builds three distinct regulatory models for Stage~I, Stage~II, and Stage~III breast cancer. The central idea is that genes driving cancer initiation may differ from those driving progression, and therefore network structure and key regulators should be inferred separately at each tumor stage. The pipeline identifies stage-specific gene modules, characterizes their biological functions, and prioritizes their core genes as putative disease genes for that stage. The approach is then validated on external datasets (GSE15852 and GSE69914) to assess reproducibility.
+
+\paragraph{Datasets and preprocessing}
+Gene expression (RNA-Seq) and DNA methylation data were downloaded from The Cancer Genome Atlas (TCGA), together with phenotype and staging data. The gene expression matrix contained 60{,}484 genes across 1{,}217 samples; the DNA methylation matrix contained 485{,}578 CpG sites across 890 samples. Only paired samples (each tumor sample matched to its own adjacent normal tissue) were retained. Samples were then stratified by clinical stage, yielding: 29 tumor/normal pairs for Stage~I, 94 pairs for Stage~II, and 32 pairs for Stage~III. Stage~IV had only two usable pairs and was excluded as not statistically convincing.
+
+For methylation, multiple CpG probes can map to the same gene. The authors collapsed CpG-level data to gene-level methylation by averaging the $\beta$ values of all CpGs annotated to that gene. The $\beta$-value represents the methylation level; values $>0.8$ defined hypermethylated genes and values $<0.2$ defined hypomethylated genes.
+
+For gene expression, normalized FPKM values were used. Genes with missing values in more than 15\% of samples were filtered out. Only those samples with both gene expression and matched methylation data (tumor and normal from the same patient) were kept for downstream paired analyses.
+
+\paragraph{Differential expression and methylation filtering}
+Within each stage separately (Stage~I, Stage~II, Stage~III), tumor vs.\ matched normal samples were compared to identify both (i) differentially expressed genes and (ii) aberrantly methylated genes.
+
+Differential expression analysis was performed using the \texttt{limma} R package, selecting genes with $p<0.05$ and $|\log \text{FC}|<0.5$ as reported thresholds. In parallel, DNA methylation status was used to label genes as hypermethylated ($\beta > 0.8$) or hypomethylated ($\beta < 0.2$). The intersection of these two criteria --- genes that were both differentially expressed and abnormally methylated --- produced the gene sets carried forward for network modeling. This yielded 1{,}027 such genes in Stage~I, 1{,}012 in Stage~II, and 1{,}220 in Stage~III.
+
+Across all stages, the authors confirmed the expected inverse relationship between DNA methylation and gene expression: higher methylation corresponded to lower expression, consistent with promoter silencing effects.
+
+\paragraph{Stage-specific gene regulatory network construction}
+To model regulatory control at each stage, the study built three transcriptional regulatory networks (one per stage). Transcription factor (TF) $\rightarrow$ target gene pairs were obtained from GRNdb, a curated TF--target interaction resource. These TF--target pairs were filtered so that the target gene was among the stage-specific differentially expressed and hyper/hypomethylated genes defined above.
+
+For each retained TF--target pair, the Pearson correlation coefficient (PCC) between TF expression and target expression was computed across the paired tumor/normal samples of that stage. Edges with $|\text{PCC}| \ge 0.5$ were kept. This procedure produced three \textbf{stage-specific gene regulatory networks:}
+\begin{itemize}[label=-]
+    \item Stage~I network: 1{,}129 nodes and 4{,}429 edges.
+    \item Stage~II network: 1{,}066 nodes and 4{,}879 edges.
+    \item Stage~III network: 1{,}339 nodes and 6{,}461 edges.
+\end{itemize}
+These per-stage networks reflect transcriptional wiring specific to that disease stage, integrating both expression deregulation and methylation dysregulation relative to normal tissue.
+
+\paragraph{Module detection via WGCNA}
+Within each stage-specific regulatory network, modules (i.e., co-regulated and co-expressed gene communities) were identified using Weighted Gene Co-expression Network Analysis (WGCNA). The steps were: (i) hierarchical clustering of genes in each network; (ii) Dynamic Tree Cut to segment the dendrogram into discrete modules, enforcing a minimum module size of 30 genes.
+
+Results:
+\begin{itemize}[label=-]
+    \item Stage~I network was partitioned into 11 modules (e.g., S1\_turquoise, S1\_brown, S1\_blue), with the largest (S1\_turquoise) containing 270 genes.
+    \item Stage~II network was partitioned into 10 modules, with the largest (S2\_turquoise) containing 337 genes.
+    \item Stage~III network was partitioned into 13 modules, with the largest (S3\_turquoise) again containing 337 genes.
+\end{itemize}
+
+Genes that were differentially expressed \textit{only} in one stage (not in the others) were labeled as ``stage-specific genes'': 92 genes for Stage~I, 60 for Stage~II, and 187 for Stage~III. The authors then mapped these uniquely stage-specific genes back to the WGCNA modules to identify which modules were most enriched for stage-unique signals. They found:
+\begin{itemize}[label=-]
+    \item Stage~I-specific genes mainly cluster in S1\_brown, S1\_turquoise, and S1\_blue.
+    \item Stage~II-specific genes mainly cluster in S2\_turquoise.
+    \item Stage~III-specific genes mainly cluster in S3\_turquoise, S3\_brown, and S3\_green.
+\end{itemize}
+
+These seven modules (S1\_brown, S1\_turquoise, S1\_blue, S2\_turquoise, S3\_turquoise, S3\_brown, S3\_green) were therefore defined as the \textbf{stage-specific core modules}.
+
+\paragraph{Topological analysis of the core modules}
+For each of the seven core modules, the study characterized network topology using Cytoscape. Metrics included node degree, betweenness centrality, and closeness centrality.
+
+\begin{itemize}[label=-]
+    \item Degree distributions in S1\_turquoise, S2\_turquoise, and S3\_turquoise were broad and extended to high connectivity: most node degrees lay between $\sim$100 and 400, implying dense regulatory connectivity in these ``turquoise'' modules.
+    \item In S1\_brown, S1\_blue, S3\_brown, and S3\_green, degree values were generally lower (mostly 50--100) but still showed scale-free-like (power-law) behavior.
+    \item Betweenness centrality was high for many nodes across all seven modules, and closeness centrality values for most nodes ranged from 0.5 to 0.9.
+\end{itemize}
+
+These metrics indicate that each stage-specific module is internally well connected, suggesting that its high-centrality nodes function as regulatory hubs. Such hubs are natural candidates for stage-relevant driver genes.
+
+\paragraph{Functional enrichment of stage-specific modules}
+Gene set enrichment analysis for each of the seven core modules was performed with Metascape, using a significance cutoff of $p<0.01$. The most significantly enriched biological themes were:
+\begin{itemize}[label=-]
+    \item \textbf{Cell cycle control and mitosis}: ``cell cycle phase transition,'' ``chromosome segregation,'' ``DNA replication,'' ``spindle organization,'' and ``cell division.'' These functions dominated the large turquoise modules of Stage~I, Stage~II, and Stage~III (S1\_turquoise, S2\_turquoise, S3\_turquoise).
+    \item \textbf{Transcriptional regulation and chromatin state}: modules such as S1\_brown, S1\_blue, S3\_brown, and S3\_green were enriched for transcriptional activator/repressor activity, chromatin binding, histone modification, nuclear receptor activity, telomerase complex, and macromolecule methylation.
+\end{itemize}
+
+Importantly, regulatory complex assembly at promoters and chromatin binding functions were found across \textit{all} seven modules, suggesting that stage-specific dysregulation in breast cancer converges on control of transcription, chromatin structure, and cell cycle checkpoints.
+
+\paragraph{Candidate disease gene prioritization}
+Within each of the seven core modules, the authors defined ``core genes'' using two complementary strategies and then took their intersection:
+\begin{enumerate}
+    \item \textbf{Correlation structure within the module}: for each module, they computed a gene--gene correlation matrix and retained genes with correlation $\ge 0.8$ and $p<0.05$, marking them as internally coherent regulators.
+    \item \textbf{Network centrality}: they ranked genes by degree, betweenness centrality, and closeness centrality within that module and selected the top 5\% as hub-like nodes.
+\end{enumerate}
+
+Genes that satisfied both criteria were labeled \textbf{candidate disease genes} for that stage.
+
+Results by stage:
+\begin{itemize}[label=-]
+    \item \textbf{Stage~I} (modules S1\_brown, S1\_turquoise, S1\_blue): 20 candidate genes, including \textit{E2F2}, \textit{E2F8}, \textit{TPX2}, \textit{BUB1}, \textit{CKAP2L}, \textit{CBX3}, \textit{KPNA2}, \textit{NEK2}, \textit{TTK}, \textit{LMNB1}, \textit{SLC25A36}, \textit{SLC39A1}, \textit{MRPS12} (PCNA-related), and additional transcriptional/transport regulators like \textit{CASC5}, \textit{CREBRF}, \textit{PAN2}, \textit{BTAF1}, \textit{ZC3H6}, \textit{DDX49}.
+    \item \textbf{Stage~II} (module S2\_turquoise): 12 candidate genes, including \textit{E2F2}, \textit{E2F8}, \textit{TPX2}, \textit{KPNA2}, \textit{CKAP2L}, \textit{CBX3}, \textit{BUB1}, \textit{CCNE2}, \textit{CASC5}, \textit{SPDL1}, \textit{TOP2A}, and \textit{DDIAS}.
+    \item \textbf{Stage~III} (modules S3\_turquoise, S3\_brown, S3\_green): 22 candidate genes, including \textit{E2F2}, \textit{RAD21}, \textit{FBXO5}, \textit{CCNE2}, \textit{CBX3}, \textit{STIL}, \textit{CKAP2L}, \textit{PCNA}, \textit{NEK2}, \textit{TTK}, \textit{CSE1L}, \textit{H2AFZ}, \textit{NR2F6}, \textit{TRAPPC6A}, \textit{IGSF8}, \textit{FDXR}, \textit{SLC39A1}, \textit{EXOSC5}, \textit{RBBP5}, \textit{KDM5B}, \textit{H3F3A}, and \textit{CDC42SE1}.
+\end{itemize}
+
+Three genes --- \textit{E2F2}, \textit{CKAP2L}, and \textit{CBX3} --- were shared across all three stages, suggesting persistent dysregulation from early to late disease.
+
+\paragraph{Biological/clinical interpretation and validation}
+The candidate genes were then checked against known cancer gene resources (OMIM, COSMIC, DAVID) and literature in PubMed to test whether they are already associated with breast cancer biology.
+
+Many top hits have clear functional relevance:
+\begin{itemize}[label=-]
+    \item \textit{E2F2}, \textit{E2F8}: transcription factors controlling cell cycle entry and proliferation; linked to poor prognosis and recurrence-free survival in breast cancer.
+    \item \textit{TPX2}, \textit{BUB1}, \textit{NEK2}, \textit{TTK}, \textit{TOP2A}, \textit{PCNA}: mitotic spindle assembly, checkpoint control, DNA topology, and replication; these genes support uncontrolled proliferation and chromosomal instability.
+    \item \textit{CKAP2L}, \textit{CASC5}, \textit{FBXO5}, \textit{STIL}: regulators of mitosis, centrosome function, or chromosomal segregation, repeatedly linked to aggressive tumor behavior and poor prognosis in breast cancer.
+    \item \textit{RAD21}: DNA repair and chromosomal cohesion, implicated in therapy response.
+    \item \textit{KDM5B}, \textit{CBX3}, \textit{H2AFZ}: chromatin and epigenetic regulators whose overexpression correlates with metastatic potential, proliferation, and reduced survival.
+    \item \textit{CSE1L}, \textit{CCNE2}: associated with metastasis and poor clinical outcome in breast tumors.
+\end{itemize}
+
+Overall, 55\% of Stage~I candidates, 83\% of Stage~II candidates, and 64\% of Stage~III candidates were already supported by curated cancer resources or published studies as breast cancer--related. This high validation rate supports the predictive value of the stage-specific module approach.
+
+\paragraph{External validation using independent datasets (GSE15852 and GSE69914)}
+To further test generalizability, the authors reapplied their framework to two public GEO datasets:
+\begin{itemize}[label=-]
+    \item GSE15852: gene expression data from 43 primary breast cancers and their matched normal tissues.
+    \item GSE69914: Illumina 450K DNA methylation data including paired normal-adjacent and tumor breast tissue samples.
+\end{itemize}
+
+From these datasets, they identified 79 genes that were both differentially expressed and aberrantly methylated. Using TF--target information and PCC~$\geq 0.5$, they built a combined breast cancer regulatory network with 195 nodes and 313 edges, then used WGCNA to divide it into modules (turquoise, blue, brown; gray genes were unassigned and discarded). Applying the same two-step prioritization (correlation $\geq 0.8$ with $p<0.05$ and top 5\% centrality), they obtained a focused set of 10 candidate genes: \textit{H2AFZ}, \textit{NPM1}, \textit{MAF}, \textit{NR3C1}, \textit{PTGER3}, \textit{TCF4}, \textit{IRF1}, \textit{RARB}, \textit{CHD2}, and \textit{SMAD4}. All but \textit{PTGER3} and \textit{CHD2} were previously linked to breast cancer biology or prognosis. This reproduced the core logic of the pipeline (methylation + expression + regulatory structure + module centrality) on independent data, including GSE69914, and again recovered biologically meaningful breast cancer genes.
+
+\paragraph{Replication workflow for a new dataset}
+The procedure described in this work can be replicated on any breast cancer dataset with (i) gene expression, (ii) DNA methylation, and (iii) clinical staging or at least tumor vs.\ matched normal pairs:
+\begin{enumerate}
+    \item \textbf{Stratify by stage}: split tumor/normal pairs into Stage~I, Stage~II, Stage~III (or other clinically defined strata). Exclude strata with too few matched pairs.
+    \item \textbf{Call altered genes}: within each stage, find differentially expressed genes using \texttt{limma} with $p<0.05$ and $|\log \text{FC}|<0.5$ as stated; classify genes as hypermethylated ($\beta>0.8$) or hypomethylated ($\beta<0.2$). Take the intersection of these two sets to focus on genes that are both transcriptionally deregulated and epigenetically abnormal.
+    \item \textbf{Build stage-specific TF$\to$target networks}: obtain TF--target pairs (e.g., from GRNdb), keep those whose targets are in the intersected gene list, and compute Pearson correlation between TF and target across that stage's samples. Retain edges with $|\text{PCC}|\ge 0.5$.
+    \item \textbf{Detect co-regulated modules}: run WGCNA on each stage-specific network. Use hierarchical clustering + Dynamic Tree Cut, enforcing a minimum of $\sim$30 genes per module.
+    \item \textbf{Identify ``core'' stage modules}: determine which modules are enriched for genes unique to that stage (i.e., differentially expressed only in Stage~I, only in Stage~II, etc.). These modules are considered the disease-relevant stage-specific modules.
+    \item \textbf{Prioritize candidate disease genes}: within each stage-specific module, (a) keep genes with strong within-module correlation ($\ge 0.8$, $p<0.05$), and (b) keep the top 5\% highest-ranked genes by degree, betweenness centrality, and closeness centrality. The intersection are the candidate stage-specific disease genes.
+    \item \textbf{Biological interpretation}: run functional enrichment (e.g., Metascape) to reveal dominant pathways (cell cycle, chromatin remodeling, spindle checkpoint, transcriptional control). Cross-reference the prioritized genes with OMIM, COSMIC, DAVID, and PubMed to evaluate known breast cancer relevance and prognostic value.
+\end{enumerate}
+
+\paragraph{Conclusion}
+By integrating DNA methylation, gene expression, TF--target regulatory structure, and explicit stage information, this framework reveals modules of tightly connected, transcriptionally dysregulated, and epigenetically altered genes that are specific to Stage~I, Stage~II, or Stage~III breast cancer. These modules are enriched for cell cycle, chromatin regulation, mitotic checkpoint control, and transcriptional programs known to underlie tumor progression. The most central genes in these modules --- including \textit{E2F2}, \textit{E2F8}, \textit{TPX2}, \textit{BUB1}, \textit{CKAP2L}, \textit{CBX3}, \textit{RAD21}, \textit{CCNE2}, \textit{STIL}, \textit{KDM5B}, \textit{TOP2A}, \textit{PCNA} --- are strongly supported by literature as drivers of proliferation, chromosomal instability, epigenetic reprogramming, and metastatic potential in breast cancer. The method therefore provides a reproducible, stage-aware strategy to nominate disease genes and potential therapeutic targets, and it was shown to generalize to independent datasets including GSE69914.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{Figures/Workflow of the computational framework for predicting disease genes based on stage-specific gene regulatory network.jpg} % o .png, .pdf, .eps...
+    \caption{Workflow of the computational framework for predicting disease genes based on stage-specific gene regulatory network.}
+    \label{fig:Workflow}
+\end{figure}
+
 
 \printbibliography
 \end{document}
