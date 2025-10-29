@@ -1,0 +1,315 @@
+\documentclass[10pt]{extarticle}
+
+% Lingua e matematica
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,amsthm}
+
+% Grafica e tabelle
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{siunitx}
+
+% Codice (opzionale)
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.98,0.98,0.98}
+\lstdefinestyle{mystyle}{
+  backgroundcolor=\color{backcolour},
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true, keepspaces=true, numbers=none, tabsize=2
+}
+\lstset{style=mystyle}
+
+% Margini
+\usepackage[margin=0.6in]{geometry}
+\usepackage{ragged2e}
+\usepackage{enumitem}
+%\usepackage[utf8]{inputenc} % per caratteri UTF-8 nei .tex e nel .bib
+\usepackage[backend=biber,style=ieee,sorting=none,maxbibnames=99]{biblatex}
+\ExecuteBibliographyOptions{doi=true,url=true,isbn=false}
+\addbibresource{references.bib}
+\usepackage{csquotes}       % consigliato da biblatex (evita warning e parse strani)
+
+
+
+% Bibliografia (biblatex + biber)
+\usepackage[backend=biber,style=ieee]{biblatex}
+\addbibresource{references.bib}
+
+% TOC: includi anche \paragraph e numerali
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+
+% Hyperref (sempre *dopo* gli altri pacchetti)
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=teal,urlcolor=magenta]{hyperref}
+
+
+\begin{document}
+
+% Custom header without a separate titlepage
+\noindent
+\begin{minipage}{0.3\textwidth}
+    \includegraphics[width=1.3\linewidth]{Figures/polito_logo_2021_blu.jpg}
+\end{minipage}
+\hfill
+\begin{minipage}{0.68\textwidth}
+    \raggedleft
+    {\LARGE \textbf{Politecnico di Torino}}\\[0.2cm]
+    {\large Master's Degree in Mathematical Engineering}\\[0.7cm]
+    {\large \textbf{Material for Thesis}}\\[0.2cm]
+    {\large Thesis Structure}\\[0.7cm]
+    \begin{tabular}{rl}
+        Elisabetta Roviera & \texttt{s328422} \\
+    \end{tabular}
+\end{minipage}
+
+\vspace{1cm}
+\hrule
+\vspace{0.5cm}
+
+\tableofcontents
+
+\vspace{0.5cm}
+\hrule
+\vspace{1cm}
+
+\paragraph{Note} 
+The following outline represents the current planned structure of the thesis. 
+It is intended as a working version and may be refined during the development of the analysis, 
+for example depending on data availability, the stability of the proposed CpG signature, 
+and the outcome of validation experiments on external cohorts. 
+The logical flow (from biological motivation, to computational framework, to application, validation, 
+and quantitative interpretation of epigenetic instability) is expected to remain consistent, 
+even if specific subsections are adjusted or merged in the final document.
+
+
+\section{Introduction}
+
+\subsection{Motivation}
+Breast cancer initiation is thought to proceed through intermediate states in which histologically normal tissue located near the primary lesion (``normal-adjacent'' tissue) already displays epigenetic disruption. Detecting and quantifying these early alterations is relevant for local risk assessment and for understanding tumor initiation.
+
+\subsection{Background and open problem}
+Robust DNA methylation signatures distinguishing Tumor vs.\ histologically normal tissue exist. In contrast, it is still unclear whether it is possible to reproducibly distinguish truly healthy normal tissue from normal-adjacent tissue using DNA methylation alone. This is an important question, since normal-adjacent tissue is often considered a ``field at risk''.
+
+\subsection{Aim of the thesis}
+The thesis aims to:
+\begin{itemize}[label=-]
+    \item build a quantitative pipeline to identify CpG sites that discriminate normal vs.\ normal-adjacent breast tissue;
+    \item define a continuous epigenetic score that places each sample along a Normal $\rightarrow$ Normal-adjacent $\rightarrow$ Tumor trajectory;
+    \item characterize normal-adjacent tissue as a potentially unstable, pre-neoplastic state using quantitative instability measures (entropy and Dynamical Network Biomarker concepts).
+\end{itemize}
+
+\subsection{Outline of the work}
+The thesis proceeds from biological motivation to computational formulation, application on real breast tissue methylation data, validation in external cohorts, and quantitative interpretation of normal-adjacent tissue as a critical pre-neoplastic state.
+
+
+\section{Biological and Clinical Background}
+
+\subsection{Breast tissue organization}
+Overview of the cellular compartments of breast tissue (luminal and basal epithelial cells, stromal compartment, adipocytes, immune infiltration) and their relevance in bulk methylation data.
+
+\subsection{DNA methylation and cancer development}
+DNA methylation is measured as a $\beta$-value in $[0,1]$, reflecting the fraction of methylated copies at a CpG site. Aberrant hypermethylation of regulatory regions is linked to the silencing of differentiation, cell cycle control, and tumor suppressor programs. Such alterations often appear before large-scale genetic changes.
+
+\subsection{Normal-adjacent tissue and field cancerization}
+Definition of normal-adjacent tissue: histologically normal tissue sampled near the tumor. Literature reports indicate that this tissue frequently exhibits focal hypermethylation, increased variability, and repression of developmental regulators, suggesting the presence of a pre-neoplastic ``field defect''.
+
+\subsection{Why normal vs.\ normal-adjacent matters}
+Distinguishing normal from normal-adjacent is clinically relevant (margin assessment, local risk stratification) and mechanistically relevant (capturing the earliest epigenetic instability). The central question is whether a reproducible CpG-based signature can be derived specifically for this distinction, beyond standard Tumor vs.\ Normal comparisons.
+
+
+\section{Mathematical and Computational Framework}
+
+\subsection{Data model}
+Let $X \in [0,1]^{p \times n}$ be the DNA methylation matrix, with $p$ CpG sites and $n$ samples labelled as Normal, Normal-adjacent, or Tumor. Public datasets provide methylation levels as $\beta$-values, already preprocessed at source.
+
+\subsection{Probe-level quality filtering}
+Sondes/CpG probes flagged as technically unreliable are removed, including:
+\begin{itemize}[label=-]
+    \item cross-reactive probes (off-target hybridization),
+    \item probes overlapping polymorphisms that alter the measured signal,
+    \item optionally, probes on sex chromosomes when they may introduce sex-driven confounding.
+\end{itemize}
+The goal is to retain CpG sites with interpretable and reproducible biological signal.
+
+\subsection{$\beta$-to-$M$ transformation and statistical harmonization}
+The raw methylation proportion $\beta$ is transformed into an $M$-value:
+\[
+M = \log_2 \left( \frac{\beta}{1 - \beta} \right).
+\]
+This transformation stabilizes variance and improves the applicability of linear modeling and $t$-type tests, since $\beta$-values are bounded and highly skewed near 0 and 1.  
+
+\subsection{Genomic and functional annotation of CpG sites}
+Each retained CpG is annotated using existing Illumina 450K/EPIC manifests and public annotation resources, linking CpGs to:
+\begin{itemize}[label=-]
+    \item genomic context (promoter/TSS200, 5'UTR, first exon, gene body, enhancer-like regions, Polycomb-marked regions),
+    \item nearby genes and regulatory elements.
+\end{itemize}
+This enables functional interpretation of the CpG panels identified later.
+
+\subsection{Estimation of cell-type composition}
+Bulk breast tissue contains variable proportions of epithelial, adipose, stromal, and immune cells. Reference-based deconvolution (e.g.\ constrained regression using known methylation signatures of purified cell types) or surrogate indices (epithelial vs.\ adipose markers) are used to estimate or approximate per-sample cellular composition.  
+This step is essential to evaluate whether differences between Normal and Normal-adjacent reflect intrinsic epigenetic changes or merely shifts in cell-type proportions.
+
+\subsection{CpG-level differential analysis}
+Within-group comparisons are performed on $M$-values to detect CpG sites that:
+\begin{itemize}[label=-]
+    \item change in mean methylation between Normal and Normal-adjacent;
+    \item and/or show increased variability (differential variance) in Normal-adjacent.
+\end{itemize}
+The second criterion is motivated by the idea that early pre-neoplastic change is often heterogeneous and focal rather than uniform across all cells.
+
+\subsection{Feature selection and classifier construction}
+Candidate CpGs are further reduced using multivariate feature selection methods (e.g.\ L1-penalized logistic regression, SVM recursive feature elimination, tree-based importance ranking).  
+The aim is to obtain a compact CpG panel that best separates Normal and Normal-adjacent samples.  
+Performance is quantified using metrics such as ROC/AUC, sensitivity, and specificity.
+
+\subsection{Definition of an epigenetic score}
+An epigenetic score is defined for each sample as a weighted combination of the selected CpG sites.  
+This score is intended to order all samples along a molecular axis Normal $\rightarrow$ Normal-adjacent $\rightarrow$ Tumor, and to provide a single interpretable readout of ``epigenetic deviation from healthy normal''.
+
+\subsection{Instability metrics (link to Chapter 6)}
+Two quantitative indicators of epigenetic instability are introduced for later analysis:
+\begin{itemize}[label=-]
+    \item an entropy-like measure of global disorder in the methylation profile,
+    \item a Dynamical Network Biomarker (DNB)-like instability index based on covariance structure within a subset of CpG sites.
+\end{itemize}
+These measures will be formally defined and applied in Chapter~6.
+
+
+\section{Application to the Primary Dataset}
+
+\subsection{Dataset description}
+Detailed description of the main breast cancer DNA methylation dataset: number of Normal, Normal-adjacent, and Tumor samples; platform (e.g.\ Illumina 450K); availability of paired samples from the same patients.
+
+\subsection{Preprocessing and harmonization}
+Concrete application of the Chapter~3 pipeline:
+\begin{itemize}[label=-]
+    \item probe filtering for technical reliability,
+    \item $\beta \rightarrow M$ transformation and its practical benefit for statistical testing,
+    \item optional centering/scaling or batch-effect adjustment at the $M$-value level,
+    \item genomic/functional annotation of the retained CpGs.
+\end{itemize}
+
+\subsection{Cell-type composition assessment}
+Estimation (or proxy estimation) of epithelial, adipose, stromal, and immune content per sample.  
+Assessment of whether observed Normal vs.\ Normal-adjacent differences can be explained purely by tissue composition, or whether they indicate genuine local epigenetic disruption.
+
+\subsection{Exploratory data analysis}
+Exploration of global structure using PCA, hierarchical clustering, and heatmaps of informative CpGs.  
+Visual positioning of Normal, Normal-adjacent, and Tumor samples in the reduced-dimensional space to assess whether Normal-adjacent occupies an intermediate or unstable state.
+
+\subsection{Identification of a Normal vs.\ Normal-adjacent CpG panel}
+Selection of CpG sites with the strongest discriminatory power between Normal and Normal-adjacent using the criteria and feature selection of Chapter~3.  
+Comparison with classical Tumor vs.\ Normal signatures from the literature, to highlight that early field effects are not necessarily captured by late tumor signatures.
+
+\subsection{Epigenetic score on the primary dataset}
+Calculation of the epigenetic score for each sample in the primary cohort.  
+Analysis of score distributions across Normal, Normal-adjacent, and Tumor, and interpretation of Normal-adjacent as an intermediate or ``destabilized'' state.
+
+\subsection{Genomic and functional interpretation}
+Annotation of the selected CpGs in terms of genomic location and associated pathways (e.g.\ cell cycle control, developmental regulators, chromatin modifiers).  
+Biological interpretation in the context of early breast carcinogenesis and field cancerization.
+
+
+\section{Cross-cohort Validation}
+
+\subsection{Independent datasets}
+Selection of one or more external cohorts containing Normal, Normal-adjacent (or equivalent ``at-risk'' tissue), and/or Tumor samples profiled on compatible DNA methylation arrays.
+
+\subsection{External projection of the CpG panel and the epigenetic score}
+Application of the CpG panel derived in Chapter~4 to the independent datasets, without retraining.  
+Computation of the epigenetic score in these external cohorts and evaluation of its ability to distinguish Normal and Normal-adjacent.
+
+\subsection{Robustness and reproducibility}
+Discussion of cross-cohort stability, including:
+\begin{itemize}[label=-]
+    \item differences in sample handling and clinical composition,
+    \item residual batch effects,
+    \item residual differences in cell-type composition.
+\end{itemize}
+Assessment of how transferable the proposed panel/score is as an early epigenetic biomarker.
+
+
+\section{Quantitative Indicators of Epigenetic Instability}
+
+\subsection{Entropy-based instability}
+
+\paragraph{Definition of an entropy metric}
+Definition of an entropy-like measure for each sample, computed from the methylation profile (for example, restricted to the CpG panel identified in Chapter~4).  
+Interpretation of higher entropy as higher global epigenetic disorder and loss of a stable tissue identity.
+
+\paragraph{Application to Normal / Normal-adjacent / Tumor}
+Comparison of entropy values across Normal, Normal-adjacent, and Tumor groups to test whether normal-adjacent tissue exhibits increased global disorder relative to healthy normal.
+
+\paragraph{Relation to the epigenetic score}
+Analysis of the relationship between entropy and the epigenetic score introduced in Chapter~4, to assess whether both measures consistently identify normal-adjacent tissue as epigenetically altered with respect to normal.
+
+\subsection{Dynamical Network Biomarker (DNB)-like instability index}
+
+\paragraph{Theoretical basis}
+Before a critical transition in a complex biological system, a specific subnetwork often shows:
+\begin{itemize}[label=-]
+    \item increased internal variability,
+    \item increased internal correlation,
+    \item decreased coupling to the rest of the system.
+\end{itemize}
+This phenomenon is known as a Dynamical Network Biomarker (DNB) and signals entry into an unstable, critical state.
+
+\paragraph{Operational definition for CpG methylation data}
+A subset of CpG sites (for example, those most informative for Normal vs.\ Normal-adjacent in Chapter~4) is treated as a candidate ``critical subnetwork''.  
+For each group (Normal, Normal-adjacent, Tumor), an instability index is computed by combining:
+\begin{itemize}[label=-]
+    \item the average standard deviation within the subset,
+    \item the average pairwise correlation within the subset,
+    \item the (inverse of the) average correlation between the subset and the rest of the CpGs.
+\end{itemize}
+The resulting index is expected to peak in a critical, unstable state.
+
+\paragraph{Application and interpretation}
+Evaluation of the instability index across Normal, Normal-adjacent, and Tumor.  
+Hypothesis: the index is maximal in Normal-adjacent, indicating that this tissue is in a high-instability, pre-transition regime.
+
+\paragraph{Joint interpretation}
+Integration of:
+\begin{itemize}[label=-]
+    \item the epigenetic score (Chapter~4),
+    \item the entropy measure (Section~6.1),
+    \item the DNB-like instability index (Section~6.2).
+\end{itemize}
+Goal: interpret Normal-adjacent tissue as an epigenetically unstable, critical state located between stable healthy tissue and fully transformed tumor tissue.
+
+
+\section{Discussion and Conclusions}
+
+\subsection{Summary of findings}
+Summary of the main results:
+\begin{itemize}[label=-]
+    \item identification of CpG sites that discriminate Normal and Normal-adjacent tissue,
+    \item definition of an epigenetic score that orders samples along a Normal $\rightarrow$ Normal-adjacent $\rightarrow$ Tumor axis,
+    \item evidence that normal-adjacent tissue displays quantitative signs of epigenetic instability.
+\end{itemize}
+
+\subsection{Biological and clinical implications}
+Potential use of early DNA methylation alterations as local risk indicators, e.g.\ to assess surgical margins or local pre-neoplastic fields.  
+Relevance for understanding how epigenetic disruption precedes (and possibly facilitates) malignant transformation.
+
+\subsection{Limitations and Future work}
+\paragraph{Main limitations}
+The main limitations are the lack of raw IDAT files, which prevents full low-level preprocessing and platform-specific normalization, and the possibility of residual technical or compositional effects in the data.
+\paragraph{Future extensions}
+Future extensions include applying the same framework to additional breast cancer subtypes and to other solid tumors, in order to assess subtype specificity and generalizability.
+
+
+
+\end{document}
