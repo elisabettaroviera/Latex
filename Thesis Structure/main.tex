@@ -149,18 +149,6 @@ M = \log_2 \left( \frac{\beta}{1 - \beta} \right).
 \]
 This transformation stabilizes variance and improves the applicability of linear modeling and $t$-type tests, since $\beta$-values are bounded and highly skewed near 0 and 1.  
 
-\subsection{Genomic and functional annotation of CpG sites}
-Each retained CpG is annotated using existing Illumina 450K/EPIC manifests and public annotation resources, linking CpGs to:
-\begin{itemize}[label=-]
-    \item genomic context (promoter/TSS200, 5'UTR, first exon, gene body, enhancer-like regions, Polycomb-marked regions),
-    \item nearby genes and regulatory elements.
-\end{itemize}
-This enables functional interpretation of the CpG panels identified later.
-
-\subsection{Estimation of cell-type composition}
-Bulk breast tissue contains variable proportions of epithelial, adipose, stromal, and immune cells. Reference-based deconvolution (e.g.\ constrained regression using known methylation signatures of purified cell types) or surrogate indices (epithelial vs.\ adipose markers) are used to estimate or approximate per-sample cellular composition.  
-This step is essential to evaluate whether differences between Normal and Normal-adjacent reflect intrinsic epigenetic changes or merely shifts in cell-type proportions.
-
 \subsection{CpG-level differential analysis}
 Within-group comparisons are performed on $M$-values to detect CpG sites that:
 \begin{itemize}[label=-]
@@ -168,6 +156,10 @@ Within-group comparisons are performed on $M$-values to detect CpG sites that:
     \item and/or show increased variability (differential variance) in Normal-adjacent.
 \end{itemize}
 The second criterion is motivated by the idea that early pre-neoplastic change is often heterogeneous and focal rather than uniform across all cells.
+
+\subsection{Outlier modelling and variance-based instability}
+Difference between mean shifts (classical differential methylation) and variance-based changes is formalized. For each CpG and each sample, an ``outlier burden'' is defined as the presence of extreme methylation values in normal-adjacent tissue compared to healthy normal tissue. Both simple statistical rules (e.g.\ IQR/quantiles, skewness) and machine-learning anomaly scores (e.g.\ isolation forest, autoencoder) are considered as reference approaches.
+
 
 \subsection{Feature selection and classifier construction}
 Candidate CpGs are further reduced using multivariate feature selection methods (e.g.\ L1-penalized logistic regression, SVM recursive feature elimination, tree-based importance ranking).  
@@ -201,13 +193,12 @@ Concrete application of the Chapter~3 pipeline:
     \item genomic/functional annotation of the retained CpGs.
 \end{itemize}
 
-\subsection{Cell-type composition assessment}
-Estimation (or proxy estimation) of epithelial, adipose, stromal, and immune content per sample.  
-Assessment of whether observed Normal vs.\ Normal-adjacent differences can be explained purely by tissue composition, or whether they indicate genuine local epigenetic disruption.
-
 \subsection{Exploratory data analysis}
 Exploration of global structure using PCA, hierarchical clustering, and heatmaps of informative CpGs.  
 Visual positioning of Normal, Normal-adjacent, and Tumor samples in the reduced-dimensional space to assess whether Normal-adjacent occupies an intermediate or unstable state.
+
+\subsection{Baseline classification: Normal vs.\ Tumor}
+Supervised models (e.g.\ XGBoost) are trained on healthy normal vs.\ tumor samples to confirm that standard tumor/normal separation can be reproduced on the primary dataset. Performance is reported with ROC--AUC, MCC, and confusion matrices. The most informative CpG sites for this task are extracted as a positive control, before addressing Normal vs.\ Normal-adjacent.
 
 \subsection{Identification of a Normal vs.\ Normal-adjacent CpG panel}
 Selection of CpG sites with the strongest discriminatory power between Normal and Normal-adjacent using the criteria and feature selection of Chapter~3.  
@@ -289,7 +280,8 @@ Integration of:
 \end{itemize}
 Goal: interpret Normal-adjacent tissue as an epigenetically unstable, critical state located between stable healthy tissue and fully transformed tumor tissue.
 
-
+\subsection{Link between entropy, outlier burden, and the epigenetic score}
+The epigenetic score (Chapter~4) is compared with entropy-based instability (Section~6.1) and with outlier burden (Section~3.5). The aim is to test whether samples with higher score also show higher entropy and a heavier accumulation of outlier CpG values, supporting the interpretation of normal-adjacent tissue as an epigenetically destabilized state.
 \section{Discussion and Conclusions}
 
 \subsection{Summary of findings}

@@ -1,0 +1,282 @@
+\documentclass[10pt]{extarticle}
+
+% Lingua e matematica
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,amsthm}
+
+% Grafica e tabelle
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{siunitx}
+
+% Codice (opzionale)
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.98,0.98,0.98}
+\lstdefinestyle{mystyle}{
+  backgroundcolor=\color{backcolour},
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true, keepspaces=true, numbers=none, tabsize=2
+}
+\lstset{style=mystyle}
+
+% Margini
+\usepackage[margin=0.6in]{geometry}
+\usepackage{ragged2e}
+\usepackage{enumitem}
+%\usepackage[utf8]{inputenc} % per caratteri UTF-8 nei .tex e nel .bib
+\usepackage[backend=biber,style=ieee,sorting=none,maxbibnames=99]{biblatex}
+\ExecuteBibliographyOptions{doi=true,url=true,isbn=false}
+\addbibresource{references.bib}
+\usepackage{csquotes}       % consigliato da biblatex (evita warning e parse strani)
+\usepackage{pifont}
+\newcommand{\good}[1]{\textcolor{teal!70!black}{\ding{51}~#1}}
+
+
+
+% Bibliografia (biblatex + biber)
+\usepackage[backend=biber,style=ieee]{biblatex}
+\addbibresource{references.bib}
+
+% TOC: includi anche \paragraph e numerali
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+
+% Hyperref (sempre *dopo* gli altri pacchetti)
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=teal,urlcolor=magenta]{hyperref}
+
+
+\begin{document}
+
+% Custom header without a separate titlepage
+\noindent
+\begin{minipage}{0.3\textwidth}
+    \includegraphics[width=1.3\linewidth]{Figures/polito_logo_2021_blu.jpg}
+\end{minipage}
+\hfill
+\begin{minipage}{0.68\textwidth}
+    \raggedleft
+    {\LARGE \textbf{Politecnico di Torino}}\\[0.2cm]
+    {\large Master's Degree in Mathematical Engineering}\\[0.7cm]
+    {\large \textbf{Material for Thesis}}\\[0.2cm]
+    {\large b-- Data Pre-processing Pipeline in GSE69914 \\ — Illumina 450K}\\[0.7cm]
+    \begin{tabular}{rl}
+        Elisabetta Roviera & \texttt{s328422} \\
+    \end{tabular}
+\end{minipage}
+
+\vspace{1cm}
+\hrule
+\vspace{0.5cm}
+
+\tableofcontents
+
+\vspace{0.5cm}
+\hrule
+\vspace{1cm}
+
+
+% Main content begins here, on the same page
+\justifying
+
+\begin{abstract}
+{\color{red}
+\textbf{MANCA L'ABSTRACT, LO SCRIVO DOPO.}\\
+\textbf{AGGIUNGI I LINK AI NOTEBOOK - GITHUB SIA PER DATASET CONSTRUCTION AND STORAGE CHE PER IL DATASET PRE PROCESSING.}\\
+}
+\end{abstract}
+
+
+
+\section{Dataset construction and storage}\label{sec:data_storage}
+
+I constructed the working methylation matrix in three stages, prioritizing speed, low memory usage, and reproducible I/O.
+
+\begin{enumerate}
+  \item \textbf{Ingestion and transposition.}
+  I parsed the GEO Series Matrix for \texttt{GSE69914}, skipping the 73-line metadata header. 
+  The source table is organized as \emph{CpG $\times$ sample} with \texttt{ID\_REF} as CpG identifiers; I coerced all sample columns to numeric (invalid entries set to \texttt{NaN}) and then transposed the matrix to the analysis layout \emph{sample $\times$ CpG}. 
+  After transposition, I promoted the original column names (GSM accessions / basenames) to a dedicated identifier column named \texttt{id\_tissue} and kept CpG probe columns only (prefix \texttt{cg} or \texttt{ch}).
+
+  \item \textbf{Label derivation and append-only write.}
+  I derived the class label directly from GSM metadata by parsing the field \textit{status(0=normal, 1=normal-adjacent, 2=breast cancer, 3=normal-BRCA1, 4=cancer-BRCA1)}, producing a numeric \texttt{label} in $\{0,1,2,3,4\}$. 
+  To avoid an in-memory join on a very wide table ($\sim$485k CpGs), I streamed through the transposed file once and appended \texttt{label} row-wise, preserving row order and ensuring constant memory usage.
+
+  \item \textbf{Columnar storage and typed schema.}
+  For long-term access, I wrote the labeled table to columnar \texttt{Parquet} with a fixed schema: \texttt{label} as \texttt{Int8} and probe intensities as \texttt{Float32}. 
+  I applied a lazy, regex-based column projection (\texttt{cg|ch}) to cast all probe columns in one pass and compressed the file with lossless LZ4. 
+  This yields fast full-table reads and efficient column projection (both in Polars and pandas) without repeatedly parsing large CSV text.
+\end{enumerate}
+
+This procedure produces a compact, typed matrix that enables rapid downstream preprocessing (technical filtering, normalization) and modeling without incurring large RAM overhead or costly re-ingestion steps.
+
+\section{Import and Data Structure}\label{sec:data_structure}
+
+The processed dataset is imported from the LZ4-compressed \texttt{.parquet} file generated in the previous step.  
+The structure is already optimized for analysis.
+
+\begin{itemize}[label=-]
+    \item \textbf{File format:} columnar \texttt{Parquet} (LZ4 compression) for fast I/O.
+    \item \textbf{Rows:} samples (one per tissue).
+    \item \textbf{Columns:} 
+    \begin{itemize}[label=--]
+        \item \texttt{id\_tissue}: unique sample identifier.
+        \item \texttt{label}: numeric class code (\texttt{Int8}).
+        \item \texttt{cg}, \texttt{ch}: methylation probes (\texttt{Float32}).
+    \end{itemize}
+    \item \textbf{Import method:} read via \href{https://pola.rs/}{Polars} (or \href{https://pandas.pydata.org/}{pandas}) with column projection for efficient partial loading.
+\end{itemize}
+
+\paragraph{Precision and data representation.}
+Because $\beta$-values are strictly bounded within $[0,1]$~\cite{Weinhold2016BetaModel}, and methylation differences of biological interest typically occur at magnitudes between $10^{-2}$ and $10^{-3}$, single-precision floating point (\texttt{float32}, machine~$\epsilon \approx 10^{-7}$) provides more than adequate numerical accuracy while significantly reducing memory usage and I/O time. This representation is further supported by recent large-scale genomics frameworks that process molecular features, including DNA methylation data, entirely in \texttt{float32} precision~\cite{deAlmeida2025ChatNT}.
+
+\vspace{0.2cm}
+Moreover, this format ensures minimal memory usage and extremely fast access for all downstream preprocessing and analysis tasks.
+
+\section{Data Validation and Integrity Check}\label{sec:data_validation}
+
+\paragraph{Data Validation.}
+I validated the structural integrity of the processed dataset to ensure that its layout, types, and values were correctly preserved after conversion and compression.
+
+\begin{itemize}[label=-]
+    \item \textbf{Dimensions:} the dataset contains $(407, 485.514)$ entries, corresponding to \textbf{samples}~$\times$~\textbf{CpG loci}.
+    \good{confirmed as expected: 407 samples and 485.514 probes.}
+    
+    \item \textbf{Data types:} \texttt{id\_tissue} is stored as \texttt{String}, \texttt{label} as \texttt{Int8}, and probe intensities as \texttt{Float32}, 
+    ensuring \textbf{compact representation} and sufficient precision for $\beta$-values.
+    \good{verified: \texttt{String, Int8, Float32} schema detected.}
+    
+    \item \textbf{Value range:} all $\beta$-values fall within the valid range $0 \leq \beta \leq 1$, confirming their correct interpretation as methylation proportions.
+     \good{The observed range was $[0.000000,\,0.997110]$.}
+\end{itemize}
+
+
+\paragraph{Missing Value Analysis.}
+Next, I performed a comprehensive check for missing values ($\text{NaN}$), as these can severely impact model performance and must be addressed before training.
+
+\begin{itemize}[label=-]
+    \item No missing entries ($\text{NaN}$) were detected across any CpG probe.
+    \good{Total NaN count: 0 |  Overall missing rate: 0\%.}
+    
+    \item The methylation matrix is therefore \textbf{complete}, requiring \textbf{no filtering or imputation} procedures.
+    \good{Dataset confirmed fully complete.}
+    
+    \item For future datasets:
+    \begin{itemize}[label=--]
+        \item If the overall missing rate is $< 1\%$, imputation may be considered as an optional step.
+        \item If probe missingness exceeds $5\%$ or sample missingness exceeds $10\%$, the affected entities should be discarded, following standard preprocessing practices~\cite{Zhou2016Annotation}.
+    \end{itemize}
+\end{itemize}
+
+
+This validation confirms the dataset is structurally sound, numerically consistent, and complete, enabling unbiased downstream variance modeling, differential methylation testing, and batch correction without any further cleaning
+
+
+
+\section{Technical Filtering}\label{sec:technical_filtering}
+
+Technical filtering aims to remove unreliable or biologically confounded probes before normalization and statistical modeling.  
+This step reduces noise, improves downstream reproducibility, and ensures that only high-confidence CpG loci are retained for analysis.
+
+\paragraph{Exclusion of technical probe sets.}
+Next, I removed probes listed in curated exclusion sets that are known to produce biased or ambiguous signals:
+\begin{itemize}[label=-]
+    \item \textbf{SNP-affected probes:} excluded to avoid spurious methylation differences caused by underlying genetic polymorphisms.
+    \item \textbf{Cross-reactive probes:} removed according to validated lists from Naeem~et~al.~(2014)~\cite{Naeem2014Filtering} and Pidsley~et~al.~(2016)~\cite{Pidsley2016Quality}, which identify probes that hybridize to multiple genomic loci.
+    \item \textbf{Sex chromosome probes:} optionally filtered if downstream analyses focus exclusively on autosomal loci.
+\end{itemize}
+
+{\color{red} \textbf{[Results pending:} number of probes removed by each list, remaining CpG count, updated dataset size.]}
+
+\paragraph{Detection \textit{p}-value filtering.}
+For each probe, the detection \textit{p}-value measures the probability that its fluorescence intensity is indistinguishable from the background.  
+Probes with detection \textit{p}-value $> 0.01$--$0.05$ in more than 1--5\% of samples were excluded, as they likely represent unreliable hybridization or poor signal quality~\cite{WilhelmBenartzi2013BJC}.  
+This filtering step follows Illumina’s quality control recommendations and standard practices for methylation array preprocessing.
+
+{\color{red} \textbf{[Results pending:} summary of removed probes, percentage excluded, post-filter matrix dimensions.]}
+
+
+\paragraph{Annotation-based filtering.}
+Finally, I performed a cross-check with official Illumina annotation files and updated curated probe databases~\cite{Zhou2016Annotation} to ensure that only valid, well-characterized loci were retained.
+This step allows harmonization between older 450K annotations and updated genome builds (e.g., hg19 $\rightarrow$ hg38) and ensures consistent CpG naming across datasets.
+
+{\color{red} \textbf{[Results pending:} number of probes retained after annotation matching, summary table or plot of final coverage.]}
+
+\paragraph{Outcome.}
+After technical filtering, the dataset is expected to retain only high-confidence probes suitable for reliable normalization and subsequent biological interpretation.
+
+{\color{red} \textbf{[Results pending:} summary of total retained CpGs, fraction of genome covered, histogram or density plot of detection \textit{p}-values.]}
+
+\section{Filtering of Invariant CpGs} 
+Remove CpGs with very low variance (e.g., variance $< 1\times10^{-4}$), 
+as they carry no discriminative information 
+(\href{https://bmcgenomics.biomedcentral.com/articles/10.1186/1471-2164-15-51}{Naeem et al., 2014}).
+
+\section{Correction of Infinium I/II Probe Bias} 
+Integrate probe design information (Type I / Type II) 
+from Illumina annotation files and inspect density distributions. \\
+Apply \textbf{Peak-Based Correction (PBC)} when clear bimodal peaks (near 0 and 1) are visible 
+(\href{https://academic.oup.com/bioinformatics/article/29/2/189/199637}{Teschendorff et al., 2013}). \\
+In parallel, apply \textbf{BMIQ normalization} as a robust alternative and 
+compare results across normalization strategies. 
+
+\section{Transformation to M-values} 
+Convert $\beta$-values to M-values using 
+$M = \log_2\left(\frac{\beta}{1 - \beta}\right)$ to stabilize variance 
+and improve suitability for linear modeling 
+(\href{https://doi.org/10.1186/1471-2105-11-587}{Du et al., 2010}). \\[4pt]
+\textit{CpG Variability Diagnosis (post M-value):} \\
+Compute variance or interquartile range (IQR) across samples for each CpG to obtain a 
+diagnostic ranking of variable loci. Highly variable CpGs are typically more informative 
+for distinguishing normal and normal-adjacent tissues. 
+(\href{https://bmcgenomics.biomedcentral.com/articles/10.1186/1471-2164-15-51}{Naeem et al., 2014}; 
+    \href{https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0465-4}{Phipson et al., 2014}). 
+Optionally, visualize the variance distribution or perform PCA on top-variable CpGs 
+to assess early group separation.
+
+\section{Batch-Effect Correction} 
+Remove inter-array technical variation using \textbf{ComBat} 
+(\href{https://academic.oup.com/biostatistics/article/8/1/118/252073}{Johnson et al., 2007}) 
+or its methylation-specific extension \textbf{ComBat-met} 
+(\href{https://pubmed.ncbi.nlm.nih.gov/40391088/}{Wang et al., 2025}). \\
+If batch effects are confounded with biological groups, 
+include the batch variable as a covariate in linear modeling (e.g., \textit{limma}).
+
+\section{Preliminary Statistical Filters} 
+\textbf{Levene / Brown–Forsythe test:} assesses homogeneity of variances across groups. \\
+\textbf{DiffVar:} empirical Bayes model for differential variance detection 
+(\href{https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0465-4}{Phipson et al., 2014}). \\
+\textbf{limma:} moderated linear model for differential methylation, 
+suitable for M-values and inclusion of covariates 
+(\href{https://academic.oup.com/nar/article/43/7/e47/2414268}{Ritchie et al., 2015}). \\
+\textbf{iEVORA:} extension of EVORA for identifying CpGs with increased epigenetic instability 
+in pre-neoplastic or field-defect tissues 
+(\href{https://academic.oup.com/bioinformatics/article/28/11/1487/22492641}{Teschendorff et al., 2012}).
+
+\section{Correlation Pruning} 
+Remove redundant CpGs with high inter-correlation 
+(e.g., Pearson $|r| > 0.9$) within local genomic regions to reduce collinearity 
+(\href{https://academic.oup.com/bioinformatics/article/36/10/3239/5775229}{Gatev et al., 2020}; 
+    \href{https://academic.oup.com/bib/article/23/1/bbab395/6420930}{Bommert et al., 2022}).
+
+\section{Feature Standardization for Machine Learning} 
+Standardize features (e.g., z-score transformation or 
+\href{https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html}{StandardScaler}) 
+on M-values to ensure comparable scales across CpGs. 
+Fit the scaler on the training fold and apply it to the test fold to prevent data leakage. 
+(\href{https://academic.oup.com/jss/article/33/1/1/3703127}{Friedman et al., 2010}; 
+    \href{https://pmc.ncbi.nlm.nih.gov/articles/PMC10863277/}{Aref-Eshghi et al., 2025}).
+
+
+\printbibliography
+\end{document}

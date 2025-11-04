@@ -1,0 +1,237 @@
+\documentclass[10pt]{extarticle}
+
+% Lingua e matematica
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,amsthm}
+
+% Grafica e tabelle
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{siunitx}
+
+% Codice (opzionale)
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.98,0.98,0.98}
+\lstdefinestyle{mystyle}{
+  backgroundcolor=\color{backcolour},
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true, keepspaces=true, numbers=none, tabsize=2
+}
+\lstset{style=mystyle}
+
+% Margini
+\usepackage[margin=0.6in]{geometry}
+\usepackage{ragged2e}
+\usepackage{enumitem}
+%\usepackage[utf8]{inputenc} % per caratteri UTF-8 nei .tex e nel .bib
+\usepackage[backend=biber,style=ieee,sorting=none,maxbibnames=99]{biblatex}
+\ExecuteBibliographyOptions{doi=true,url=true,isbn=false}
+\addbibresource{references.bib}
+\usepackage{csquotes}       % consigliato da biblatex (evita warning e parse strani)
+
+
+
+% Bibliografia (biblatex + biber)
+\usepackage[backend=biber,style=ieee]{biblatex}
+\addbibresource{references.bib}
+
+% TOC: includi anche \paragraph e numerali
+\setcounter{secnumdepth}{1}
+\setcounter{tocdepth}{1}
+
+% Hyperref (sempre *dopo* gli altri pacchetti)
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=teal,urlcolor=magenta]{hyperref}
+
+
+\begin{document}
+
+% Custom header without a separate titlepage
+\noindent
+\begin{minipage}{0.3\textwidth}
+    \includegraphics[width=1.3\linewidth]{Figures/polito_logo_2021_blu.jpg}
+\end{minipage}
+\hfill
+\begin{minipage}{0.68\textwidth}
+    \raggedleft
+    {\LARGE \textbf{Politecnico di Torino}}\\[0.2cm]
+    {\large Laurea Magistrale in Ingegneria Matematica}\\[0.7cm]
+    {\large \textbf{Analisi Comparativa e Strategie Future per lo Studio Epigenetico del Carcinoma Mammario}}\\[0.2cm]
+    {\large Revisione dei Lavori di Tesi}\\[0.7cm]
+    \begin{tabular}{rl}
+        Eleonora Guarnaschelli \\
+        Elisabetta Roviera
+    \end{tabular}
+\end{minipage}
+
+\vspace{1cm}
+\hrule
+\vspace{0.5cm}
+
+\tableofcontents
+
+\vspace{0.5cm}
+\hrule
+\vspace{1cm}
+
+% --------------------------------------------------
+\section{Background e Obiettivi Scientifici}
+L’obiettivo comune dei due progetti di tesi è l’identificazione di \textbf{CpG significative} in grado di distinguere il \textbf{tessuto normale} da quello \textbf{adiacente al tumore} nel carcinoma mammario.  
+Lo studio si basa sul concetto di \textit{field cancerization}.  
+Analizzare le differenze di metilazione permette di comprendere i \textbf{meccanismi iniziali della carcinogenesi} e di individuare \textbf{biomarcatori di rischio epigenetico precoce}.
+
+% --------------------------------------------------
+\section{Struttura dei Progetti di Tesi e Linee Metodologiche}
+Entrambi i lavori condividono la stessa architettura, ma divergono negli algoritmi implementati e sul metodo di validazione biologica.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3cm} >{\raggedright\arraybackslash}p{6cm} >{\raggedright\arraybackslash}p{6cm}}
+\toprule
+\textbf{Fase} & \textbf{Guarnaschelli} & \textbf{Roviera} \\
+\midrule
+\textbf{Selezione CpG} &
+Metodi statistici di feature selection (ANOVA, Gain Ratio, iEVORA) e modelli ML supervisionati (XGBoost) per la classificazione \textit{Normal vs Adjacent}. &
+Sviluppo parallelo di metodi statistici, ML e DL (inclusi test di variabilità, iEVORA, reti neurali e LSTM) per individuare CpG discriminanti e pattern non lineari di metilazione. \\
+\textbf{Validazione biologica} &
+Analisi basata su entropia come misura di instabilità epigenetica intra-gruppo. &
+Calcolo di un indice Dynamical Network Biomarker-like per misurare l’instabilità epigenetica nei tessuti adiacenti. \\
+\textbf{Interpretazione finale} &
+Gene \& Pathway analysis. &
+Gene \& Pathway analysis. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Le pipeline convergono in una \textbf{fase comparativa finale}, che confronterà i loci CpG identificati da ciascun approccio e i pathway associati, con l’obiettivo di evidenziare marcatori comuni e complementari.
+
+% --------------------------------------------------
+\section{Pipeline Analitica: Dataset, Pre-processing e Metodi Computazionali}
+\subsection{Dataset di Metilazione e Strategia di Utilizzo}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{} l l l l @{}}
+\toprule
+\textbf{Dataset} & \textbf{Piattaforma} & \textbf{Campioni} & \textbf{Link GEO} \\
+\midrule
+GSE69914 & Illumina 450K & Normal (50) / Tumor (263) / Adjacent (42)  & \href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE69914}{Link} \\
+GSE287331 & Infinium EPIC (~930K CpG) & Normal (250) / Tumor (69) / Adjacent (60) & \href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE287331}{Link} \\
+GSE225845 & Infinium EPIC (~930K CpG) & Normal (104) / Tumor (185) / Adjacent (113) & \href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE225845}{Link} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Gestione dei dataset}
+I dataset EPIC verranno armonizzati e \textbf{troncati alle sole CpG comuni} con la piattaforma 450K, in modo da garantire la comparabilità tra studi.  
+L’idea operativa è di \textbf{unire i due dataset EPIC più numerosi} dopo il troncamento, utilizzandoli come \textbf{training set} per i modelli di classificazione, e di \textbf{testare le pipeline sul dataset meno numeroso} (ad esempio GSE69914), qualora la compatibilità dei dati lo consenta.  
+In alternativa, qualora si ritenga più appropriato mantenere GSE69914 come dataset di addestramento, questa scelta dovrà essere esplicitata.
+
+{\color{red}
+\paragraph{DOMANDE}
+\begin{itemize}[label=-]
+    \item Qual è la strategia più solida: usare i dataset EPIC unificati come \textit{training set} e GSE69914 come \textit{test set}, oppure invertire tale impostazione?
+    \item È necessario che i campioni \textit{Normal} e \textit{Adjacent} siano \textbf{appaiati} (provenienti dallo stesso paziente) per garantire maggiore coerenza biologica?
+    \item Come è possibile accedere ai \textbf{metadati clinici} (mutazioni, età, sesso, composizione cellulare) per valutarne l’impatto e, se disponibili, includerli come covariate nei modelli ML/DL?
+    \item Devono essere \textbf{rimossi i campioni portatori di mutazioni BRCA1/BRCA2}, qualora tali alterazioni possano introdurre bias nei pattern di metilazione?
+\end{itemize}
+}
+
+% --------------------------------------------------
+\subsection{Strategia di Pre-Processing dei Dati}
+
+Pipeline condivisa ispirata a \textit{Newsham et al.} con estensioni adattate ai due progetti.
+
+\begin{enumerate}
+    \item \textbf{Importazione e armonizzazione} dei dataset (riduzione dei dataset EPIC alle CpG comuni con la piattaforma 450K).  
+    \item \textbf{Rimozione CpG rumorose}, secondo le liste di:
+    \begin{itemize}[label=-]
+        \item \textit{Pidsley et al. (2016) \cite{Pidsley2016}} e \textit{Chen et al. (2013) \cite{Chen2013}} – cross-reactive probes;
+        \item \textit{Naeem et al. (2014) \cite{Naeem2014}} – sonde con elevata variabilità non biologica.
+    \end{itemize}
+    \item \textbf{Gestione dei valori mancanti}: verranno rimossi i CpG o i campioni contenenti NaN, a seconda della loro distribuzione (prevalenza per CpG o per tessuto).
+    \item \textbf{Conversione dei valori $\beta$ in M-values} per garantire omoschedasticità e validità statistica.
+    \item \textbf{Normalizzazione} dei valori M.
+    \item \textbf{Feature selection preliminare} per ridurre la dimensionalità prima della fase di training.
+\end{enumerate}
+
+{\color{red}
+\paragraph{DOMANDE}
+\begin{itemize}[label=-]
+    \item Per quanto riguarda le liste di filtraggio proposte siamo aperte a consigli su eventuali alternative o su criteri per selezionare quella migliore.
+    \item Biologicamente ha senso rimuovere le CpG incluse nelle liste di filtraggio, come quella di Chen \cite{Chen2013} (e la sua versione aggiornata e modificata proposta da Pidsley \cite{Pidsley2016})?
+Infatti, nello studio di Teschendorff \cite{teschendorff2016fielddefects} 923 CpG considerate significative per distinguere tessuto normale e adiacente risultano incluse nella lista di Chen et al., mentre nello studio di Ding \cite{ding2019pancancer} una delle sette CpG ritenute più discriminanti tra tessuto tumorale e normale appartiene alla lista di Pidsley e un’altra a quella di Naeem.
+    \item Inserire subito un livello di feature selection statistica o applicarlo dopo la normalizzazione?
+\end{itemize}
+}
+% --------------------------------------------------
+\subsection{Metodi di Analisi e Selezione delle CpG}
+
+Entrambe le tesi mirano a identificare pattern discriminanti e interpretabili, combinando approcci statistici, ML e DL.
+
+\paragraph{Metodi statistici}
+\begin{itemize}[label=-]
+    \item \textit{iEVORA} – individuazione di CpG a varianza differenziale.
+    \item \textit{Gain Ratio}, \textit{ANOVA}, test non parametrici – selezione di feature con elevata separabilità tra gruppi.
+\end{itemize}
+
+\paragraph{Machine \& Deep Learning}
+\begin{itemize}[label=-]
+    \item \textbf{XGBoost}, \textbf{LightGBM}, \textbf{CatBoost} – modelli supervisionati ad alte prestazioni.
+    \item \textbf{Reti neurali dense e LSTM} – esplorazione di pattern non lineari nei profili di metilazione.
+    \item \textbf{Autoencoder} – riduzione non lineare della dimensionalità e individuazione di feature epigenetiche emergenti.
+\end{itemize}
+
+\paragraph{Criteri di valutazione}
+\begin{itemize}[label=-]
+    \item Accuratezza, ROC-AUC, F1 score, MCC e interpretabilità biologica;
+    \item Selezione finale di CpG tramite importance score o p-value thresholding;
+    \item Confronto quantitativo e visivo tra metodi per verificare consistenza e stabilità.
+\end{itemize}
+
+\paragraph{Analisi dei risultati e confronto con precedenti studi}
+L’analisi delle CpG identificate da XGBoost potrà essere approfondita valutando la forma delle loro distribuzioni di metilazione (asimmetria, multimodalità, varianza e presenza di outlier nei tessuti adiacenti rispetto ai normali).
+Le CpG selezionate verranno annotate per individuare i geni e i pathway maggiormente coinvolti, verificando la coerenza con i risultati riportati da Teschendorff et al. e la possibile espressione differenziale degli stessi geni in dataset indipendenti.
+Questa fase consentirà di collegare le evidenze statistiche del modello a un contesto biologico verificabile
+
+% --------------------------------------------------
+
+% --------------------------------------------------
+{\color{blue}
+\subsection*{Prossimi passi}
+L’approccio congiunto integra la solidità dei metodi statistici e ML con la flessibilità dei modelli DL, offrendo una visione completa del fenomeno epigenetico.  
+\begin{enumerate}
+    \item Consolidare un pre-processing standardizzato;
+    \item Integrare e confrontare metodi di feature selection e classificazione;
+    \item Elaborare un’analisi comparativa finale dei risultati.
+\end{enumerate}
+}
+
+% --------------------------------------------------
+\section{Proposta di Pubblicazione e Sintesi dei Risultati Attesi}
+
+I due progetti, fondati su approcci complementari di \textbf{variabilità differenziale} e \textbf{outlier detection}, potranno confluire in una pubblicazione congiunta dedicata allo studio dei \textit{field defects} nel carcinoma mammario.  
+L’obiettivo comune è proporre un \textbf{modello integrato} per l’identificazione di marcatori epigenetici di rischio precoce, che combini solidità statistica e sensibilità a eventi epigenetici rari.
+
+\begin{enumerate}
+    \item \textbf{Ricerca delle CpG e validazione incrociata.} Applicazione dei diversi metodi statistici, di machine e deep learning per individuare CpG discriminanti tra tessuti \textit{Normal} e \textit{Adjacent}.  
+Le pipeline verranno testate mediante \textbf{cross-validation} su un dataset indipendente, così da verificare la robustezza e la generalizzabilità dei marcatori individuati.
+    \item \textbf{Analisi di entropia e biomarcatori.} Valutazione dell’instabilità epigenetica attraverso l’entropia e un indice DNB-like ispirato ai Dynamical Network Biomarkers, al fine di caratterizzare lo stato critico dei tessuti adiacenti al tumore.
+    \item \textbf{Confronto dei risultati.} Confronto quantitativo e biologico tra i risultati ottenuti dai due approcci.  
+Saranno analizzati i loci CpG comuni e le differenze di pattern di metilazione.
+\end{enumerate}
+L’obiettivo finale è delineare un \textbf{framework integrato} per l’identificazione di marcatori epigenetici affidabili e biologicamente interpretabili.
+
+\printbibliography
+% --------------------------------------------------
+\end{document}
