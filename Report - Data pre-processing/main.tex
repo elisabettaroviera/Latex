@@ -11,6 +11,9 @@
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{siunitx}
+\usepackage{wrapfig}
+\usepackage{placeins}
+
 
 % Codice (opzionale)
 \usepackage{listings}
@@ -189,40 +192,40 @@ Technical filtering aims to remove unreliable or biologically confounded probes 
 This step reduces noise, improves downstream reproducibility, and ensures that only high-confidence CpG loci are retained for analysis.
 
 \paragraph{Exclusion of technical probe sets.}
-Next, I removed probes listed in curated exclusion sets that are known to produce biased or ambiguous signals:
+I excluded probes using curated resources that operationalise known technical artefacts (see Appendix~\ref{app:probe-filters} for details).
 \begin{itemize}[label=-]
-    \item \textbf{SNP-affected probes:} excluded to avoid spurious methylation differences caused by underlying genetic polymorphisms.
-    \item \textbf{Cross-reactive probes:} removed according to validated lists from Naeem~et~al.~(2014)~\cite{Naeem2014Filtering} and Pidsley~et~al.~(2016)~\cite{Pidsley2016Quality}, which identify probes that hybridize to multiple genomic loci.
-    \item \textbf{Sex chromosome probes:} optionally filtered if downstream analyses focus exclusively on autosomal loci.
+  \item \textbf{SNP-affected probes:} probes with common variation at the interrogated CpG, at the single-base extension site, or within the probe body \cite{zhou2016,pidsley2016}.
+  \item \textbf{Cross-reactive probes:} probes with off-target/multi-mapping hybridisation \cite{chen2013}, \cite{mccartney2016}, \cite{zhou2016}.
+  \item \textbf{Design-/platform-specific masks:} consolidated \texttt{MASK\_*} flags for mapping, SNP windows, non-CpG probes, and optional sex-chromosome probes \cite{zhou2016}.
+  \item \textbf{Naeem hierarchical QC (450K):} discard logic for multi-mapping, repeats, INDEL, and disruptive SNPs \cite{naeem2014}.
 \end{itemize}
-
-{\color{red} \textbf{[Results pending:} number of probes removed by each list, remaining CpG count, updated dataset size.]}
-
-\paragraph{Detection \textit{p}-value filtering.}
-For each probe, the detection \textit{p}-value measures the probability that its fluorescence intensity is indistinguishable from the background.  
-Probes with detection \textit{p}-value $> 0.01$--$0.05$ in more than 1--5\% of samples were excluded, as they likely represent unreliable hybridization or poor signal quality~\cite{WilhelmBenartzi2013BJC}.  
-This filtering step follows Illumina’s quality control recommendations and standard practices for methylation array preprocessing.
-
-{\color{red} \textbf{[Results pending:} summary of removed probes, percentage excluded, post-filter matrix dimensions.]}
-
+\textbf{List provenance used here.}
+Naeem et al.~2014~\cite{naeem2014}; Chen et al.~2013~\cite{chen2013}; Pidsley et al.~2016~\cite{pidsley2016}; Zhou et al.~2016~\cite{zhou2016}; McCartney et al.~2016~\cite{mccartney2016}. \good{Total CpGs removed: 225,426.}
 
 \paragraph{Annotation-based filtering.}
-Finally, I performed a cross-check with official Illumina annotation files and updated curated probe databases~\cite{Zhou2016Annotation} to ensure that only valid, well-characterized loci were retained.
-This step allows harmonization between older 450K annotations and updated genome builds (e.g., hg19 $\rightarrow$ hg38) and ensures consistent CpG naming across datasets.
+I performed a cross-check with the official Illumina manifest file 
+(\href{https://emea.support.illumina.com/array/array_kits/infinium_humanmethylation450_beadchip_kit/downloads.html?utm_source=chatgpt.com/}{\textit{HumanMethylation450 v1.2 Manifest File}}) to ensure that only valid and well-characterized loci were retained.  
+This annotation-based filtering step validates probe integrity using the manufacturer's reference genome mapping (hg19) and removes:
+\begin{itemize}[label=-]
+  \item probes with invalid or missing chromosome information (\texttt{CHR});
+  \item probes with undefined or non-positive genomic positions (\texttt{MAPINFO});
+  \item duplicated probe identifiers (\texttt{IlmnID});
+  \item non-CpG-targeting probes (i.e., IDs beginning with ``ch'').
+\end{itemize}
 
-{\color{red} \textbf{[Results pending:} number of probes retained after annotation matching, summary table or plot of final coverage.]}
+This step guarantees consistency between the experimental dataset and the official Illumina annotation, harmonizing CpG identifiers across datasets and preventing misaligned genomic coordinates in downstream analyses.  
+The remaining probes thus represent a validated subset of the HumanMethylation450 array.
 
-\paragraph{Outcome.}
-After technical filtering, the dataset is expected to retain only high-confidence probes suitable for reliable normalization and subsequent biological interpretation.
-
-{\color{red} \textbf{[Results pending:} summary of total retained CpGs, fraction of genome covered, histogram or density plot of detection \textit{p}-values.]}
+\good{After manifest-based validation, \textbf{875 non-CpG probes} were removed, leaving a final matrix of \textbf{407 samples $\times$ 259,213 CpGs}.}
 
 \section{Filtering of Invariant CpGs} 
 Remove CpGs with very low variance (e.g., variance $< 1\times10^{-4}$), 
 as they carry no discriminative information 
 (\href{https://bmcgenomics.biomedcentral.com/articles/10.1186/1471-2164-15-51}{Naeem et al., 2014}).
 
+
 \section{Correction of Infinium I/II Probe Bias} 
+QUA VORREI FAR VEDERE CHE QUESTA COSA è STATA FATTA -> MI BASTA QUINDI UN PLOT PER DIMOSTRARE CHE NEI RAW DATA è STATA FATTA 
 Integrate probe design information (Type I / Type II) 
 from Illumina annotation files and inspect density distributions. \\
 Apply \textbf{Peak-Based Correction (PBC)} when clear bimodal peaks (near 0 and 1) are visible 
@@ -277,6 +280,101 @@ Fit the scaler on the training fold and apply it to the test fold to prevent dat
 (\href{https://academic.oup.com/jss/article/33/1/1/3703127}{Friedman et al., 2010}; 
     \href{https://pmc.ncbi.nlm.nih.gov/articles/PMC10863277/}{Aref-Eshghi et al., 2025}).
 
+
+\clearpage
+
+\appendix
+\section{Filtering lists}
+\label{app:probe-filters}
+
+This appendix details the major technical filtering lists and annotations applied in Illumina 450K and EPIC methylation arrays to remove unreliable or ambiguous CpG probes. 
+
+\subsection{Reducing the risk of false discovery enabling identification of biologically significant genome-wide methylation status using the humanmethylation450 array}
+\label{app:naeem2014}
+\begin{wrapfigure}{r}{0.29\textwidth} % {r}=destra, {0.4\textwidth}=larghezza
+    \centering
+    \includegraphics[width=\linewidth]{Figures/Workflow for determining affected Probes.jpg} % o .png, .pdf, .eps...
+    \caption{Workflow for determining affected Probes.}
+    \label{fig:Workflow}
+\end{wrapfigure}
+Naeem \emph{et al.} \cite{naeem2014} proposed a structured filtering framework to reduce false discoveries by sequentially discarding probes based on hybridisation specificity and genomic integrity (Figure \ref{fig:Workflow}).  
+The main exclusion steps are:
+\begin{enumerate}[label=-]
+  \item Multi-mapping or cross-hybridising probes $\Rightarrow$ \textit{discard}.
+  \item Probes overlapping repetitive elements (LINE/SINE/ALU) $\Rightarrow$ \textit{discard}.
+  \item Probes targeting regions with INDELs $\Rightarrow$ \textit{discard}.
+  \item Probes overlapping SNPs:
+    \begin{enumerate}[label=--]
+      \item SNP at CpG or extension site $\Rightarrow$ \textit{discard}.
+      \item SNP near target but not interfering in bisulfite space $\Rightarrow$ \textit{keep}.
+    \end{enumerate}
+\end{enumerate}
+The resulting ``discard'' set therefore removes probes affected by cross-reactivity, structural polymorphisms (INDELs), and SNPs that alter CpG interrogation.
+
+\subsection{Discovery of cross-reactive probes and polymorphic cpgs in the illumina infinium humanmethylation450 microarray}
+\label{app:chen2013}
+Chen \emph{et al.} \cite{chen2013} empirically identified probes in the 450K array that exhibit off-target hybridisation or overlap with common SNPs.  
+For this project, only the \textbf{cross-reactive list} is available and used.  
+This list enumerates $\sim$29k multi-mapping probes whose methylation signal cannot be uniquely attributed to one genomic locus.
+
+\subsection{Critical evaluation of the Illumina MethylationEPIC BeadChip microarray for whole-genome DNA methylation profiling}
+\label{app:pidsley2016}
+Pidsley \emph{et al.} \cite{pidsley2016} provide a platform-level assessment of the EPIC array, with explicit \emph{annotated probe lists} that flag probes whose methylation signal may be confounded by design- or genome-related artefacts. The focus is on probe categories and positions where technical bias arises, rather than on a universal, prescriptive blacklist. In particular, they catalogue:
+
+\begin{itemize}[label=-]
+  \item \textbf{Cross-hybridising CpG-targeting probes:} CpG probes showing sequence homology (off-target matches) to additional genomic loci, yielding non-unique hybridisation and potentially inflated or ambiguous $\beta$ signals.
+  \item \textbf{Cross-hybridising non-CpG-targeting probes:} off-target issues among CNG/non-CpG probes; these are typically excluded in CpG-centric analyses due to limited interpretability and higher risk of artefacts.
+  \item \textbf{Probes overlapping common genetic variation:} annotation of variants from population data at three critical positions:
+  \begin{enumerate}[label=--]
+    \item \textit{At the interrogated CpG} (polymorphic CpG) --- directly affects the presence of the CpG dinucleotide and the measured methylation state;
+    \item \textit{At the single-base extension (SBE) site} (Type~I) --- perturbs extension and dye chemistry, biasing intensity ratios;
+    \item \textit{Within the probe body} --- can reduce binding affinity or alter hybridisation kinetics, especially for common variants.
+  \end{enumerate}
+\end{itemize}
+
+
+\subsection{Comprehensive characterization, annotation and innovative use of infinium dna methylation beadchip probes}
+\label{app:zhou2016}
+Zhou \emph{et al.} \cite{zhou2016} released a unified probe annotation for both 450K and EPIC arrays with multiple binary mask columns (\texttt{MASK\_*}).  
+Each mask flags probes to be removed due to specific technical artifacts:
+\begin{itemize}[label=-]
+  \item \texttt{MASK\_mapping}: cross-hybridisation or ambiguous alignment;
+  \item \texttt{MASK\_snp5}: SNP within $\pm 5$\,bp of the CpG;
+  \item \texttt{MASK\_extBase}: SNP at the single-base extension;
+  \item \texttt{MASK\_commonSNPs}: overlap with common polymorphisms;
+  \item \texttt{MASK\_nonCG}: non-CpG-targeting probes;
+  \item \texttt{MASK\_chrXY}: probes located on X or Y chromosomes (optional).
+\end{itemize}
+This resource provides a programmatic and reproducible way to perform fine-grained probe masking.
+
+\subsection{Identification of polymorphic and off-target probe binding sites on the Illumina Infinium MethylationEPIC BeadChip}
+\label{app:mccartney2016}
+For the MethylationEPIC array, McCartney \emph{et al.} \cite{mccartney2016} assessed probe design artifacts and published supplementary tables that include:
+\begin{itemize}[label=-]
+  \item cross-hybridising CpG-targeting probes;
+  \item cross-hybridising non-CpG-targeting probes.
+\end{itemize}
+
+\subsection{Comparative Overview}
+\label{app:overview}
+\begin{table}[H]
+\small
+\caption{Technical categories covered by each filtering resource.}
+\centerline{ % <-- USA QUESTO
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Category} & \textbf{Naeem14} & \textbf{Chen13} & \textbf{Pidsley16} & \textbf{Zhou16} & \textbf{McCartney16} \\
+\midrule
+Cross-hybridisation / multi-mapping & Yes (Steps 1–2) & Yes & Yes & \texttt{MASK\_mapping} & Table~2+3 \\
+SNP at CpG / extension base   	& Yes (Step 5) & -- & Yes & \texttt{MASK\_snp5, MASK\_extBase} & -- \\
+Nearby SNP tolerated   	& Conditional (Step 6) & -- & -- & -- & -- \\
+INDEL / structural variant   	& Yes (Step 3) & -- & -- & -- & -- \\
+Non-CpG probes   	& -- & -- & Yes 	& \texttt{MASK\_nonCG} & Table~3 \\
+Sex-chromosome probes (X/Y)   	& Yes & Yes & Yes & \texttt{MASK\_chrXY} & -- \\
+\bottomrule
+\end{tabular}
+} 
+\end{table}
 
 \printbibliography
 \end{document}
