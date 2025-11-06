@@ -177,13 +177,37 @@ Next, I performed a comprehensive check for missing values ($\text{NaN}$), as th
     \item For future datasets:
     \begin{itemize}[label=--]
         \item If the overall missing rate is $< 1\%$, imputation may be considered as an optional step.
-        \item If probe missingness exceeds $5\%$ or sample missingness exceeds $10\%$, the affected entities should be discarded, following standard preprocessing practices~\cite{Zhou2016Annotation}.
+        \item If probe missingness exceeds $5\%$ or sample missingness exceeds $10\%$, the affected entities should be discarded, following standard preprocessing practices~\cite{zhou2016}.
     \end{itemize}
 \end{itemize}
 
 
 This validation confirms the dataset is structurally sound, numerically consistent, and complete, enabling unbiased downstream variance modeling, differential methylation testing, and batch correction without any further cleaning
 
+\section{Correction of Infinium I/II Probe Bias}
+
+Raw methylation intensity data (\textit{IDAT} files) from the \textbf{GSE69914} dataset were processed using the \texttt{minfi} package (v1.8.9) and \texttt{BMIQ} normalization (v1.4), as reported in \cite{GSE69914}.
+This preprocessing pipeline includes the \textbf{Bias Correction between Infinium Type I and Type II probes}, ensuring that $\beta$-value distributions from both probe designs are comparable prior to downstream analysis.
+
+To verify that the bias correction was successfully applied, the $\beta$-value distributions were stratified by probe design (Type~I vs.~Type~II) using the official Illumina 450K manifest obtained from the \texttt{IlluminaHumanMethylation450kanno.} \texttt{ilmn12.hg19} Bioconductor package~\cite{Illumina450kAnno}.
+Following the framework proposed by Teschendorff et al. \cite{Teschendorff2013BMIQ}, two diagnostic plots were generated.
+\begin{enumerate}
+    \item \textbf{Left panel:} the $\beta$-value density distributions of Type~I and Type~II probes are shown to overlap substantially, indicating no evident design-driven bias in the normalized data;
+    \item \textbf{Right panel:} a Q--Q plot of Type~II versus Type~I quantiles demonstrates a median absolute deviation from the identity line of $|\Delta| = 0.162$, confirming good alignment between probe types after BMIQ normalization.
+\end{enumerate}
+
+The observed deviation value ($|\Delta| \approx 0.16$) is consistent with well-corrected datasets, as discussed by Teschendorff et al. \cite{Teschendorff2013BMIQ} and by Yousefi et al. \cite{Yousefi2013ProbeBias}, who report that post-BMIQ alignment typically reduces the median deviation below $\sim0.20$, while uncorrected data often exceed $0.25$--$0.30$.
+Hence, the present dataset shows \textbf{no residual Infinium I/II bias}, and no further probe-type correction was required.
+{\color{red}MANCA L'INTERVALLO GIUSTO (SOTTO I 0.18)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Figures/type_bias_density_and_qq.png}
+    \caption{Diagnostic assessment of Infinium I/II probe-type bias. 
+    (\textbf{Left}) Density of $\beta$-values by probe design shows well-overlapping distributions. 
+    (\textbf{Right}) Q--Q plot (Type~II vs.~Type~I) with median deviation $|\Delta| = 0.162$, confirming effective BMIQ normalization.}
+    \label{fig:type_bias}
+\end{figure}
 
 
 \section{Technical Filtering}\label{sec:technical_filtering}
@@ -207,45 +231,102 @@ I performed a cross-check with the official Illumina manifest file
 (\href{https://emea.support.illumina.com/array/array_kits/infinium_humanmethylation450_beadchip_kit/downloads.html?utm_source=chatgpt.com/}{\textit{HumanMethylation450 v1.2 Manifest File}}) to ensure that only valid and well-characterized loci were retained.  
 This annotation-based filtering step validates probe integrity using the manufacturer's reference genome mapping (hg19) and removes:
 \begin{itemize}[label=-]
-  \item probes with invalid or missing chromosome information (\texttt{CHR});
-  \item probes with undefined or non-positive genomic positions (\texttt{MAPINFO});
-  \item duplicated probe identifiers (\texttt{IlmnID});
-  \item non-CpG-targeting probes (i.e., IDs beginning with ``ch'').
+  \item Probes with invalid or missing chromosome information (\texttt{CHR});
+  \item Probes with undefined or non-positive genomic positions (\texttt{MAPINFO});
+  \item Duplicated probe identifiers (\texttt{IlmnID});
+  \item Non-CpG-targeting probes (i.e., IDs beginning with ``ch'').
 \end{itemize}
 
 This step guarantees consistency between the experimental dataset and the official Illumina annotation, harmonizing CpG identifiers across datasets and preventing misaligned genomic coordinates in downstream analyses.  
 The remaining probes thus represent a validated subset of the HumanMethylation450 array.
 
 \good{After manifest-based validation, \textbf{875 non-CpG probes} were removed, leaving a final matrix of \textbf{407 samples $\times$ 259,213 CpGs}.}
+{\color{red}DA AGGIUNGERE LA REFERENCE}
 
-\section{Filtering of Invariant CpGs} 
-Remove CpGs with very low variance (e.g., variance $< 1\times10^{-4}$), 
-as they carry no discriminative information 
-(\href{https://bmcgenomics.biomedcentral.com/articles/10.1186/1471-2164-15-51}{Naeem et al., 2014}).
+\section{Filtering of Invariant CpGs}\label{sec:invariant_filtering}
+
+CpG sites exhibiting minimal methylation variability across samples provide no discriminatory information and may inflate the multiple-testing burden.  
+Following the empirically driven approach of Edgar \textit{et al.}~\cite{Edgar2017}, probes with low dispersion were identified using the inter-decile \textbf{beta-range}:
+$r_{\beta} = \mathrm{P90}(\beta) - \mathrm{P10}(\beta)$,
+which quantifies methylation variability in a robust and outlier-resistant manner.
+
+\paragraph{Whole-cohort variability analysis.}
+Across all tissue types, the $r_{\beta}$ distribution was highly right-skewed, with most loci showing limited variability (Figure~\ref{fig:beta_range_compare}, left).  
+Three candidate thresholds ($r_{\beta} < 0.01$, $0.02$, $0.05$) were evaluated, corresponding to:
+\good{$r_{\beta} <$ 0.01: 1,782\text{ CpGs removed}},
+\good{$r_{\beta} <$ 0.02: 28,569}, 
+\good{$r_{\beta} <$ 0.05: 79,433}.
+
+{\color{red}
+The conservative cutoff $r_{\beta}\ge0.01$ was selected, removing only invariant probes while retaining loci with meaningful biological variation. -- MANCA DA DECIDERE
+}
+
+\paragraph{Normal and adjacent-tissue subset.}
+To investigate whether tumor-related heterogeneity influenced the variability profile, the same analysis was repeated using only normal and normal-adjacent tissues (labels~0,~1,~3).  
+As expected, the overall dispersion decreased (Figure~\ref{fig:beta_range_compare}, right), yielding:
+\good{$r_{\beta} <$ 0.01: 3,972\text{ CpGs removed}}, 
+\good{$r_{\beta} <$ 0.02: 40,342}, 
+\good{$r_{\beta} <$ 0.05: 102,473}.
+
+This confirms that tumor samples contribute most of the global variability, while non-neoplastic tissues exhibit tighter methylation clustering.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{Figures/beta_range_distribution_study.png}
+        \caption{All samples (Normal, Adjacent, Tumor).}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{Figures/beta_range_distribution_study_normal_adjacent.png}
+        \caption{Subset restricted to Normal and Adjacent tissues.}
+    \end{subfigure}
+    \caption{Distribution of beta-range ($\mathrm{P90}-\mathrm{P10}$) across CpGs with candidate thresholds (0.01, 0.02, 0.05).  
+    The right panel shows reduced variability when excluding tumor samples, consistent with tissue-specific stability reported by Edgar \textit{et al.}~\cite{Edgar2017}.}
+    \label{fig:beta_range_compare}
+\end{figure}
+
+{\color{red}Final dataset retained CpGs with $r_{\beta}\ge0.01$, following the tissue-specific non-variability filtering approach of Edgar \textit{et al.}, ensuring the removal of non-informative loci while preserving biologically relevant variation. -- MANCA DA DECIDERE}
 
 
-\section{Correction of Infinium I/II Probe Bias} 
-QUA VORREI FAR VEDERE CHE QUESTA COSA è STATA FATTA -> MI BASTA QUINDI UN PLOT PER DIMOSTRARE CHE NEI RAW DATA è STATA FATTA 
-Integrate probe design information (Type I / Type II) 
-from Illumina annotation files and inspect density distributions. \\
-Apply \textbf{Peak-Based Correction (PBC)} when clear bimodal peaks (near 0 and 1) are visible 
-(\href{https://academic.oup.com/bioinformatics/article/29/2/189/199637}{Teschendorff et al., 2013}). \\
-In parallel, apply \textbf{BMIQ normalization} as a robust alternative and 
-compare results across normalization strategies. 
+\section{Comparison of Beta-value and M-value Quantifications}\label{sec:beta_mvalue_comparison}
 
-\section{Transformation to M-values} 
-Convert $\beta$-values to M-values using 
-$M = \log_2\left(\frac{\beta}{1 - \beta}\right)$ to stabilize variance 
-and improve suitability for linear modeling 
-(\href{https://doi.org/10.1186/1471-2105-11-587}{Du et al., 2010}). \\[4pt]
-\textit{CpG Variability Diagnosis (post M-value):} \\
-Compute variance or interquartile range (IQR) across samples for each CpG to obtain a 
-diagnostic ranking of variable loci. Highly variable CpGs are typically more informative 
-for distinguishing normal and normal-adjacent tissues. 
-(\href{https://bmcgenomics.biomedcentral.com/articles/10.1186/1471-2164-15-51}{Naeem et al., 2014}; 
-    \href{https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0465-4}{Phipson et al., 2014}). 
-Optionally, visualize the variance distribution or perform PCA on top-variable CpGs 
-to assess early group separation.
+Illumina Infinium arrays measure two fluorescence intensities per CpG: methylated ($y^{(M)}$) and unmethylated ($y^{(U)}$) signals, both background-corrected and normalized.  
+From these signals, two equivalent representations of methylation level can be derived~\cite{Du2010}.
+
+\paragraph{Definitions.}
+The \textbf{Beta-value} ($\beta$) represents the proportion of methylated signal:
+\[
+\beta_i = \frac{\max(y_i^{(M)},0)}{\max(y_i^{(M)},0) + \max(y_i^{(U)},0) + \alpha},
+\quad 0 \le \beta_i \le 1,
+\]
+while the \textbf{M-value} ($M$) is defined as the log$_2$-ratio of methylated to unmethylated intensities:
+\[
+M_i = \log_2\left(\frac{\max(y_i^{(M)},0)+\alpha}{\max(y_i^{(U)},0)+\alpha}\right),
+\quad M_i \in (-\infty,\infty).
+\]
+The two measures are related by the logit transform:
+\[
+M_i = \log_2\!\left(\frac{\beta_i}{1-\beta_i}\right)
+\quad\Longleftrightarrow\quad
+\beta_i = \frac{2^{M_i}}{1 + 2^{M_i}}.
+\]
+
+\paragraph{Rationale.}
+As established by Du \textit{et al.}~\cite{Du2010}, $\beta$-values are bounded and heteroscedastic—variance depends on the mean, especially near 0 or 1—whereas $M$-values are approximately homoscedastic and symmetrically distributed, making them statistically more suitable for linear-model and $t$-test analyses.  
+For interpretability, $\beta$ remains preferred for reporting because it directly corresponds to a percentage of methylation.
+
+\paragraph{Implementation in this dataset.}
+The \textbf{GSE69914} matrix provides $\beta$-values only; raw intensities ($y^{(M)}, y^{(U)}$) are unavailable.  
+Hence, I derived $M$ using the standard logit transform:
+\[
+M = \log_2\!\left(\frac{\beta + \varepsilon}{1 - \beta + \varepsilon}\right),
+\]
+with a small $\varepsilon$ for numerical stability.  
+This reproduces the expected scale and statistical properties of $M$, enabling robust modeling even without raw intensity data.
+
+\good{All subsequent statistical analyses are performed in $M$-space (for inference and testing), and results are converted back to $\beta$ for visualization and biological interpretation.}
+
 
 \section{Batch-Effect Correction} 
 Remove inter-array technical variation using \textbf{ComBat} 
@@ -288,6 +369,25 @@ Fit the scaler on the training fold and apply it to the test fold to prevent dat
 \label{app:probe-filters}
 
 This appendix details the major technical filtering lists and annotations applied in Illumina 450K and EPIC methylation arrays to remove unreliable or ambiguous CpG probes. 
+
+\begin{table}[H]
+\small
+\caption{Technical categories covered by each filtering resource.}
+\centerline{ % <-- USA QUESTO
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Category} & \textbf{Naeem} \ref{app:naeem2014} & \textbf{Chen} \ref{app:chen2013} & \textbf{Pidsley} \ref{app:pidsley2016} & \textbf{Zhou} \ref{app:zhou2016} & \textbf{McCartney} \ref{app:mccartney2016}\\
+\midrule
+Cross-hybridisation / multi-mapping & Yes (Steps 1–2) & Yes & Yes & \texttt{MASK\_mapping} & Table~2+3 \\
+SNP at CpG / extension base   	& Yes (Step 5) & -- & Yes & \texttt{MASK\_snp5, MASK\_extBase} & -- \\
+Nearby SNP tolerated   	& Conditional (Step 6) & -- & -- & -- & -- \\
+INDEL / structural variant   	& Yes (Step 3) & -- & -- & -- & -- \\
+Non-CpG probes   	& -- & -- & Yes 	& \texttt{MASK\_nonCG} & Table~3 \\
+
+\bottomrule
+\end{tabular}
+} 
+\end{table}
 
 \subsection{Reducing the risk of false discovery enabling identification of biologically significant genome-wide methylation status using the humanmethylation450 array}
 \label{app:naeem2014}
@@ -336,45 +436,29 @@ Pidsley \emph{et al.} \cite{pidsley2016} provide a platform-level assessment of 
 \subsection{Comprehensive characterization, annotation and innovative use of infinium dna methylation beadchip probes}
 \label{app:zhou2016}
 Zhou \emph{et al.} \cite{zhou2016} released a unified probe annotation for both 450K and EPIC arrays with multiple binary mask columns (\texttt{MASK\_*}).  
-Each mask flags probes to be removed due to specific technical artifacts:
+Each \href{https://zwdzwd.github.io/InfiniumAnnotation/mask.html}{mask} flags probes to be removed due to specific technical artifacts.
 \begin{itemize}[label=-]
-  \item \texttt{MASK\_mapping}: cross-hybridisation or ambiguous alignment;
-  \item \texttt{MASK\_snp5}: SNP within $\pm 5$\,bp of the CpG;
-  \item \texttt{MASK\_extBase}: SNP at the single-base extension;
-  \item \texttt{MASK\_commonSNPs}: overlap with common polymorphisms;
-  \item \texttt{MASK\_nonCG}: non-CpG-targeting probes;
-  \item \texttt{MASK\_chrXY}: probes located on X or Y chromosomes (optional).
+  \item \texttt{MASK.mapping}: probes with low or inconsistent mapping quality (non-unique alignment or presence of INDELs);
+  \item \texttt{MASK.typeINextBaseSwitch}: Type-I probes carrying a SNP in the extension base that causes a color-channel switch (\emph{CCS} probes);
+  \item \texttt{MASK.extBase}: probes whose extension base is inconsistent with the expected color channel or CpG context;
+  \item \texttt{MASK.sub30.copy}: probes with non-unique 30-bp 3' subsequences (potential cross-hybridisation);
+  \item \texttt{MASK.snp5.common}: probes overlapping a SNP within $\pm5$\,bp of the interrogated CpG (even with global MAF < 1\%);
+  \item \texttt{MASK.snp5.GMAF1p}: probes overlapping SNPs with global MAF > 1\%;
+  \item \texttt{MASK.general}: recommended composite mask integrating mapping, SNP, and cross-reactivity filters for general use;
+  \item \texttt{MASK.rmsk15}: probes overlapping RepeatMasker regions (not recommended for exclusion in standard workflows).
 \end{itemize}
+
 This resource provides a programmatic and reproducible way to perform fine-grained probe masking.
 
 \subsection{Identification of polymorphic and off-target probe binding sites on the Illumina Infinium MethylationEPIC BeadChip}
 \label{app:mccartney2016}
-For the MethylationEPIC array, McCartney \emph{et al.} \cite{mccartney2016} assessed probe design artifacts and published supplementary tables that include:
+McCartney \emph{et al.} \cite{mccartney2016} assessed probe design artifacts and published supplementary tables that include:
 \begin{itemize}[label=-]
-  \item cross-hybridising CpG-targeting probes;
-  \item cross-hybridising non-CpG-targeting probes.
+  \item Cross-hybridising CpG-targeting probes;
+  \item Cross-hybridising non-CpG-targeting probes.
 \end{itemize}
 
-\subsection{Comparative Overview}
-\label{app:overview}
-\begin{table}[H]
-\small
-\caption{Technical categories covered by each filtering resource.}
-\centerline{ % <-- USA QUESTO
-\begin{tabular}{lccccc}
-\toprule
-\textbf{Category} & \textbf{Naeem14} & \textbf{Chen13} & \textbf{Pidsley16} & \textbf{Zhou16} & \textbf{McCartney16} \\
-\midrule
-Cross-hybridisation / multi-mapping & Yes (Steps 1–2) & Yes & Yes & \texttt{MASK\_mapping} & Table~2+3 \\
-SNP at CpG / extension base   	& Yes (Step 5) & -- & Yes & \texttt{MASK\_snp5, MASK\_extBase} & -- \\
-Nearby SNP tolerated   	& Conditional (Step 6) & -- & -- & -- & -- \\
-INDEL / structural variant   	& Yes (Step 3) & -- & -- & -- & -- \\
-Non-CpG probes   	& -- & -- & Yes 	& \texttt{MASK\_nonCG} & Table~3 \\
-Sex-chromosome probes (X/Y)   	& Yes & Yes & Yes & \texttt{MASK\_chrXY} & -- \\
-\bottomrule
-\end{tabular}
-} 
-\end{table}
+
 
 \printbibliography
 \end{document}
