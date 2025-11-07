@@ -1,0 +1,249 @@
+\documentclass[10pt]{extarticle}
+
+% Lingua e matematica
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,amsthm}
+
+% Grafica e tabelle
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{siunitx}
+\usepackage{wrapfig}
+\usepackage{placeins}
+
+
+% Codice (opzionale)
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.98,0.98,0.98}
+\lstdefinestyle{mystyle}{
+  backgroundcolor=\color{backcolour},
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true, keepspaces=true, numbers=none, tabsize=2
+}
+\lstset{style=mystyle}
+
+% Margini
+\usepackage[margin=0.6in]{geometry}
+\usepackage{ragged2e}
+\usepackage{enumitem}
+%\usepackage[utf8]{inputenc} % per caratteri UTF-8 nei .tex e nel .bib
+\usepackage[backend=biber,style=ieee,sorting=none,maxbibnames=99]{biblatex}
+\ExecuteBibliographyOptions{doi=true,url=true,isbn=false}
+\addbibresource{references.bib}
+\usepackage{csquotes}       % consigliato da biblatex (evita warning e parse strani)
+\usepackage{pifont}
+\newcommand{\good}[1]{\textcolor{teal!70!black}{\ding{51}~#1}}
+
+
+
+% Bibliografia (biblatex + biber)
+\usepackage[backend=biber,style=ieee]{biblatex}
+\addbibresource{references.bib}
+
+% TOC: includi anche \paragraph e numerali
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+
+% Hyperref (sempre *dopo* gli altri pacchetti)
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=teal,urlcolor=magenta]{hyperref}
+
+
+\begin{document}
+
+% Custom header without a separate titlepage
+\noindent
+\begin{minipage}{0.3\textwidth}
+    \includegraphics[width=1.3\linewidth]{Figures/polito_logo_2021_blu.jpg}
+\end{minipage}
+\hfill
+\begin{minipage}{0.68\textwidth}
+    \raggedleft
+    {\LARGE \textbf{Politecnico di Torino}}\\[0.2cm]
+    {\large Laurea Magistrale in Ingegneria Matematica}\\[0.7cm]
+    {\large \textbf{Analisi Comparativa e Strategie Future per lo Studio Epigenetico del Carcinoma Mammario}}\\[0.2cm]
+    {\large Revisione dei Lavori di Tesi \\ Data Pre-Processing Pipeline in GSE69914}\\[0.7cm]
+    \begin{tabular}{rl}
+        Eleonora Guarnaschelli \\
+        Elisabetta Roviera
+    \end{tabular}
+\end{minipage}
+
+\vspace{1cm}
+\hrule
+\vspace{0.5cm}
+
+\tableofcontents
+
+\vspace{0.5cm}
+\hrule
+\vspace{1cm}
+
+
+% Main content begins here, on the same page
+\justifying
+
+\begin{abstract}
+{\color{red}
+\textbf{MANCA L'ABSTRACT, LO SCRIVO DOPO.}\\
+}
+\end{abstract}
+
+\paragraph{Costruzione del dataset.}\label{sec:data_storage}
+
+
+Abbiamo acquisito il dataset \texttt{GSE69914}~\cite{GSE69914} in formato \texttt{.txt} contenente i valori di metilazione ($\beta$-values) e ottenuto le etichette di classe direttamente da \texttt{GEOparse} per garantirne la massima correttezza.  
+La matrice è stata successivamente convertita in un file compresso \texttt{.parquet} con righe corrispondenti ai campioni e colonne alle sonde CpG.  
+Infine, abbiamo eseguito i controlli di qualità per verificare l’assenza di valori mancanti e la correttezza del range dei $\beta$-values.
+
+
+\section{Correzione del bias tra sonde Infinium I e II}\label{sec:infinium_bias}
+
+I dati grezzi di intensità di metilazione del dataset sono stati pre-processati dagli autori originali utilizzando il pacchetto \texttt{minfi} (v1.8.9) e la normalizzazione \texttt{BMIQ} (v1.4), come riportato in~\cite{GSE69914}.  
+Questa pipeline include la \textbf{correzione del bias tra le sonde Infinium di tipo~I e tipo~II}, assicurando che le distribuzioni dei valori di metilazione ($\beta$-values) dei due design risultino comparabili prima delle analisi successive.
+
+Abbiamo verificato in modo indipendente che tale correzione fosse effettivamente applicata.  
+A tal fine, le distribuzioni dei $\beta$-values sono state stratificate per tipo di sonda (Type~I vs.~Type~II) utilizzando il manifest ufficiale di Illumina~450K ottenuto dal pacchetto Bioconductor~\cite{Illumina450kAnno}.  
+Seguendo l’approccio diagnostico proposto da Teschendorff et~al.~\cite{Teschendorff2013BMIQ}, abbiamo generato due grafici di controllo.
+\begin{enumerate}
+    \item Le distribuzioni di densità dei $\beta$-values per le sonde Type~I e Type~II (\autoref{fig:type_bias_density}) mostrano un’elevata sovrapposizione, senza evidenza di bias dovuto al design;
+    \item Il Q--Q plot che confronta i quantili delle sonde Type~II rispetto alle Type~I (\autoref{fig:type_bias_qq}) presenta un allineamento quasi diagonale, confermando l’efficacia della correzione.
+\end{enumerate}
+
+Il pattern osservato dopo la normalizzazione riproduce fedelmente i risultati descritti da Teschendorff~et~al.~\cite{Teschendorff2013BMIQ} e da Wang~et~al.~\cite{Wang2015Normalization450K}, che hanno dimostrato come la procedura BMIQ riduca sostanzialmente il bias tra sonde Infinium di tipo~I e~II, producendo distribuzioni sovrapposte e relazioni quantiliche bilanciate.  
+\good{Pertanto, la nostra verifica conferma che il dataset \textbf{GSE69914} ha subito una corretta normalizzazione BMIQ e non presenta bias residui tra le sonde Infinium~I/II prima dell’analisi.}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[height=6cm]{Figures/type_bias_density.pdf}
+        \caption{Distribuzione dei $\beta$-values per tipo di sonda (Type~I vs.~Type~II).  
+        Le curve quasi sovrapposte indicano una correzione efficace del bias.}
+        \label{fig:type_bias_density}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[height=6cm]{Figures/type_bias_qqplot.pdf}
+        \caption{Q--Q plot tra i quantili delle sonde Type~II e Type~I.  
+        L’allineamento alla diagonale ($y = x$) conferma la correzione del bias di design.}
+        \label{fig:type_bias_qq}
+    \end{subfigure}
+    \caption{Valutazione diagnostica della correzione del bias tra sonde Infinium Type~I e~II nel dataset \textbf{GSE69914}.  
+    Le distribuzioni coerenti dei $\beta$-values e dei quantili dimostrano l’efficacia della normalizzazione BMIQ applicata.}
+    \label{fig:type_bias_combined}
+\end{figure}
+
+\section{Filtraggio tecnico}\label{sec:technical_filtering}
+
+Il filtraggio tecnico ha lo scopo di rimuovere le sonde inaffidabili o affette da artefatti biologici o di piattaforma prima delle fasi di normalizzazione e modellazione statistica.  
+Questo passaggio consente di ridurre il rumore, migliorare la riproducibilità delle analisi e mantenere esclusivamente i siti CpG ad alta affidabilità.
+
+\paragraph{Rimozione delle sonde affette da artefatti tecnici.}
+Abbiamo applicato diversi insiemi di filtri consolidati presenti in letteratura per eliminare sonde problematiche o non univocamente mappate.  
+In particolare, sono stati rimossi:
+\begin{itemize}[label=-]
+  \item \textbf{SNP-affected probes:} sonde contenenti varianti comuni nel sito CpG, nella base di estensione o all’interno della sequenza della sonda~\cite{zhou2016,pidsley2016};
+  \item \textbf{Sonde cross-reattive:} sonde con ibridazione multipla o mappatura non specifica~\cite{chen2013,mccartney2016,zhou2016};
+  \item \textbf{Maschere di design o piattaforma:} flag \texttt{MASK\_*} relativi a errori di mappatura, SNP adiacenti, sonde non-CpG e sonde su cromosomi sessuali opzionali~\cite{zhou2016};
+  \item \textbf{Controlli gerarchici Naeem (450K):} esclusione di sonde multi-mappate, ripetute o affette da varianti strutturali (INDEL) e SNP interferenti~\cite{naeem2014}.
+\end{itemize}
+
+La \autoref{tab:technical_filtering} sintetizza le principali categorie di artefatti tecnici considerate e le corrispondenti fonti bibliografiche utilizzate per la loro rimozione: Naeem~et~al.~2014~\cite{naeem2014}, Chen~et~al.~2013~\cite{chen2013}, Pidsley~et~al.~2016~\cite{pidsley2016}, Zhou~et~al.~2016~\cite{zhou2016} e McCartney~et~al.~2016~\cite{mccartney2016}.  
+\good{Complessivamente, sono state rimosse \textbf{225.426 sonde CpG}.}
+
+
+\begin{table}[H]
+\small
+\caption{Categorie tecniche coperte da ciascuna risorsa di filtraggio.}
+\centerline{
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Categoria} & \textbf{Naeem} & \textbf{Chen} & \textbf{Pidsley} & \textbf{Zhou} & \textbf{McCartney} \\
+\midrule
+Ibridazione multipla / multi-mapping & Sì  & Sì & Sì & \texttt{MASK\_mapping} & Liste 2–3 \\
+SNP al sito CpG / base di estensione & Sì  & -- & Sì & \texttt{MASK\_snp5, MASK\_extBase} & -- \\
+SNP adiacenti tollerati & Sì & -- & -- & -- & -- \\
+INDEL / varianti strutturali & Sì  & -- & -- & -- & -- \\
+Sonde non-CpG & -- & -- & Sì & \texttt{MASK\_nonCG} & Lista 3 \\
+\bottomrule
+\end{tabular}
+\label{tab:technical_filtering}
+}
+\end{table}
+
+
+\paragraph{Filtraggio basato su annotazione.}
+Abbiamo successivamente verificato la coerenza del dataset con il file di manifest ufficiale di Illumina  
+(\href{https://emea.support.illumina.com/array/array_kits/infinium_humanmethylation450_beadchip_kit/downloads.html?utm_source=chatgpt.com/}{\textit{HumanMethylation450 v1.2 Manifest File}}), assicurando il mantenimento esclusivo delle sonde valide e ben caratterizzate.  
+Sono state eliminate sonde non-CpG (identificativi con prefisso ``ch'').
+
+Questo passaggio garantisce la consistenza tra i dati sperimentali e l’annotazione ufficiale Illumina, prevenendo disallineamenti genomici nelle analisi successive.  
+Seguendo le raccomandazioni di Zhou~et~al.~\cite{zhou2016} e Pidsley~et~al.~\cite{pidsley2016}. \good{Sono state rimosse ulteriori \textbf{875 sonde non-CpG}.}
+
+\section{Filtraggio delle CpG invarianti}\label{sec:invariant_filtering}
+
+I siti CpG che mostrano una variabilità di metilazione minima tra i campioni non forniscono informazioni discriminanti e possono aumentare inutilmente il carico di test multipli.  
+Seguendo l’approccio empirico proposto da Edgar~\textit{et~al.}~\cite{Edgar2017}, abbiamo identificato le sonde a bassa dispersione utilizzando l’intervallo inter-decile dei valori di metilazione, definito come:
+$r_{\beta} = \mathrm{P90}(\beta) - \mathrm{P10}(\beta)$,
+una misura robusta e resistente agli outlier della variabilità di metilazione.
+
+\paragraph{Analisi di variabilità sull’intero dataset.}
+Considerando tutti i tipi di tessuto, la distribuzione di $r_{\beta}$ risulta fortemente asimmetrica a destra, con la maggior parte dei loci che mostrano una variabilità limitata (\autoref{fig:beta_range_all}).  
+Abbiamo valutato tre soglie candidate ($r_{\beta} < 0.01$, $0.02$, $0.05$), ottenendo:
+\good{$r_{\beta} <$ 0.01: 1.782~CpG rimosse},  
+\good{$r_{\beta} <$ 0.02: 28.569},  
+\good{$r_{\beta} <$ 0.05: 79.433}.
+
+\paragraph{Sottoinsieme Normal e Adjacent.}
+Poiché l’obiettivo finale è identificare le CpG informative per distinguere i tessuti \textbf{normali} (label~0) da quelli \textbf{adiacenti} (label~1), abbiamo applicato il filtraggio in modo specifico a questo sottoinsieme.  
+Come atteso, limitando l’analisi a tessuti non tumorali la dispersione complessiva diminuisce (\autoref{fig:beta_range_subset}), con i seguenti risultati:
+\good{$r_{\beta} <$ 0.01: 3.972~CpG rimosse},  
+\good{$r_{\beta} <$ 0.02: 40.342},  
+\good{$r_{\beta} <$ 0.05: 102.473}.
+
+Questo conferma che i campioni tumorali contribuiscono in modo predominante alla variabilità globale della metilazione, in accordo con quanto riportato da Hansen~et~al.~\cite{Hansen2011}, che descrivono un’aumentata variabilità stocastica nei tessuti neoplastici rispetto a quelli normali.  
+\good{Abbiamo pertanto adottato come soglia di riferimento il valore proposto da Edgar~\textit{et~al.}~\cite{Edgar2017}, $r_{\beta} < 0.05$, applicandolo al sottoinsieme Normal--Adjacent, ottenendo una matrice finale di \textbf{99 campioni $\times$ 156.740 CpG}.}  
+Le CpG al di sotto di tale soglia nel sottoinsieme ristretto sono state rimosse anche dal dataset completo.  
+
+Nel caso in cui analisi successive evidenzino che questa scelta risulti eccessivamente permissiva — portando all’esclusione di un numero rilevante di loci potenzialmente informativi — il criterio verrà rivalutato in senso più conservativo (ad esempio soglie di $0.02$ o $0.01$).  
+Questo approccio garantisce che vengano scartati solo i siti con metilazione stabile nei tessuti non tumorali, preservando invece le CpG con possibile rilevanza biologica per la distinzione tra tessuti Normal e Adjacent.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[height=6.2cm]{Figures/beta_range_distribution_study.png}
+        \caption{Distribuzione dell’intervallo inter-decile $r_{\beta}$ considerando l’intera coorte (Normal, Adjacent e Tumor).  
+        La distribuzione è asimmetrica, con la maggior parte delle CpG a bassa variabilità.}
+        \label{fig:beta_range_all}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[height=6.2cm]{Figures/beta_range_distribution_study_label013.png}
+        \caption{Distribuzione dell’intervallo inter-decile $r_{\beta}$ limitata ai tessuti Normal e Adjacent.  
+        L’esclusione dei campioni tumorali riduce la dispersione complessiva.}
+        \label{fig:beta_range_subset}
+    \end{subfigure}
+    \caption{Distribuzione dell’intervallo inter-decile dei valori di metilazione ($r_{\beta} = \mathrm{P90} - \mathrm{P10}$) nei siti CpG.  
+    L’analisi evidenzia una minore variabilità nei tessuti non tumorali, supportando l’uso di $r_{\beta}<0.05$ come criterio di filtraggio per il sottoinsieme Normal--Adjacent.}
+    \label{fig:beta_range_compare}
+\end{figure}
+
+
+
+
+\printbibliography
+\end{document}

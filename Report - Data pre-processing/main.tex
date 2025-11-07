@@ -182,32 +182,49 @@ Next, I performed a comprehensive check for missing values ($\text{NaN}$), as th
 \end{itemize}
 
 
-This validation confirms the dataset is structurally sound, numerically consistent, and complete, enabling unbiased downstream variance modeling, differential methylation testing, and batch correction without any further cleaning
+This validation confirms the dataset is structurally sound, numerically consistent, and complete, enabling unbiased downstream variance modeling, differential methylation testing, and batch correction without any further cleaning.
 
 \section{Correction of Infinium I/II Probe Bias}
 
-Raw methylation intensity data (\textit{IDAT} files) from the \textbf{GSE69914} dataset were processed using the \texttt{minfi} package (v1.8.9) and \texttt{BMIQ} normalization (v1.4), as reported in \cite{GSE69914}.
-This preprocessing pipeline includes the \textbf{Bias Correction between Infinium Type I and Type II probes}, ensuring that $\beta$-value distributions from both probe designs are comparable prior to downstream analysis.
+Raw methylation intensity data (\textit{IDAT} files) from the \textbf{GSE69914} dataset were processed by the original authors using the \texttt{minfi} package (v1.8.9) and \texttt{BMIQ} normalization (v1.4), as reported in \cite{GSE69914}.
+This preprocessing pipeline includes the \textbf{bias correction between Infinium Type~I and Type~II probes}, ensuring that $\beta$-value distributions from both probe designs are comparable prior to downstream analysis.
 
-To verify that the bias correction was successfully applied, the $\beta$-value distributions were stratified by probe design (Type~I vs.~Type~II) using the official Illumina 450K manifest obtained from the \texttt{IlluminaHumanMethylation450kanno.} \texttt{ilmn12.hg19} Bioconductor package~\cite{Illumina450kAnno}.
-Following the framework proposed by Teschendorff et al. \cite{Teschendorff2013BMIQ}, two diagnostic plots were generated.
+I independently verified that this probe-type bias correction had been successfully applied.
+To this aim, the $\beta$-value distributions were stratified by probe design (Type~I vs.~Type~II) using the official Illumina 450K manifest obtained from the Bioconductor package~\cite{Illumina450kAnno}.
+Following the diagnostic framework proposed by Teschendorff et~al.~\cite{Teschendorff2013BMIQ}, two diagnostic plots were generated:
 \begin{enumerate}
-    \item \textbf{Left panel:} the $\beta$-value density distributions of Type~I and Type~II probes are shown to overlap substantially, indicating no evident design-driven bias in the normalized data;
-    \item \textbf{Right panel:} a Q--Q plot of Type~II versus Type~I quantiles demonstrates a median absolute deviation from the identity line of $|\Delta| = 0.162$, confirming good alignment between probe types after BMIQ normalization.
+    \item The $\beta$-value density distributions of Type~I and Type~II probes (\autoref{fig:type_bias_density}) show extensive overlap, with no evident design-driven bias in the normalized data;
+    \item The Q--Q plot comparing Type~II versus Type~I quantiles (\autoref{fig:type_bias_qq}) exhibits a near-diagonal alignment, confirming effective bias correction.
 \end{enumerate}
 
-The observed deviation value ($|\Delta| \approx 0.16$) is consistent with well-corrected datasets, as discussed by Teschendorff et al. \cite{Teschendorff2013BMIQ} and by Yousefi et al. \cite{Yousefi2013ProbeBias}, who report that post-BMIQ alignment typically reduces the median deviation below $\sim0.20$, while uncorrected data often exceed $0.25$--$0.30$.
-Hence, the present dataset shows \textbf{no residual Infinium I/II bias}, and no further probe-type correction was required.
-{\color{red}MANCA L'INTERVALLO GIUSTO (SOTTO I 0.18)}
+The observed post-normalization pattern closely reproduces the characteristic outcome described by Teschendorff~et~al.~\cite{Teschendorff2013BMIQ} and Wang~et~al.~\cite{Wang2015Normalization450K}, who demonstrated that BMIQ substantially reduces Infinium Type~II probe bias, yielding overlapping $\beta$-value distributions and near-diagonal Q--Q relationships.
+\good{Hence, this verification confirms that the GSE69914 dataset underwent proper BMIQ normalization, and no residual Infinium~I/II bias was detected prior to analysis.}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{Figures/type_bias_density_and_qq.png}
-    \caption{Diagnostic assessment of Infinium I/II probe-type bias. 
-    (\textbf{Left}) Density of $\beta$-values by probe design shows well-overlapping distributions. 
-    (\textbf{Right}) Q--Q plot (Type~II vs.~Type~I) with median deviation $|\Delta| = 0.162$, confirming effective BMIQ normalization.}
-    \label{fig:type_bias}
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[height=6cm]{Figures/type_bias_density.png}
+        \caption{$\beta$-value distribution by Infinium probe design (Type~I vs.~Type~II). 
+        The near-overlapping shapes indicate effective correction of probe-type bias.}
+        \label{fig:type_bias_density}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[height=6cm]{Figures/type_bias_qqplot_with_legend.png}
+        \caption{Q--Q plot comparing quantiles of Type~II vs.~Type~I probes. 
+        The alignment to the diagonal ($y = x$) confirms balanced signal distributions after normalization.}
+        \label{fig:type_bias_qq}
+    \end{subfigure}
+    \caption{Diagnostic evaluation of Infinium Type~I/II probe bias correction in the GSE69914 dataset. 
+    The consistent $\beta$-value and quantile distributions demonstrate the effectiveness of the BMIQ normalization previously applied.}
+    \label{fig:type_bias_combined}
 \end{figure}
+
+
+
+
 
 
 \section{Technical Filtering}\label{sec:technical_filtering}
@@ -238,10 +255,10 @@ This annotation-based filtering step validates probe integrity using the manufac
 \end{itemize}
 
 This step guarantees consistency between the experimental dataset and the official Illumina annotation, harmonizing CpG identifiers across datasets and preventing misaligned genomic coordinates in downstream analyses.  
-The remaining probes thus represent a validated subset of the HumanMethylation450 array.
+The remaining probes thus represent a validated subset of the HumanMethylation450 array, following the recommendations of Zhou~et~al.~\cite{zhou2016} and Pidsley~et~al.~\cite{pidsley2016}, who emphasize the importance of excluding non-CpG or improperly mapped loci using the official Illumina manifest.  
 
 \good{After manifest-based validation, \textbf{875 non-CpG probes} were removed, leaving a final matrix of \textbf{407 samples $\times$ 259,213 CpGs}.}
-{\color{red}DA AGGIUNGERE LA REFERENCE}
+
 
 \section{Filtering of Invariant CpGs}\label{sec:invariant_filtering}
 
@@ -251,81 +268,87 @@ $r_{\beta} = \mathrm{P90}(\beta) - \mathrm{P10}(\beta)$,
 which quantifies methylation variability in a robust and outlier-resistant manner.
 
 \paragraph{Whole-cohort variability analysis.}
-Across all tissue types, the $r_{\beta}$ distribution was highly right-skewed, with most loci showing limited variability (Figure~\ref{fig:beta_range_compare}, left).  
+Across all tissue types, the $r_{\beta}$ distribution was highly right-skewed, with most loci showing limited variability (\autoref{fig:beta_range_all}).  
 Three candidate thresholds ($r_{\beta} < 0.01$, $0.02$, $0.05$) were evaluated, corresponding to:
 \good{$r_{\beta} <$ 0.01: 1,782\text{ CpGs removed}},
 \good{$r_{\beta} <$ 0.02: 28,569}, 
 \good{$r_{\beta} <$ 0.05: 79,433}.
 
-{\color{red}
-The conservative cutoff $r_{\beta}\ge0.01$ was selected, removing only invariant probes while retaining loci with meaningful biological variation. -- MANCA DA DECIDERE
-}
-
 \paragraph{Normal and adjacent-tissue subset.}
-To investigate whether tumor-related heterogeneity influenced the variability profile, the same analysis was repeated using only normal and normal-adjacent tissues (labels~0,~1,~3).  
-As expected, the overall dispersion decreased (Figure~\ref{fig:beta_range_compare}, right), yielding:
+Given the final objective of identifying CpGs informative for distinguishing normal from adjacent tissues, this filtering step was applied specifically to the subset including 
+\textbf{normal} (label~0), \textbf{adjacent} (label~1), and \textbf{BRCA1-modified normal} (label~3) samples.  
+As expected, restricting to these tissues decreases overall dispersion (\autoref{fig:beta_range_subset}), yielding:
 \good{$r_{\beta} <$ 0.01: 3,972\text{ CpGs removed}}, 
 \good{$r_{\beta} <$ 0.02: 40,342}, 
 \good{$r_{\beta} <$ 0.05: 102,473}.
 
-This confirms that tumor samples contribute most of the global variability, while non-neoplastic tissues exhibit tighter methylation clustering.
+This confirms that tumor samples contribute most of the global methylation variability, consistent with the increased stochastic variation reported in cancer tissues compared to normal~\cite{Hansen2011}.  
+\good{Accordingly, the reference threshold proposed by Edgar~\textit{et~al.}~\cite{Edgar2017}, $r_{\beta} < 0.05$, was adopted as a pragmatic cutoff and applied to the Normal--Adjacent subset, leaving a final matrix of \textbf{99 samples $\times$ 156,740 CpGs}.}  
+CpGs below this threshold in the restricted cohort were removed from the full dataset.  
+If subsequent analyses reveal that this choice is overly permissive—resulting in the exclusion of an excessive number of informative loci—the criterion will be re-evaluated and adjusted toward a more conservative threshold (e.g., $0.02$ or $0.01$).  
+This approach ensures that only loci exhibiting stable methylation within non-tumor tissues are discarded, preserving CpGs with potential biological relevance for the Normal--Adjacent classification task.
 
 \begin{figure}[H]
     \centering
-    \begin{subfigure}[t]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{Figures/beta_range_distribution_study.png}
-        \caption{All samples (Normal, Adjacent, Tumor).}
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[height=6.2cm]{Figures/beta_range_distribution_study.png}
+        \caption{Whole cohort including Normal, Adjacent, and Tumor samples.  
+        The distribution is right-skewed, with most CpGs showing limited variability.}
+        \label{fig:beta_range_all}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[t]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{Figures/beta_range_distribution_study_normal_adjacent.png}
-        \caption{Subset restricted to Normal and Adjacent tissues.}
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[height=6.2cm]{Figures/beta_range_distribution_study_label013.png}
+        \caption{Subset restricted to Normal, Adjacent, and BRCA1-modified Normal tissues.  
+        Excluding tumor samples reduces overall dispersion across CpGs.}
+        \label{fig:beta_range_subset}
     \end{subfigure}
-    \caption{Distribution of beta-range ($\mathrm{P90}-\mathrm{P10}$) across CpGs with candidate thresholds (0.01, 0.02, 0.05).  
-    The right panel shows reduced variability when excluding tumor samples, consistent with tissue-specific stability reported by Edgar \textit{et al.}~\cite{Edgar2017}.}
+    \caption{Distribution of inter-decile beta-range ($r_{\beta} = \mathrm{P90}-\mathrm{P10}$) across CpG sites.  
+    The analysis highlights reduced variability in non-tumor tissues, supporting the use of $r_{\beta}<0.05$ as a filtering criterion in the Normal--Adjacent subset.}
     \label{fig:beta_range_compare}
 \end{figure}
 
-{\color{red}Final dataset retained CpGs with $r_{\beta}\ge0.01$, following the tissue-specific non-variability filtering approach of Edgar \textit{et al.}, ensuring the removal of non-informative loci while preserving biologically relevant variation. -- MANCA DA DECIDERE}
 
 
 \section{Comparison of Beta-value and M-value Quantifications}\label{sec:beta_mvalue_comparison}
 
-Illumina Infinium arrays measure two fluorescence intensities per CpG: methylated ($y^{(M)}$) and unmethylated ($y^{(U)}$) signals, both background-corrected and normalized.  
-From these signals, two equivalent representations of methylation level can be derived~\cite{Du2010}.
+Illumina Infinium reports two background-corrected signals per CpG, methylated $y^{(M)}$ and unmethylated $y^{(U)}$.  
+The \textbf{Beta-value} is the proportion of methylated intensity,
+\[
+\beta_i=\frac{\max(y_i^{(M)},0)}{\max(y_i^{(M)},0)+\max(y_i^{(U)},0)+\alpha},\quad 0\le\beta_i\le 1,
+\]
+while the \textbf{M-value} is the log-ratio,
+\[
+M_i=\log_2\!\left(\frac{\max(y_i^{(M)},0)+\alpha}{\max(y_i^{(U)},0)+\alpha}\right)
+=\log_2\!\left(\frac{\beta_i}{1-\beta_i}\right).
+\]
 
-\paragraph{Definitions.}
-The \textbf{Beta-value} ($\beta$) represents the proportion of methylated signal:
-\[
-\beta_i = \frac{\max(y_i^{(M)},0)}{\max(y_i^{(M)},0) + \max(y_i^{(U)},0) + \alpha},
-\quad 0 \le \beta_i \le 1,
-\]
-while the \textbf{M-value} ($M$) is defined as the log$_2$-ratio of methylated to unmethylated intensities:
-\[
-M_i = \log_2\left(\frac{\max(y_i^{(M)},0)+\alpha}{\max(y_i^{(U)},0)+\alpha}\right),
-\quad M_i \in (-\infty,\infty).
-\]
-The two measures are related by the logit transform:
-\[
-M_i = \log_2\!\left(\frac{\beta_i}{1-\beta_i}\right)
-\quad\Longleftrightarrow\quad
-\beta_i = \frac{2^{M_i}}{1 + 2^{M_i}}.
-\]
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{Figures/fig2_norm_vs_adj_row.png}
+  \caption{\textbf{Histograms} of $\beta$ (left pair) and $M$ (right pair) for Normal (labels 0,3) vs Adjacent (label 1), using all samples and CpGs after filtering.
+  The bounded, U-shaped $\beta$ distributions contrast with the more symmetric $M$ distributions, visually supporting Du \textit{et al.}~\cite{Du2010}.}
+  \label{fig:hist_norm_adj_row}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{Figures/fig3_norm_vs_adj_row.png}
+  \caption{\textbf{Mean--SD relationship} across CpGs for Normal vs Adjacent in $\beta$ (left pair) and $M$ (right pair).
+  The local-median SD curves show pronounced mean-dependent variance in $\beta$ that is substantially reduced in $M$, consistent with the homoscedasticity advantage reported by Du \textit{et al.}~\cite{Du2010}.}
+  \label{fig:meansd_norm_adj_row}
+\end{figure}
 
 \paragraph{Rationale.}
-As established by Du \textit{et al.}~\cite{Du2010}, $\beta$-values are bounded and heteroscedastic—variance depends on the mean, especially near 0 or 1—whereas $M$-values are approximately homoscedastic and symmetrically distributed, making them statistically more suitable for linear-model and $t$-test analyses.  
-For interpretability, $\beta$ remains preferred for reporting because it directly corresponds to a percentage of methylation.
+As shown by Du \textit{et al.}~\cite{Du2010}, $\beta$ is \emph{bounded} and \emph{heteroscedastic} (variance depends on the mean, especially near 0 and 1), whereas $M$ is approximately \emph{homoscedastic} and more suitable for linear modeling and $t$-tests.  
+\emph{Interpretability} remains higher for $\beta$, hence I use $M$ for inference and $\beta$ for reporting.
 
 \paragraph{Implementation in this dataset.}
-The \textbf{GSE69914} matrix provides $\beta$-values only; raw intensities ($y^{(M)}, y^{(U)}$) are unavailable.  
-Hence, I derived $M$ using the standard logit transform:
-\[
-M = \log_2\!\left(\frac{\beta + \varepsilon}{1 - \beta + \varepsilon}\right),
-\]
-with a small $\varepsilon$ for numerical stability.  
-This reproduces the expected scale and statistical properties of $M$, enabling robust modeling even without raw intensity data.
-
-\good{All subsequent statistical analyses are performed in $M$-space (for inference and testing), and results are converted back to $\beta$ for visualization and biological interpretation.}
+The GSE69914 matrix provides $\beta$ only; I therefore computed $M=\log_2\!\big((\beta+\varepsilon)/(1-\beta+\varepsilon)\big)$ with a small $\varepsilon = 10^{-6}$ for numerical stability.  
+\good{The working matrix was converted to $M$-values.}
 
 
 \section{Batch-Effect Correction} 
@@ -348,12 +371,16 @@ in pre-neoplastic or field-defect tissues
 (\href{https://academic.oup.com/bioinformatics/article/28/11/1487/22492641}{Teschendorff et al., 2012}).
 
 \section{Correlation Pruning} 
+{\color{red}TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO}
+
 Remove redundant CpGs with high inter-correlation 
 (e.g., Pearson $|r| > 0.9$) within local genomic regions to reduce collinearity 
 (\href{https://academic.oup.com/bioinformatics/article/36/10/3239/5775229}{Gatev et al., 2020}; 
     \href{https://academic.oup.com/bib/article/23/1/bbab395/6420930}{Bommert et al., 2022}).
 
 \section{Feature Standardization for Machine Learning} 
+{\color{red}TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO}
+
 Standardize features (e.g., z-score transformation or 
 \href{https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html}{StandardScaler}) 
 on M-values to ensure comparable scales across CpGs. 
