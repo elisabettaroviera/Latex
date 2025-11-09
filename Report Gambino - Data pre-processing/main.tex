@@ -102,7 +102,7 @@
 \paragraph{Costruzione del dataset.}\label{sec:data_storage}
 
 
-Abbiamo acquisito il dataset \texttt{GSE69914}~\cite{GSE69914} in formato \texttt{.txt} contenente i valori di metilazione ($\beta$-values) e ottenuto le etichette di classe direttamente da \texttt{GEOparse} per garantirne la massima correttezza.  
+Abbiamo acquisito il dataset \texttt{GSE69914}~\cite{GSE69914} in formato \texttt{.txt} contenente i valori di metilazione ($\beta$-values) e ottenuto i label direttamente da \texttt{GEOparse} per garantirne la massima correttezza.  
 La matrice è stata successivamente convertita in un file compresso \texttt{.parquet} con righe corrispondenti ai campioni e colonne alle sonde CpG.  
 Infine, abbiamo eseguito i controlli di qualità per verificare l’assenza di valori mancanti e la correttezza del range dei $\beta$-values.
 
@@ -110,10 +110,10 @@ Infine, abbiamo eseguito i controlli di qualità per verificare l’assenza di v
 \section{Correzione del bias tra sonde Infinium I e II}\label{sec:infinium_bias}
 
 I dati grezzi di intensità di metilazione del dataset sono stati pre-processati dagli autori originali utilizzando il pacchetto \texttt{minfi} (v1.8.9) e la normalizzazione \texttt{BMIQ} (v1.4), come riportato in~\cite{GSE69914}.  
-Questa pipeline include la \textbf{correzione del bias tra le sonde Infinium di tipo~I e tipo~II}, assicurando che le distribuzioni dei valori di metilazione ($\beta$-values) dei due design risultino comparabili prima delle analisi successive.
+Questa pipeline include la \textbf{correzione del bias tra le sonde Infinium di tipo~I e tipo~II}, assicurando che le distribuzioni dei valori di metilazione dei due design risultino comparabili prima delle analisi successive.
 
 Abbiamo verificato in modo indipendente che tale correzione fosse effettivamente applicata.  
-A tal fine, le distribuzioni dei $\beta$-values sono state stratificate per tipo di sonda (Type~I vs.~Type~II) utilizzando il manifest ufficiale di Illumina~450K ottenuto dal pacchetto Bioconductor~\cite{Illumina450kAnno}.  
+A tal fine, le distribuzioni dei $\beta$-values sono state stratificate per tipo di sonda (Type~I vs.~Type~II) utilizzando il manifesto ufficiale di Illumina~450K ottenuto dal pacchetto Bioconductor~\cite{Illumina450kAnno}.  
 Seguendo l’approccio diagnostico proposto da Teschendorff et~al.~\cite{Teschendorff2013BMIQ}, abbiamo generato due grafici di controllo.
 \begin{enumerate}
     \item Le distribuzioni di densità dei $\beta$-values per le sonde Type~I e Type~II (\autoref{fig:type_bias_density}) mostrano un’elevata sovrapposizione, senza evidenza di bias dovuto al design;
@@ -147,7 +147,7 @@ Il pattern osservato dopo la normalizzazione riproduce fedelmente i risultati de
 
 \section{Filtraggio tecnico}\label{sec:technical_filtering}
 
-Il filtraggio tecnico ha lo scopo di rimuovere le sonde inaffidabili o affette da artefatti biologici o di piattaforma prima delle fasi di normalizzazione e modellazione statistica.  
+Il filtraggio tecnico ha lo scopo di rimuovere le sonde inaffidabili o affette da artefatti biologici o di piattaforma prima delle fasi di normalizzazione e modellazione.  
 Questo passaggio consente di ridurre il rumore, migliorare la riproducibilità delle analisi e mantenere esclusivamente i siti CpG ad alta affidabilità.
 
 \paragraph{Rimozione delle sonde affette da artefatti tecnici.}
@@ -190,7 +190,7 @@ Abbiamo successivamente verificato la coerenza del dataset con il file di manife
 Sono state eliminate sonde non-CpG (identificativi con prefisso ``ch'').
 
 Questo passaggio garantisce la consistenza tra i dati sperimentali e l’annotazione ufficiale Illumina, prevenendo disallineamenti genomici nelle analisi successive.  
-Seguendo le raccomandazioni di Zhou~et~al.~\cite{zhou2016} e Pidsley~et~al.~\cite{pidsley2016}. \good{Sono state rimosse ulteriori \textbf{875 sonde non-CpG}.}
+Seguendo le raccomandazioni di Zhou~et~al.~\cite{zhou2016} e Pidsley~et~al.~\cite{pidsley2016}, \good{sono state rimosse ulteriori \textbf{875 sonde non-CpG}.}
 
 \section{Filtraggio delle CpG invarianti}\label{sec:invariant_filtering}
 
@@ -200,39 +200,37 @@ $r_{\beta} = \mathrm{P90}(\beta) - \mathrm{P10}(\beta)$,
 una misura robusta e resistente agli outlier della variabilità di metilazione.
 
 \paragraph{Analisi di variabilità sull’intero dataset.}
-Considerando tutti i tipi di tessuto, la distribuzione di $r_{\beta}$ risulta fortemente asimmetrica a destra, con la maggior parte dei loci che mostrano una variabilità limitata (\autoref{fig:beta_range_all}).  
+Considerando tutti i tipi di tessuto, la distribuzione di $r_{\beta}$ risulta fortemente asimmetrica, con la maggior parte dei loci che mostrano una variabilità limitata (\autoref{fig:beta_range_all}).  
 Abbiamo valutato tre soglie candidate ($r_{\beta} < 0.01$, $0.02$, $0.05$), ottenendo:
 \good{$r_{\beta} <$ 0.01: 1.782~CpG rimosse},  
 \good{$r_{\beta} <$ 0.02: 28.569},  
 \good{$r_{\beta} <$ 0.05: 79.433}.
 
 \paragraph{Sottoinsieme Normal e Adjacent.}
-Poiché l’obiettivo finale è identificare le CpG informative per distinguere i tessuti \textbf{normali} (label~0) da quelli \textbf{adiacenti} (label~1), abbiamo applicato il filtraggio in modo specifico a questo sottoinsieme.  
+Poiché l’obiettivo finale è identificare le CpG informative per distinguere i tessuti \textbf{normali} da quelli \textbf{adiacenti}, abbiamo applicato il filtraggio in modo specifico a questo sottoinsieme.  
 Come atteso, limitando l’analisi a tessuti non tumorali la dispersione complessiva diminuisce (\autoref{fig:beta_range_subset}), con i seguenti risultati:
 \good{$r_{\beta} <$ 0.01: 3.972~CpG rimosse},  
 \good{$r_{\beta} <$ 0.02: 40.342},  
 \good{$r_{\beta} <$ 0.05: 102.473}.
 
 Questo conferma che i campioni tumorali contribuiscono in modo predominante alla variabilità globale della metilazione, in accordo con quanto riportato da Hansen~et~al.~\cite{Hansen2011}, che descrivono un’aumentata variabilità stocastica nei tessuti neoplastici rispetto a quelli normali.  
-\good{Abbiamo pertanto adottato come soglia di riferimento il valore proposto da Edgar~\textit{et~al.}~\cite{Edgar2017}, $r_{\beta} < 0.05$, applicandolo al sottoinsieme Normal--Adjacent, ottenendo una matrice finale di \textbf{99 campioni $\times$ 156.740 CpG}.}  
-Le CpG al di sotto di tale soglia nel sottoinsieme ristretto sono state rimosse anche dal dataset completo.  
+\good{Abbiamo pertanto adottato come soglia di riferimento il valore proposto da Edgar~\textit{et~al.}~\cite{Edgar2017}, $r_{\beta} < 0.05$, applicandolo al sottoinsieme Normal--Adjacent, ottenendo una matrice finale di \textbf{99 campioni $\times$ 156.738 CpG}.}  
 
 Nel caso in cui analisi successive evidenzino che questa scelta risulti eccessivamente permissiva — portando all’esclusione di un numero rilevante di loci potenzialmente informativi — il criterio verrà rivalutato in senso più conservativo (ad esempio soglie di $0.02$ o $0.01$).  
-Questo approccio garantisce che vengano scartati solo i siti con metilazione stabile nei tessuti non tumorali, preservando invece le CpG con possibile rilevanza biologica per la distinzione tra tessuti Normal e Adjacent.
 
 \begin{figure}[H]
     \centering
     \begin{subfigure}[t]{0.49\textwidth}
         \centering
-        \includegraphics[height=6.2cm]{Figures/beta_range_distribution_study.png}
-        \caption{Distribuzione dell’intervallo inter-decile $r_{\beta}$ considerando l’intera coorte (Normal, Adjacent e Tumor).  
+        \includegraphics[height=6.2cm]{Figures/beta_range_distribution_study.pdf}
+        \caption{Distribuzione dell’intervallo inter-decile $r_{\beta}$ considerando l’intero dataset (Normal, Adjacent e Tumor).  
         La distribuzione è asimmetrica, con la maggior parte delle CpG a bassa variabilità.}
         \label{fig:beta_range_all}
     \end{subfigure}
     \hfill
     \begin{subfigure}[t]{0.49\textwidth}
         \centering
-        \includegraphics[height=6.2cm]{Figures/beta_range_distribution_study_label013.png}
+        \includegraphics[height=6.2cm]{Figures/beta_range_distribution_study_label013.pdf}
         \caption{Distribuzione dell’intervallo inter-decile $r_{\beta}$ limitata ai tessuti Normal e Adjacent.  
         L’esclusione dei campioni tumorali riduce la dispersione complessiva.}
         \label{fig:beta_range_subset}
@@ -242,6 +240,84 @@ Questo approccio garantisce che vengano scartati solo i siti con metilazione sta
     \label{fig:beta_range_compare}
 \end{figure}
 
+{\color{red}\textbf{DOMANDA:} il filtro $r_{\beta}<0.05$ è stato applicato solo al sottoinsieme Normal–Adjacent.  
+È metodologicamente corretto, o sarebbe meglio rimuovere le CpG utilizzando il filtro sull’intero dataset?}
+
+\section{Confronto tra quantificazioni in Beta-value e M-value}\label{sec:beta_mvalue_comparison}
+
+La piattaforma Illumina Infinium fornisce due segnali corretti per ogni CpG: metilato ($y^{(M)}$) e non metilato ($y^{(U)}$).  
+Il \textbf{Beta-value} rappresenta la frazione di metilazione, mentre l'\textbf{M-value} è la sua trasformazione logaritmica:
+\[
+\beta_i = \frac{\max(y_i^{(M)},0)}{\max(y_i^{(M)},0)+\max(y_i^{(U)},0)+\alpha}, \qquad
+M_i = \log_2\!\left(\frac{\beta_i}{1-\beta_i}\right).
+\]
+
+\paragraph{Applicazione al dataset.}
+Per la matrice GSE69914 gli $M$-value sono stati calcolati come
+\[
+M = \log_2\!\left(\frac{\beta+\varepsilon}{1-\beta+\varepsilon}\right),
+\]
+con $\varepsilon = 10^{-6}$ per stabilità numerica.  
+\good{Il dataset è stato convertito in M-value per le successive analisi.}
+
+
+Come mostrato da Du \textit{et al.}~\cite{Du2010}, i valori $\beta$ sono \emph{limitati} e \emph{eteroschedastici}, mentre gli $M$ risultano più simmetrici e \emph{omoschedastici}, quindi più adatti a modelli lineari.  
+Come mostrato in \autoref{fig:hist_msd}, le distribuzioni dei $\beta$ assumono la tipica forma a U e mostrano varianza dipendente dalla media, mentre gli $M$ presentano profili più regolari.  
+\good{I risultati ottenuti concordano con quanto riportato da Du \textit{et al.}~\cite{Du2010}.}
+
+
+% ==========================================
+% --- DISTRIBUZIONI E RELAZIONE MEDIA–SD
+% ==========================================
+\begin{figure}[H]
+  \centering
+
+  % ---------- Prima riga: istogrammi ----------
+  \begin{subfigure}{0.24\textwidth}
+    \includegraphics[width=\textwidth]{Figures/hist_normal_beta.pdf}
+    \caption{Istogramma di $\beta$ nei campioni Normali}
+  \end{subfigure}
+  \begin{subfigure}{0.24\textwidth}
+    \includegraphics[width=\textwidth]{Figures/hist_adjacent_beta.pdf}
+    \caption{Istogramma di $\beta$ nei campioni Adiacenti}
+  \end{subfigure}
+  \begin{subfigure}{0.24\textwidth}
+    \includegraphics[width=\textwidth]{Figures/hist_normal_m.pdf}
+    \caption{Istogramma di $M$ nei campioni Normali}
+  \end{subfigure}
+  \begin{subfigure}{0.24\textwidth}
+    \includegraphics[width=\textwidth]{Figures/hist_adjacent_m.pdf}
+    \caption{Istogramma di $M$ nei campioni Adiacenti}
+  \end{subfigure}
+
+  \vspace{1em}
+
+  % ---------- Seconda riga: relazioni media–SD ----------
+  \begin{subfigure}{0.24\textwidth}
+    \includegraphics[width=\textwidth]{Figures/msd_normal_beta.pdf}
+    \caption{Relazione media–SD per $\beta$ nei Normali}
+  \end{subfigure}
+  \begin{subfigure}{0.24\textwidth}
+    \includegraphics[width=\textwidth]{Figures/msd_adjacent_beta.pdf}
+    \caption{Relazione media–SD per $\beta$ negli Adiacenti}
+  \end{subfigure}
+  \begin{subfigure}{0.24\textwidth}
+    \includegraphics[width=\textwidth]{Figures/msd_normal_m.pdf}
+    \caption{Relazione media–SD per $M$ nei Normali}
+  \end{subfigure}
+  \begin{subfigure}{0.24\textwidth}
+    \includegraphics[width=\textwidth]{Figures/msd_adjacent_m.pdf}
+    \caption{Relazione media–SD per $M$ negli Adiacenti}
+  \end{subfigure}
+
+  \caption{
+  \textbf{Distribuzioni e relazioni media–deviazione standard dei valori di metilazione.}
+  Gli istogrammi (prima riga) mostrano la tipica distribuzione a U dei $\beta$ e la maggiore simmetria degli $M$;  
+  i pannelli inferiori evidenziano la forte dipendenza della varianza dalla media nei $\beta$, ridotta dopo la trasformazione logit in $M$.  
+  Tutte le analisi sono state eseguite sulle 156{,}738 CpG rimaste dopo i filtri finora applicati.
+  }
+  \label{fig:hist_msd}
+\end{figure}
 
 
 
