@@ -336,6 +336,14 @@ For each GSM sample, the following attributes were extracted:
 The \texttt{label\_3class} field was cast to \texttt{Int8} to minimize storage, and the full phenotype table was stored as an LZ4-compressed Parquet file.  
 This compact representation provides a consistent three-level encoding of the tumor-proximity axis (normal, benign/adjacent, tumor), harmonized with the labeling schemes adopted for GSE69914 and GSE225845 and ready for downstream comparative analyses.
 
+\subsection{Harmonization and unified schema}
+
+All working methylation matrices were normalized to the same backbone:
+\texttt{id\_tissue} (sample identifier), \texttt{label} (0=normal, 1=adjacent, 2=tumor), and genome-wide CpG columns stored as \texttt{Float32} in LZ4-compressed Parquet (layout: sample~$\times$~CpG).  
+Each dataset also has a phenotype table aligned one-to-one with the matrix, minimally containing \texttt{id\_tissue} and \texttt{label}, plus dataset-specific attributes (e.g., \texttt{idat\_basename}, clinical and technical fields).  
+This unified schema guarantees clean joins, consistent preprocessing, and seamless cross-cohort comparisons across 450K and EPIC platforms.
+
+
 \subsection{Outlook and modelling strategy}
 
 The unified methylation matrices constructed in this stage provide the foundation for all subsequent preprocessing and modelling tasks.  
