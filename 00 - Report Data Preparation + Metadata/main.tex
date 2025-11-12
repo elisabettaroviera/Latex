@@ -1,0 +1,353 @@
+\documentclass[10pt]{extarticle}
+
+% Lingua e matematica
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,amsthm}
+
+% Grafica e tabelle
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{siunitx}
+\usepackage{wrapfig}
+\usepackage{placeins}
+
+
+% Codice (opzionale)
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.98,0.98,0.98}
+\lstdefinestyle{mystyle}{
+  backgroundcolor=\color{backcolour},
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true, keepspaces=true, numbers=none, tabsize=2
+}
+\lstset{style=mystyle}
+
+% Margini
+\usepackage[margin=0.6in]{geometry}
+\usepackage{ragged2e}
+\usepackage{enumitem}
+%\usepackage[utf8]{inputenc} % per caratteri UTF-8 nei .tex e nel .bib
+\usepackage[backend=biber,style=ieee,sorting=none,maxbibnames=99]{biblatex}
+\ExecuteBibliographyOptions{doi=true,url=true,isbn=false}
+\addbibresource{references.bib}
+\usepackage{csquotes}       % consigliato da biblatex (evita warning e parse strani)
+\usepackage{pifont}
+\newcommand{\good}[1]{\textcolor{teal!70!black}{\ding{51}~#1}}
+
+
+
+% Bibliografia (biblatex + biber)
+\usepackage[backend=biber,style=ieee]{biblatex}
+\addbibresource{references.bib}
+
+% TOC: includi anche \paragraph e numerali
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+
+% Hyperref (sempre *dopo* gli altri pacchetti)
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=teal,urlcolor=magenta]{hyperref}
+
+
+\begin{document}
+
+% Custom header without a separate titlepage
+\noindent
+\begin{minipage}{0.3\textwidth}
+    \includegraphics[width=1.3\linewidth]{Figures/polito_logo_2021_blu.jpg}
+\end{minipage}
+\hfill
+\begin{minipage}{0.68\textwidth}
+    \raggedleft
+    {\LARGE \textbf{Politecnico di Torino}}\\[0.2cm]
+    {\large Master's Degree in Mathematical Engineering}\\[0.7cm]
+    {\large \textbf{Material for Thesis}}\\[0.2cm]
+    {\large a-- Dataset Construction, Storage and Metadata acquisition}\\[0.7cm]
+    \begin{tabular}{rl}
+        Elisabetta Roviera & \texttt{s328422} \\
+    \end{tabular}
+\end{minipage}
+
+\vspace{1cm}
+\hrule
+\vspace{0.5cm}
+
+\tableofcontents
+
+\vspace{0.5cm}
+\hrule
+\vspace{1cm}
+
+
+% Main content begins here, on the same page
+\justifying
+
+\begin{abstract}
+This document provides a complete description of the dataset construction and metadata acquisition pipeline developed for the thesis project \emph{“Advanced Study of Epigenetic Mechanisms in Neoplasms”}.  
+It details the retrieval, ingestion, transposition, labeling, and storage of three large GEO methylation datasets — \textbf{GSE69914}, \textbf{GSE225845}, and \textbf{GSE287331} — all focused on breast tissue methylation across normal, adjacent-normal, and tumor states.  
+The resulting harmonized Parquet files and phenotype tables constitute the reproducible foundation for all subsequent preprocessing, statistical, and machine-learning analyses.
+
+All notebooks and resources are publicly available in the \href{https://github.com/elisabettaroviera/THESIS/tree/main}{\texttt{thesis repository}}:
+\begin{itemize}[label=-]
+  \item \href{https://github.com/elisabettaroviera/THESIS/blob/main/01%20-%20Notebook/00%20-%20Dataset%20Construction%20%26%20Metadati/GSE69914/00-dataset-preparation-GSE69914.ipynb}{\texttt{00-dataset-preparation-GSE69914.ipynb}} — GSE69914 $\beta$-value matrix ingestion and labeling.
+  \item \href{https://github.com/elisabettaroviera/THESIS/blob/main/01%20-%20Notebook/00%20-%20Dataset%20Construction%20%26%20Metadati/GSE69914/00-dataset-metadata-GSE69914.ipynb}{\texttt{00-dataset-metadata-GSE69914.ipynb}} — Metadata extraction for GSE69914.
+  \item \href{https://github.com/elisabettaroviera/THESIS/blob/main/01%20-%20Notebook/00%20-%20Dataset%20Construction%20%26%20Metadati/GSE225845/00-dataset-preparation-GSE225845.ipynb}{\texttt{00-dataset-preparation-GSE225845.ipynb}} — GSE225845 $\beta$-value streaming ingestion and merging.
+  \item \href{https://github.com/elisabettaroviera/THESIS/blob/main/01%20-%20Notebook/00%20-%20Dataset%20Construction%20%26%20Metadati/GSE225845/00-dataset-metadata-GSE225845.ipynb}{\texttt{00-dataset-metadata-GSE225845.ipynb}} — Metadata extraction for GSE225845.
+  \item \href{https://github.com/elisabettaroviera/THESIS/blob/main/01%20-%20Notebook/00%20-%20Dataset%20Construction%20%26%20Metadati/GSE287331/00-dataset-preparation-GSE287331.ipynb}{\texttt{00-dataset-preparation-GSE287331.ipynb}} — GSE287331 $\beta$-value matrix ingestion. 
+  \item \href{https://github.com/elisabettaroviera/THESIS/blob/main/01%20-%20Notebook/00%20-%20Dataset%20Construction%20%26%20Metadati/GSE287331/00-dataset-metadata-GSE287331.ipynb}{\texttt{00-dataset-metadata-GSE287331.ipynb}} — Metadata extraction for GSE287331.
+  \end{itemize}
+
+\noindent
+All raw and processed methylation data are available from the NCBI Gene Expression Omnibus (GEO):
+
+\begin{itemize}[label=-]
+  \item \href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE69914}{GSE69914} — Illumina 450K, normal vs adjacent vs tumor.
+  \item \href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE225845}{GSE225845} — EPIC array, breast tissue methylation (normal, adjacent, tumor).
+  \item \href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE287331}{GSE287331} — EPIC array, tumor-proximity axis (HDB–CUB–OQ–AN–TU).
+\end{itemize}
+\end{abstract}
+
+
+
+% ============================
+% SECTION — Data acquisition
+% ============================
+\section{Data Source and Rationale}
+
+\paragraph{Gene Expression Omnibus (\href{https://www.ncbi.nlm.nih.gov/geo/}{GEO}).}
+I reviewed several public portals for DNA methylation arrays (e.g., GEO, ArrayExpress, GDC/TCGA). To reduce heterogeneity in formats and metadata, I decided to use a single source: the \textbf{NCBI Gene Expression Omnibus (GEO)}. GEO is both a website and a curated repository: it assigns stable accessions (GSE/GSM/GPL), preserves sample-level metadata, and hosts links to processed $\beta$-value matrices and raw IDAT files. Using one source simplifies downstream harmonization.
+
+\paragraph{Continuation of prior thesis work.}
+This study builds upon the master’s thesis by Nastaran Ahmadi Bonakdar \cite{Bonakdar2025}, which focused on the GEO series \textbf{GSE69914} \cite{GSE69914}.  
+Building on that foundation, I continue using the Gene Expression Omnibus (\href{https://www.ncbi.nlm.nih.gov/geo/}{GEO}) as the unified repository for DNA methylation data and extend the analysis to two additional series: \textbf{GSE225845} \cite{GSE225845} and \textbf{GSE287331} \cite{GSE287331}.  
+All datasets were selected following consistent criteria to ensure comparability across platforms and tissue types.
+
+\subsection{Inclusion criteria}
+The datasets were screened according to the following requirements, ensuring technical compatibility and adequate cohort representation:
+
+\begin{itemize}[label=-]
+  \item \textbf{Platform:} Illumina HumanMethylation450 (450K) or MethylationEPIC (850K), providing broad CpG coverage and cross-study comparability.
+  \item \textbf{Tissue groups:} availability of \emph{normal/healthy}, \emph{adjacent-normal}, and \emph{tumor} samples to enable comparative analyses.
+  \item \textbf{Sample size:} preference for at least $\sim$50 samples per group to improve statistical power and reduce sampling noise.
+  \item \textbf{Data availability:} presence of \emph{processed} methylation matrices with $\beta$-values (Series Matrix or supplementary files). Raw \texttt{.idat} files are optional and not required for the present objectives.
+\end{itemize}
+
+
+\subsection{Processed $\beta$-values versus raw IDAT files}
+
+Raw \texttt{.idat} files contain the fluorescence intensities measured for each CpG probe in the methylated ($y^{(M)}$) and unmethylated ($y^{(U)}$) channels.  
+In contrast, $\beta$-values represent a normalized proportion of methylation, defined as \cite{Du2010}:
+\[
+\beta := \frac{\max(y^{(M)},0)}{\max(y^{(M)},0)+\max(y^{(U)},0)+\alpha}, \qquad \beta\in[0,1],
+\]
+where $\alpha$ is a small offset (typically 100) added to stabilize the ratio and prevent division by very small denominators.
+
+$\beta$-values provide an intuitive and interpretable measure of methylation: values close to~0 indicate unmethylated CpG sites, whereas values close to~1 correspond to highly methylated loci.  
+Because the goal of this thesis is to identify possible alterations in DNA methylation in normal tissues and investigate whether they may contribute to tumor transformation, working with already normalized $\beta$-values is fully appropriate.  
+Reprocessing raw IDAT files would not add relevant information for this objective, as it involves low-level signal calibration that has already been performed by the original authors.  
+Using the processed matrices allows me to focus on the analytical and comparative aspects of the study — applying statistical and machine learning methods to detect biologically meaningful methylation differences.
+
+
+% ============================
+% Standardized dataset cards
+% ============================
+\section{Candidate GEO Series}
+
+Three GEO datasets were selected according to the inclusion criteria described above.  
+All of them focus on breast tissue methylation and collectively cover normal, adjacent-normal, and tumor samples across the two Illumina array generations (450K and EPIC).  
+This combination provides both historical continuity and higher-resolution coverage for comparative analyses.
+
+\paragraph{GSE69914 --} Genome-wide DNA methylation profiling of normal breast, adjacent-normal, and breast cancer tissue.
+\begin{itemize}[label=-]
+  \item \textbf{Public release:} Jun 18, 2015.
+  \item \textbf{Platform:} Illumina HumanMethylation450 BeadChip (GPL16304).  
+  \item \textbf{Sample composition:} 407 samples in total — 50 normal, 42 matched adjacent-normal/tumor pairs (84 samples), 263 tumors, plus 7 normal and 3 tumor samples from BRCA1 carriers.
+  \item \textbf{Data availability:} I downloaded the processed $\beta$-values directly from the \texttt{Series Matrix file(s) (.txt)} provided on GEO. These files contain already normalized methylation levels for all CpG sites across the available samples.
+  \item \textbf{Notes:} This dataset forms the cornerstone of the previous thesis by Nastaran Ahmadi Bonakdar \cite{Bonakdar2025} and remains a key reference in field-defect and outlier methylation studies. Despite some incomplete metadata, it provides an ideal baseline for comparison across tissue states.
+  \item \textbf{GEO link:} \href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE69914}{GSE69914}.
+\end{itemize}
+
+\paragraph{GSE225845 --} High neighborhood deprivation impacts DNA methylation and gene expression in cancer-related genes.  
+\begin{itemize}[label=-]
+  \item \textbf{Public release:} Oct 15, 2023.
+  \item \textbf{Platform:} Illumina Infinium MethylationEPIC (GPL21145).  
+  \item \textbf{Sample composition:} 402 breast tissue samples from 289 women, including 185 tumors, 113 paired adjacent-normal samples, and 104 normal tissues obtained from reduction mammoplasty.
+  \item \textbf{Data availability:} I downloaded the processed $\beta$-value matrices available on GEO, one file for each tissue group (normal, adjacent-normal, and tumor). These tables provide normalized methylation levels across all CpG sites.  
+  \texttt{GSE225845\_normal\_normalized\_betas.txt.gz}, \texttt{GSE225845\_adjnorm\_normalized\_betas.txt.gz}, \texttt{GSE225845\_tumors} \\ \texttt{normalized\_betas.txt.gz}.
+  \item \textbf{Notes:} The dataset explores the effect of neighborhood deprivation on epigenetic regulation and includes clearly defined tumor, adjacent-normal, and normal groups, making it suitable for tissue-type comparisons in this study.
+  \item \textbf{GEO link:} \href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE225845}{GSE225845}.
+\end{itemize}
+
+\paragraph{GSE287331 --} DNA methylation patterns in breast cancer, paired benign tissue, and healthy controls.  
+\begin{itemize}[label=-]
+  \item \textbf{Public release:} Jun 18, 2025.
+  \item \textbf{Platform:} Illumina Infinium MethylationEPIC v1.0 (GPL21145).  
+  \item \textbf{Sample composition:} A “tumor-proximity axis” design including 69 tumor (TU), 60 adjacent-normal (AN), 67 ipsilateral opposite quadrant (OQ), 68 contralateral unaffected breast (CUB), and 182 healthy-donated breast (HDB) samples.
+  \item \textbf{Data availability:} I downloaded the processed $\beta$-values provided as compressed CSV files on GEO \\ \texttt{GSE287331\_betas\_processed.csv.gz}.
+  \item \textbf{Notes:} This recent large-scale EPIC study explicitly models the transition from healthy to tumor tissue along the tumor-proximity axis. Its structure is highly relevant for assessing progressive methylation alterations in the early stages of tumorigenesis.
+  \item \textbf{GEO link:} \href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE287331}{GSE287331}.
+\end{itemize}
+
+
+
+% ============================
+% Workflow overview
+% ============================
+\section{Dataset preparation}
+Before applying any preprocessing or modelling steps, I first constructed standardized working methylation matrices and their corresponding phenotype tables for each dataset (GSE69914, GSE225845, GSE287331).  
+All matrices were converted to a common \texttt{sample~$\times$~CpG} layout and stored as compressed Parquet files, with harmonized label encodings to enable downstream comparative analyses.
+
+\subsection{GSE69914 — Dataset preparation}
+
+\paragraph{Beta-value matrix construction.}
+The working methylation matrix for GSE69914 (\texttt{GSE69914.parquet}) was constructed in three main stages, prioritizing speed, low memory usage, and reproducible I/O.  
+\begin{enumerate}[label=\arabic*)]
+  \item \textbf{Ingestion and transposition.}  
+  The GEO Series Matrix file was parsed directly, skipping the 73-line metadata header.  
+  The source table is organized as \texttt{CpG~$\times$~sample}, with \texttt{ID\_REF} entries representing CpG probe identifiers.  
+  All sample columns were coerced to numeric values (invalid entries set to \texttt{NaN}) and explicitly cast to \texttt{float32} to minimize memory usage while preserving numerical precision.  
+  The matrix was then transposed to the analysis layout (\texttt{sample~$\times$~CpG}), promoting the GSM accession identifiers to a dedicated column named \texttt{id\_tissue}.
+  
+  \item \textbf{Label derivation and attachment.}  
+  Class labels were derived from the GSM-level metadata by parsing the field \texttt{status(0=normal, 1=normal-adjacent, 2=breast cancer, 3=normal-BRCA1, 4=cancer-BRCA1)}, resulting in integer codes within \{0,1,2,3,4\}.  
+  To avoid performing a costly in-memory join on a very wide table ($\sim$485k CpGs), labels were streamed and appended row-wise, preserving sample order and ensuring constant memory usage.
+
+  \item \textbf{Columnar storage and typed schema.}  
+  For long-term access and efficient downstream analysis, the labeled table was written to Parquet format using a fixed schema:  
+  \texttt{id\_tissue} (string), \texttt{label} (\texttt{Int8}), and all CpG probe intensities as \texttt{Float32}.  
+  The dataset was compressed using lossless LZ4 and dictionary encoding, providing fast full-table reads and efficient column projection in both Polars and pandas.  
+  This design yields a compact, typed matrix suitable for high-throughput preprocessing (technical filtering, normalization) and machine-learning–based modeling.
+\end{enumerate}
+
+\textbf{Precision and data representation.}
+Because $\beta$-values are strictly bounded within $[0,1]$~\cite{Teschendorff2013BMIQ} and biologically meaningful methylation differences typically occur at magnitudes of $10^{-2}$–$10^{-3}$, single-precision floating point (\texttt{float32}, machine~$\epsilon \approx 10^{-7}$) offers more than adequate numerical accuracy while reducing memory consumption and I/O time.  
+This representation aligns with recent large-scale genomics frameworks that process molecular features, including DNA methylation data, entirely in \texttt{float32} precision~\cite{deAlmeida2025ChatNT}.
+
+\paragraph{Phenotypic metadata extraction.}
+A dedicated phenotype table (\texttt{pheno\_GSE69914\_lz4.parquet}) was constructed from the GEO metadata using the \texttt{GEOparse} API.  
+For each sample (GSM), I extracted the following attributes:
+\begin{itemize}[label=-]
+  \item \texttt{sample\_id} — GEO accession identifier;
+  \item \texttt{label} — numeric class code (0–4) consistent with the $\beta$-matrix;
+  \item \texttt{group} — categorical tissue class (Normal, Adjacent, Tumor, Normal\_BRCA1, Tumor\_BRCA1);
+  \item \texttt{sentrix\_id}, \texttt{slide\_id} — Illumina BeadChip and batch identifiers;
+  \item \texttt{er}, \texttt{pr}, \texttt{her2}, \texttt{ki67} — binary immunohistochemical markers (0=negative, 1=positive);
+  \item \texttt{batch} — internal batch field replicated from \texttt{slide\_id}.
+\end{itemize}
+All variables were stored in a compact Parquet table with \texttt{Int8} encoding for categorical and binary fields and LZ4 compression for efficient downstream joins and batch-effect correction steps.
+
+\subsection{GSE225845 — Dataset preparation}
+
+\paragraph{Beta-value matrix construction.}
+The working methylation matrix for GSE225845 (\texttt{GSE225845.parquet}) was built from the three tissue-specific normalized $\beta$-value tables provided on GEO (normal, adjacent-normal, and tumors), prioritizing streaming I/O, low memory usage, and a consistent typed schema across tissue groups.
+\begin{enumerate}[label=\arabic*)]
+  \item \textbf{Streaming ingestion of normal and adjacent-normal matrices.}  
+  The normalized $\beta$-value tables for normal and adjacent-normal breast tissue were ingested directly from the original tab-delimited TXT files using a lazy Polars \texttt{scan\_csv} pipeline.  
+  Only the metadata columns \texttt{accession\_num} and \texttt{basenames} were preserved as strings, while all remaining columns (CpG probes) were cast to \texttt{Float32}.  
+  The resulting tables were written in a fully streaming fashion to Parquet with LZ4 compression, without ever loading the full matrix into memory.
+
+  \item \textbf{Chunked conversion of the tumor matrix.}  
+  Owing to the larger size of the tumor file (EPIC array, wide CpG dimension), the same conversion strategy could not be applied directly without exceeding the available RAM.  
+  Instead, the tumor TXT file was processed in row-wise chunks using \texttt{pandas.read\_csv} with an explicit \texttt{dtype} map: \texttt{accession\_num} and \texttt{basenames} as strings, and all CpG probes as \texttt{float32}.  
+  Each chunk was converted to an Arrow table with a pre-defined schema and streamed to a Parquet file via a \texttt{pyarrow.ParquetWriter}, preserving the original \texttt{sample~$\times$~CpG} layout and avoiding any intermediate transposition or dense in-memory representation.
+
+  \item \textbf{Vertical concatenation and label attachment.}  
+  The three Parquet files (normal, adjacent-normal, tumor) were then loaded lazily using \texttt{pl.scan\_parquet}.  
+  For each table, a numeric \texttt{label} column was added to encode the tissue class (\texttt{0 = normal}, \texttt{1 = normal-adjacent}, \texttt{2 = tumor}), and the columns were reordered to enforce a uniform schema of the form  
+  \texttt{[accession\_num, basenames, label, CpG\_1, \dots, CpG\_p]}.  
+  The three datasets were finally concatenated vertically and written to a single Parquet file with LZ4 compression using \texttt{sink\_parquet}, yielding a unified, labeled methylation matrix covering all 595 samples.
+\end{enumerate}
+
+\paragraph{Phenotypic metadata extraction.}
+A dedicated phenotype table (\texttt{pheno\_GSE225845.parquet}) was constructed from the GSE225845 SOFT record using the \texttt{GEOparse} API.  
+For each GSM entry, the following attributes were extracted or derived:
+\begin{itemize}[label=-]
+  \item \texttt{geo\_accession} — GEO sample accession (GSM identifier);
+  \item \texttt{sample\_name} — human-readable title of the sample;
+  \item \texttt{source\_name} — free-text description of the tissue source (e.g., frozen normal breast tissue);
+  \item \texttt{sample\_type\_raw} — raw sample type string from \texttt{characteristics\_ch1} (e.g., \texttt{normal}, \texttt{adj\_norm}, \texttt{tumor});
+  \item \texttt{tissue\_type\_raw} — additional tissue descriptor when available (e.g., explicit “tissue:” fields);
+  \item \texttt{age\_at\_surgery} — age at surgery, parsed from text and cast to \texttt{Float32};
+  \item \texttt{race} — reported race/ethnicity (e.g., European American, African American);
+  \item \texttt{sex} — sex, normalized to uppercase codes (F/M);
+  \item \texttt{idat\_basename} — Illumina IDAT basename (\texttt{methylation id (basenames)}), linking each sample to the corresponding raw array files;
+  \item \texttt{label\_3class} — compact 3-class code derived from \texttt{sample\_type\_raw}, with  
+    \texttt{0 = normal}, \texttt{1 = normal-adjacent (adj\_norm)}, \texttt{2 = breast cancer / tumor}.
+\end{itemize}
+All categorical labels were cast to \texttt{Int8}, and the resulting phenotype table was stored as an LZ4-compressed Parquet file to support efficient joins with the methylation matrix and downstream stratified analyses.
+
+\paragraph{Biological replicates and sample-count discrepancy.}
+The unified Parquet matrix contains 595 arrays (231 normal, 140 adjacent-normal, 224 tumors), exceeding the 402 samples reported in the original study description (185 tumors, 113 adjacent, 104 normal).  
+To investigate this discrepancy, I first searched for potential \emph{technical} duplicates by checking for repeated \texttt{idat\_basename} values, replicated \texttt{sample\_name} entries, and duplicate (\texttt{sample\_type\_raw}, \texttt{idat\_basename}) combinations; no such duplicates were detected.  
+Subsequently, I inspected the sample titles and extracted embedded numeric case identifiers using a regular expression, yielding a field \texttt{case\_id\_guess}.  
+Many of these inferred identifiers appeared exactly twice, typically associated with different tissue states (e.g., normal vs.~tumor or normal vs.~adjacent-normal), indicating the presence of \emph{biological} replicates (paired specimens from the same individual) rather than technical replication.  
+
+All arrays were retained in the working dataset to preserve the full normal–adjacent–tumor structure of the cohort.  
+However, these pairings must be handled with particular care in downstream machine-learning experiments: training, validation, and test splits must be defined at the patient level (e.g., grouping by \texttt{case\_id\_guess}) to avoid data leakage between splits and overly optimistic performance estimates.
+
+\subsection{GSE287331 — Dataset preparation}
+
+\paragraph{Beta-value matrix construction.}
+The working methylation matrix for GSE287331 (\texttt{GSE287331\_lz4.parquet}) was constructed from the processed $\beta$-value CSV provided by the authors, using a memmap-based pipeline to handle the very high CpG dimensionality while keeping memory usage under control.
+\begin{enumerate}[label=\arabic*)]
+  \item \textbf{Schema discovery and layout definition.}  
+  The processed matrix was supplied as a wide, tabular file with CpG probes as rows and samples as columns.  
+  The separator was inferred automatically, and the header row was read once with \texttt{pandas.read\_csv} to identify the probe column (CpG identifiers) and the full set of sample columns.  
+  The total number of samples and CpGs was computed by inspecting the header and counting the remaining data rows, respectively.
+
+  \item \textbf{Memmap-based transposition in blocks.}  
+  To avoid materializing the full CpG~$\times$~sample matrix in RAM, a \texttt{numpy.memmap} array was allocated on disk with shape \texttt{(samples, CpGs)} in Fortran (\texttt{column-major}) order and \texttt{Float32} dtype.  
+  The input file was then streamed in row blocks (50\,000 CpGs at a time) using \texttt{pandas.read\_csv} with the probe column kept as string and all sample columns parsed directly as \texttt{float32}.  
+  For each chunk, CpG identifiers were collected, the numeric block was transposed to \texttt{samples~$\times$~block}, and written into the appropriate slice of the memmap.  
+  This strategy implements an out-of-core transposition, ensuring that at no point the full matrix needs to fit in memory.
+
+  \item \textbf{Arrow table construction and Parquet export.}  
+  After the memmap had been fully populated, an Arrow table was built column-by-column in a zero-copy fashion.  
+  The first column, \texttt{id\_sample}, stores the sample identifiers derived from the original column names of the processed CSV; all remaining columns correspond to CpG probes, each backed directly by a contiguous \texttt{float32} slice from the memmap.  
+  The resulting table was written to a single Parquet file with LZ4 compression, using a fixed schema (\texttt{id\_sample} as string, all CpG intensities as \texttt{Float32}) and disabling dictionary encoding for the floating-point columns.  
+  The temporary memmap file was removed at the end of the process, yielding a compact, columnar representation in the standard \texttt{sample~$\times$~CpG} layout used throughout the thesis.
+\end{enumerate}
+
+\paragraph{Phenotypic metadata extraction.}
+A dedicated phenotype table (\texttt{pheno\_GSE287331.parquet}) was constructed from the GSE287331 SOFT record using the \texttt{GEOparse} API.  
+For each GSM sample, the following attributes were extracted:
+\begin{itemize}[label=-]
+  \item \texttt{geo\_accession} — GEO sample accession (GSM identifier);
+  \item \texttt{sample\_name} — title of the sample, as provided in the GEO record;
+  \item \texttt{tissue\_type\_raw} — raw tissue code parsed from \texttt{characteristics\_ch1} entries of the form tissue: \texttt{HDB/CUB/OQ/AN/TU};
+  \item \texttt{idat\_basename} — Illumina IDAT basename extracted from the description field (e.g., \texttt{202234810048\_R01C01}), enabling linkage to the raw EPIC arrays;
+  \item \texttt{label\_3class} — numeric three-class label derived from \texttt{tissue\_type\_raw} via a deterministic mapping:
+    \begin{itemize}[label=--]
+      \item \texttt{0 = HDB} (healthy donated breast, normal controls),
+      \item \texttt{1 = CUB/OQ/AN} (contralateral unaffected breast, ipsilateral opposite quadrant, adjacent-normal; tumor-proximity axis),
+      \item \texttt{2 = TU/TUMOR} (breast cancer tissue).
+    \end{itemize}
+\end{itemize}
+The \texttt{label\_3class} field was cast to \texttt{Int8} to minimize storage, and the full phenotype table was stored as an LZ4-compressed Parquet file.  
+This compact representation provides a consistent three-level encoding of the tumor-proximity axis (normal, benign/adjacent, tumor), harmonized with the labeling schemes adopted for GSE69914 and GSE225845 and ready for downstream comparative analyses.
+
+\subsection{Outlook and modelling strategy}
+
+The unified methylation matrices constructed in this stage provide the foundation for all subsequent preprocessing and modelling tasks.  
+In the next phase, feature filtering, normalization, and bias correction will be applied consistently across datasets to ensure comparability.  
+Machine-learning models will then be trained primarily on the largest available datasets (GSE225845 and GSE287331), while GSE69914 will serve as an independent baseline for cross-dataset validation.
+
+To ensure unbiased generalization, training, validation, and test splits will be carefully defined at the \emph{patient level}—particularly for datasets containing paired normal/adjacent/tumor samples—to prevent information leakage.  
+Cross-validation strategies will be used within the training sets, and both within-dataset and across-dataset evaluations will be performed to study the reproducibility and transferability of methylation signatures between cohorts.  
+
+A multi-dataset analytical design will be adopted, inspired by recent large-scale methylation studies that evaluate both within-dataset performance and cross-cohort generalizability~\cite{DecodingDepression2024}.  
+Following that approach, each dataset will first be analyzed individually—optimizing preprocessing and feature selection pipelines per cohort—before performing a combined meta-analysis to identify reproducible epigenetic alterations across studies.
+
+
+\printbibliography
+\end{document}
