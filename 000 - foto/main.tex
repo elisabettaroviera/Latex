@@ -1,0 +1,371 @@
+\documentclass[10pt]{extarticle}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[margin=2cm]{geometry}
+
+\begin{document}
+
+\section{Data Exploration and Visualization — GSE69914}
+
+\subsection{Missingness}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_01_missing_per_sample.pdf}
+\caption{Missing per sample}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_02_missing_per_cpg.pdf}
+\caption{Missing per CpG}
+\end{figure}
+
+\subsection{Beta-value distributions}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_03_beta_density_random_samples.pdf}
+\caption{Random sample density}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_04_beta_density_group_mean.pdf}
+\caption{Group mean density}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_05_ridge_normal.pdf}
+\caption{Ridge plot — Normal}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_06_ridge_adjacent.pdf}
+\caption{Ridge plot — Adjacent}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_07_ridge_tumor.pdf}
+\caption{Ridge plot — Tumor}
+\end{figure}
+
+\subsection{Mean beta}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_08_mean_beta_per_sample.pdf}
+\caption{Mean beta per sample}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_09_mean_beta_distribution_by_group.pdf}
+\caption{Mean beta distribution by group}
+\end{figure}
+
+\subsection{Outlier analysis}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_10_outlier_burden.pdf}
+\caption{Outlier burden}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_11_heatmap_top_outlier_cpgs_numbered.pdf}
+\caption{Heatmap of top outlier CpGs}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_12_delta_beta_overlaid.pdf}
+\caption{Delta-beta overlaid}
+\end{figure}
+
+\subsection{Variance and correlations}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_13_intragroup_variance.pdf}
+\caption{Intragroup variance}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_14_sample_correlation_heatmap.pdf}
+\caption{Sample correlation heatmap}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_15_skewness_kurtosis.pdf}
+\caption{Skewness and kurtosis}
+\end{figure}
+
+\subsection{Dimensionality reduction}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_16_pca.pdf}
+\caption{PCA}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_17_tsne.pdf}
+\caption{t-SNE}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_18_umap.pdf}
+\caption{UMAP}
+\end{figure}
+
+\subsection{Manifest coverage}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_19_coverage_by_cpg_context.pdf}
+\caption{Coverage by CpG context}
+\end{figure}
+
+\subsection{Dynamic-network proxies}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_20_dynamic_network_degree_proxy.pdf}
+\caption{Dynamic network — Degree proxy}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_21_dnb_network_tumor_minus_normal.pdf}
+\caption{DNB network: Tumor minus Normal}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE69914_22_dnb_network_adjacent_minus_normal.pdf}
+\caption{DNB network: Adjacent minus Normal}
+\end{figure}
+
+
+\section{Data Exploration and Visualization — GSE225845}
+
+\subsection{Missingness}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_01_missing_per_sample.pdf}
+\caption{Missing per sample}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_02_missing_per_cpg.pdf}
+\caption{Missing per CpG}
+\end{figure}
+
+\subsection{Beta-value distributions}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_03_beta_density_random_samples.pdf}
+\caption{Random sample density}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_04_beta_density_group_mean.pdf}
+\caption{Group mean density}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_05_ridge_normal.pdf}
+\caption{Ridge plot — Normal}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_06_ridge_adjacent.pdf}
+\caption{Ridge plot — Adjacent}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_07_ridge_tumor.pdf}
+\caption{Ridge plot — Tumor}
+\end{figure}
+
+\subsection{Mean beta}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_08_mean_beta_per_sample.pdf}
+\caption{Mean beta per sample}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_09_mean_beta_distribution_by_group.pdf}
+\caption{Mean beta distribution by group}
+\end{figure}
+
+\subsection{Outlier analysis}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_10_outlier_burden.pdf}
+\caption{Outlier burden}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_11_heatmap_top_outlier_cpgs_numbered.pdf}
+\caption{Heatmap of top outlier CpGs}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_12_delta_beta_overlaid.pdf}
+\caption{Delta-beta overlaid}
+\end{figure}
+
+\subsection{Variance and correlations}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_13_intragroup_variance.pdf}
+\caption{Intragroup variance}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_14_sample_correlation_heatmap.pdf}
+\caption{Sample correlation heatmap}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_15_skewness_kurtosis.pdf}
+\caption{Skewness and kurtosis}
+\end{figure}
+
+\subsection{Dimensionality reduction}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_16_pca.pdf}
+\caption{PCA}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_17_tsne.pdf}
+\caption{t-SNE}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_18_umap.pdf}
+\caption{UMAP}
+\end{figure}
+
+\subsection{Manifest coverage}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_19_coverage_by_cpg_context.pdf}
+\caption{Coverage by CpG context}
+\end{figure}
+
+\subsection{Dynamic-network proxies}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_20_dynamic_network_degree_proxy.pdf}
+\caption{Dynamic network — Degree proxy}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_21_dnb_network_tumor_minus_normal.pdf}
+\caption{DNB network: Tumor minus Normal}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE225845_22_dnb_network_adjacent_minus_normal.pdf}
+\caption{DNB network: Adjacent minus Normal}
+\end{figure}
+
+
+
+\section{Data Exploration and Visualization — GSE287331}
+
+\subsection{Missingness}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_01_missing_per_sample.pdf}
+\caption{Missing per sample}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_02_missing_per_cpg.pdf}
+\caption{Missing per CpG}
+\end{figure}
+
+\subsection{Beta-value distributions}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_03_beta_density_random_samples.pdf}
+\caption{Random sample density}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_04_beta_density_group_mean.pdf}
+\caption{Group mean density}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_05_ridge_normal.pdf}
+\caption{Ridge plot — Normal}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_06_ridge_adjacent.pdf}
+\caption{Ridge plot — Adjacent}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_07_ridge_tumor.pdf}
+\caption{Ridge plot — Tumor}
+\end{figure}
+
+\subsection{Mean beta}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_08_mean_beta_per_sample.pdf}
+\caption{Mean beta per sample}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_09_mean_beta_distribution_by_group.pdf}
+\caption{Mean beta distribution by group}
+\end{figure}
+
+\subsection{Outlier analysis}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_10_outlier_burden.pdf}
+\caption{Outlier burden}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_11_heatmap_top_outlier_cpgs_numbered.pdf}
+\caption{Heatmap of top outlier CpGs}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_12_delta_beta_overlaid.pdf}
+\caption{Delta-beta overlaid}
+\end{figure}
+
+\subsection{Variance and correlations}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_13_intragroup_variance.pdf}
+\caption{Intragroup variance}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_14_sample_correlation_heatmap.pdf}
+\caption{Sample correlation heatmap}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_15_skewness_kurtosis.pdf}
+\caption{Skewness and kurtosis}
+\end{figure}
+
+\subsection{Dimensionality reduction}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_16_pca.pdf}
+\caption{PCA}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_17_tsne.pdf}
+\caption{t-SNE}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_18_umap.pdf}
+\caption{UMAP}
+\end{figure}
+
+\subsection{Manifest coverage}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_19_coverage_by_cpg_context.pdf}
+\caption{Coverage by CpG context}
+\end{figure}
+
+\subsection{Dynamic-network proxies}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_20_dynamic_network_degree_proxy.pdf}
+\caption{Dynamic network — Degree proxy}
+\end{figure}
+\end{document}
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_21_dnb_network_tumor_minus_normal.pdf}
+\caption{DNB network: Tumor minus Normal}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.3\textwidth]{GSE287331_22_dnb_network_adjacent_minus_normal.pdf}
+\caption{DNB network: Adjacent minus Normal}
+\end{figure}
+
+\end{document}
