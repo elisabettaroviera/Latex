@@ -320,22 +320,32 @@ The working methylation matrix for GSE287331 (\texttt{GSE287331\_lz4.parquet}) w
 \end{enumerate}
 
 \paragraph{Phenotypic metadata extraction.}
-A dedicated phenotype table (\texttt{pheno\_GSE287331.parquet}) was constructed from the GSE287331 SOFT record using the \texttt{GEOparse} API.  
+A dedicated phenotype table (\texttt{pheno\_GSE287331.parquet}) was constructed from the GSE287331 SOFT record using the \texttt{GEOparse} API.
 For each GSM sample, the following attributes were extracted:
+
 \begin{itemize}[label=-]
   \item \texttt{geo\_accession} — GEO sample accession (GSM identifier);
   \item \texttt{sample\_name} — title of the sample, as provided in the GEO record;
-  \item \texttt{tissue\_type\_raw} — raw tissue code parsed from \texttt{characteristics\_ch1} entries of the form tissue: \texttt{HDB/CUB/OQ/AN/TU};
+  \item \texttt{tissue\_type\_raw} — raw tissue class parsed from \texttt{characteristics\_ch1} (HDB, AN, TU, OQ, CUB);
   \item \texttt{idat\_basename} — Illumina IDAT basename extracted from the description field (e.g., \texttt{202234810048\_R01C01}), enabling linkage to the raw EPIC arrays;
-  \item \texttt{label\_3class} — numeric three-class label derived from \texttt{tissue\_type\_raw} via a deterministic mapping:
+
+  \item \texttt{label} — five-class numeric encoding:
     \begin{itemize}[label=--]
-      \item \texttt{0 = HDB} (healthy donated breast, normal controls),
-      \item \texttt{1 = CUB/OQ/AN} (contralateral unaffected breast, ipsilateral opposite quadrant, adjacent-normal; tumor-proximity axis),
-      \item \texttt{2 = TU/TUMOR} (breast cancer tissue).
+      \item \texttt{0 = HDB} (healthy donated breast),
+      \item \texttt{1 = AN}  (adjacent-normal breast tissue),
+      \item \texttt{2 = TU}  (tumor tissue),
+      \item \texttt{3 = OQ}  (ipsilateral opposite quadrant),
+      \item \texttt{4 = CUB} (contralateral unaffected breast).
     \end{itemize}
 \end{itemize}
-The \texttt{label\_3class} field was cast to \texttt{Int8} to minimize storage, and the full phenotype table was stored as an LZ4-compressed Parquet file.  
-This compact representation provides a consistent three-level encoding of the tumor-proximity axis (normal, benign/adjacent, tumor), harmonized with the labeling schemes adopted for GSE69914 and GSE225845 and ready for downstream comparative analyses.
+
+The \texttt{label} field was cast to \texttt{Int8} to minimize storage, and the full table was saved as an LZ4-compressed Parquet file.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\linewidth]{Figures/BreastTissue.jpeg}
+    \caption{Illustration of the five tissue categories which were collected.}
+    \label{fig:breast_tissue}
+\end{figure}
 
 \subsection{Harmonization and unified schema}
 
