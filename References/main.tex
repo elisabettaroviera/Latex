@@ -1,0 +1,489 @@
+\documentclass[10pt]{extarticle}
+
+% Lingua e matematica
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,amsthm}
+
+% Grafica e tabelle
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{siunitx}
+\usepackage{wrapfig}
+\usepackage{placeins}
+
+% Codice (opzionale)
+\usepackage{listings}
+\usepackage[table]{xcolor}
+\usepackage{makecell} % per andare a capo dentro le celle
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.98,0.98,0.98}
+\lstdefinestyle{mystyle}{
+  backgroundcolor=\color{backcolour},
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true, keepspaces=true, numbers=none, tabsize=2
+}
+\lstset{style=mystyle}
+
+% Margini e testo
+\usepackage[margin=0.6in]{geometry}
+\usepackage{ragged2e}
+\usepackage{enumitem}
+
+
+% Bibliografia (biblatex + biber, stile IEEE)
+\usepackage{csquotes} % consigliato da biblatex
+\usepackage[backend=biber,style=ieee,sorting=none,maxbibnames=99]{biblatex}
+\ExecuteBibliographyOptions{doi=true,url=true,isbn=false}
+\addbibresource{references.bib}
+
+\usepackage{pifont}
+\newcommand{\good}[1]{\textcolor{teal!70!black}{\ding{51}~#1}}
+
+% Hyperref (sempre *dopo* gli altri pacchetti)
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=teal,urlcolor=magenta]{hyperref}
+
+% TOC: includi anche \paragraph e numerali
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+
+% --- YES/NO per la tabella bibliografia ---
+% Colori per le celle "Read" e "Cited"
+\definecolor{yesgreen}{RGB}{198,239,206} % verde chiaro
+\definecolor{nored}{RGB}{255,199,206}    % rosso chiaro
+\definecolor{catbg}{RGB}{226,239,253} % azzurrino chiaro per le categorie
+
+\newcommand{\yes}{\cellcolor{yesgreen}\textbf{Yes}}
+\newcommand{\noo}{\cellcolor{nored}\textbf{No}}
+
+\begin{document}
+
+% Custom header without a separate titlepage
+\noindent
+\begin{minipage}{0.3\textwidth}
+    \includegraphics[width=1.3\linewidth]{Figures/polito_logo_2021_blu.jpg}
+\end{minipage}
+\hfill
+\begin{minipage}{0.68\textwidth}
+    \raggedleft
+    {\LARGE \textbf{Politecnico di Torino}}\\[0.2cm]
+    {\large Master's Degree in Mathematical Engineering}\\[0.7cm]
+    {\large \textbf{Material for Thesis}}\\[0.2cm]
+    {\large Bibliography tracking}\\[0.7cm]
+    \begin{tabular}{rl}
+        Elisabetta Roviera & \texttt{s328422} \\
+    \end{tabular}
+\end{minipage}
+
+%\vspace{1cm}
+%\hrule
+%\vspace{0.5cm}
+
+%\tableofcontents
+
+\vspace{0.2cm}
+\hrule
+\vspace{0.2cm}
+
+% Main content begins here, on the same page
+\justifying
+
+% -------------------------------------------------
+\section*{Bibliography tracking}
+% -------------------------------------------------
+
+The following table provides an overview of the references used in the thesis,
+indicating whether each work has been read and whether it is currently cited in
+the written material.
+
+\begin{table}[H]
+    \centering
+    \caption{Tracking of GEO datasets, manifests, and probe-filtering resources}
+    \label{tab:datasets-files-tracking}
+
+    \begin{tabular}{|l|l|c|c|c|}
+        \hline
+        \textbf{First author / Source} &
+        \textbf{Dataset / Resource title} &
+        \textbf{Read} &
+        \textbf{Used} &
+        \textbf{Ref.} \\
+        \hline
+
+        % ---------- GEO DATASETS ----------
+        \multicolumn{5}{|l|}{\cellcolor{catbg}\textbf{GEO datasets}} \\
+        \hline
+
+        NCBI &
+        \makecell[l]{GSE69914: DNA methylation profiles\\ in breast tissue samples} &
+        \yes & \yes & \cite{NCBI2015_GSE69914} \\
+        \hline
+
+        NCBI &
+        \makecell[l]{GSE225845: High neighborhood deprivation\\ impacts DNA methylation and gene expression\\ in cancer-related genes} &
+        \yes & \yes & \cite{NCBI2023_GSE225845} \\
+        \hline
+
+        NCBI &
+        \makecell[l]{GSE287331: DNA methylation patterns in\\ breast cancer, benign tissue, and healthy controls} &
+        \yes & \yes & \cite{NCBI2025_GSE287331} \\
+        \hline
+
+        % ---------- MANIFESTS & ANNOTATIONS ----------
+        \multicolumn{5}{|l|}{\cellcolor{catbg}\textbf{Manifests \& annotation resources}} \\
+        \hline
+
+        Illumina &
+        \makecell[l]{Infinium MethylationEPIC v1.0 B5\\ Manifest File} &
+        \yes & \yes & \cite{IlluminaManifestEPIC} \\
+        \hline
+
+        Robinson &
+        \makecell[l]{IlluminaHumanMethylation450kanno.ilmn12.hg19:\\ annotation package for 450k arrays (Bioconductor)} &
+        \yes & \yes & \cite{Illumina450kAnno2015} \\
+        \hline
+
+        % ---------- PROBE FILTERING & ARRAY-SPECIFIC ISSUES ----------
+        \multicolumn{5}{|l|}{\cellcolor{catbg}\textbf{Probe filtering \& array-specific issues}} \\
+        \hline
+
+        Naeem &
+        \makecell[l]{Reducing the risk of false discovery enabling\\ identification of biologically significant genome-wide\\ methylation status using the HM450 array} &
+        \yes & \yes & \cite{Naeem2014} \\
+        \hline
+
+        Chen &
+        \makecell[l]{Discovery of cross-reactive probes and\\ polymorphic CpGs in the Illumina\\ HumanMethylation450 microarray} &
+        \yes & \yes & \cite{Chen2013} \\
+        \hline
+
+        Pidsley &
+        \makecell[l]{Critical evaluation of the Illumina\\ MethylationEPIC BeadChip microarray\\ for whole-genome DNA methylation profiling} &
+        \yes & \yes & \cite{Pidsley2016} \\
+        \hline
+
+        Zhou &
+        \makecell[l]{Comprehensive characterization, annotation and\\ innovative use of Infinium DNA methylation\\ BeadChip probes} &
+        \yes & \yes & \cite{Zhou2016} \\
+        \hline
+
+        McCartney &
+        \makecell[l]{Identification of polymorphic and off-target probe\\ binding sites on the Illumina Infinium\\ MethylationEPIC BeadChip} &
+        \yes & \yes & \cite{McCartney2016} \\
+        \hline
+
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Tracking of consulted and cited references for Medical / biological background}
+    \label{tab:biblio-tracking}
+
+    \begin{tabular}{|l|l|c|c|c|}
+        \hline
+        \textbf{First author} &
+        \textbf{Full paper title} &
+        \textbf{Read} &
+        \textbf{Cited} &
+        \textbf{Ref.} \\
+        \hline
+
+        \multicolumn{5}{|l|}{\cellcolor{catbg}\textbf{Medical / biological background}} \\
+        \hline
+
+        NIH &
+        \makecell[l]{Understanding Cancer} &
+        \yes & \noo & \cite{NIH2007} \\
+        \hline
+
+        NCI &
+        \makecell[l]{BRCA Gene Changes: Cancer Risk and\\ Genetic Testing Fact Sheet} &
+        \yes & \yes & \cite{NCI2024} \\
+        \hline
+
+        Azizi &
+        \makecell[l]{Introduction to Cancer Biology} &
+        \yes & \noo & \cite{Azizi2022} \\
+        \hline
+
+        Menon &
+        \makecell[l]{Breast Cancer (StatPearls)} &
+        \yes & \noo & \cite{Menon2025} \\
+        \hline
+
+        Hanahan &
+        \makecell[l]{The Hallmarks of Cancer} &
+        \yes & \noo & \cite{Hanahan2000} \\
+        \hline
+
+        Ehrlich &
+        \makecell[l]{DNA Methylation in Cancer:\\ Too Much, but Also Too Little} &
+        \yes & \yes & \cite{Ehrlich2002} \\
+        \hline
+
+        Bird &
+        \makecell[l]{DNA Methylation Patterns\\ and Epigenetic Memory} &
+        \yes & \yes & \cite{Bird2002} \\
+        \hline
+
+        Russo &
+        \makecell[l]{Epigenetic Mechanisms\\ of Gene Regulation} &
+        \yes & \yes & \cite{Russo1996} \\
+        \hline
+
+        Pina\textendash Sanchez &
+        \makecell[l]{Cancer Biology, Epidemiology, and\\ Treatment in the 21st Century} &
+        \yes & \noo & \cite{PinaSanchez2022} \\
+        \hline
+
+        Ji &
+        \makecell[l]{Comprehensive Methylome Map of\\ Lineage Commitment from\\ Hematopoietic Progenitors} &
+        \yes & \noo & \cite{Ji2010} \\
+        \hline
+
+        Wilcox &
+        \makecell[l]{The CpG Landscape of Protein\\ Coding DNA in Vertebrates} &
+        \yes & \noo & \cite{Wilcox2025} \\
+        \hline
+\end{tabular}
+\end{table}
+
+
+\begin{table}[H]
+    \centering
+    \caption{Tracking of consulted and cited references for Data visualization and exploration}
+    \label{tab:biblio-tracking}
+
+    \begin{tabular}{|l|l|c|c|c|}
+        \hline
+        \textbf{First author} &
+        \textbf{Full paper title} &
+        \textbf{Read} &
+        \textbf{Cited} &
+        \textbf{Ref.} \\
+        \hline
+	\multicolumn{5}{|l|}{\cellcolor{catbg}\textbf{Data visualization and exploration}} \\
+	\hline
+
+	Maksimovic &
+	\makecell[l]{SWAN: Subset-quantile Within Array Normalization\\ for Illumina HumanMethylation450 BeadChips} &
+	\yes & \yes & \cite{Maksimovic2012} \\
+	\hline
+
+	Benelli &
+	\makecell[l]{Charting Differentially Methylated Regions\\ in Cancer with Rocker-meth} &
+	\yes & \noo & \cite{Benelli2021} \\
+	\hline
+
+	Seeboth &
+	\makecell[l]{DNA Methylation Outlier Burden, Health, and Ageing\\ in Generation Scotland and the Lothian Birth Cohorts} &
+	\yes & \noo & \cite{Seeboth2020} \\
+	\hline
+
+	Zhao &
+	\makecell[l]{A Urine-based DNA Methylation Assay, ProCUrE, to\\ Identify Clinically Significant Prostate Cancer} &
+	\yes & \noo & \cite{Zhao2018} \\
+	\hline
+
+    Chen &
+    \makecell[l]{Detecting Early-Warning Signals for Sudden Deterioration\\ of Complex Diseases by Dynamical Network Biomarkers} &
+    \noo & \yes & \cite{Chen2012} \\
+    \hline
+
+    West &
+    \makecell[l]{On Dynamic Network Entropy in Cancer} &
+    \noo & \yes & \cite{West2018} \\
+    \hline
+
+    Liu &
+    \makecell[l]{Identifying the Critical States and Dynamic Network\\ Biomarkers of Cancers Based on Network Entropy} &
+    \noo & \yes & \cite{Liu2022} \\
+    \hline
+
+    Islam &
+    \makecell[l]{Integration of DNA Methylation Patterns and Genetic Variation\\ in Human Pediatric Tissues Helps Inform EWAS Design and Interpretation} &
+    \noo & \yes & \cite{IIslam2019} \\
+    \hline
+
+    Mansell &
+    \makecell[l]{Guidance for DNA Methylation Studies:\\ Statistical Insights from the Illumina EPIC Array} &
+    \noo & \yes & \cite{Mansell2019} \\
+    \hline
+
+    Chen &
+    \makecell[l]{mLiftOver: Mapping DNA Methylation Data Across\\ Array Platforms and Genome Builds} &
+    \noo & \yes & \cite{Chen2024} \\
+    \hline
+
+	\end{tabular}
+\end{table}
+
+
+
+\begin{table}[H]
+    \centering
+    \caption{Tracking of consulted and cited references for GSE69914 Applications}
+    \label{tab:biblio-tracking}
+
+    \begin{tabular}{|l|l|c|c|c|}
+        \hline
+        \textbf{First author} &
+        \textbf{Full paper title} &
+        \textbf{Read} &
+        \textbf{Cited} &
+        \textbf{Ref.} \\
+        \hline
+	\multicolumn{5}{|l|}{\cellcolor{catbg}\textbf{GSE69914 Applications}} \\
+	\hline
+
+	Chen &
+	\makecell[l]{Discovery of cross-reactive probes and polymorphic\\ CpGs in the Illumina HumanMethylation450 microarray} &
+	\yes & \noo & \cite{Chen2013} \\
+	\hline
+
+	Teschendorff &
+	\makecell[l]{DNA methylation outliers in normal breast tissue\\ identify field defects that are enriched in cancer} &
+	\yes & \yes & \cite{Teschendorff2016} \\
+	\hline
+
+	Gao &
+	\makecell[l]{The integrative epigenomic-transcriptomic landscape\\ of ER-positive breast cancer} &
+	\yes & \noo & \cite{Gao2015} \\
+	\hline
+
+	Ding &
+	\makecell[l]{Integrative analysis identifies potential DNA methylation\\ biomarkers for pan-cancer diagnosis and prognosis} &
+	\yes & \noo & \cite{Ding2019} \\
+	\hline
+
+	Gao &
+	\makecell[l]{DNA methylation patterns in normal tissue correlate more\\ strongly with breast cancer status than CNVs} &
+	\yes & \noo & \cite{Gao2018} \\
+	\hline
+
+	Croes &
+	\makecell[l]{Large-scale analysis of DFNA5 methylation reveals\\ its potential as biomarker for breast cancer} &
+	\yes & \noo & \cite{Croes2018} \\
+	\hline
+
+	Fan &
+	\makecell[l]{Prediction of disease genes based on stage-specific\\ gene regulatory networks in breast cancer} &
+	\yes & \noo & \cite{Fan2021} \\
+	\hline
+
+	Gao &
+	\makecell[l]{Genome-wide discovery of circulating cell-free DNA\\ methylation signatures for TNBC diagnosis} &
+	\yes & \noo & \cite{Gao2025} \\
+	\hline
+
+	Zhu &
+	\makecell[l]{An improved epigenetic counter to track mitotic age\\ in normal and precancerous tissues} &
+	\yes & \noo & \cite{Zhu2024} \\
+	\hline
+
+	Yang &
+	\makecell[l]{Pan-cancer integrative analysis of epigenetic enzymes\\ reveals universal epigenomic deregulation} &
+	\yes & \noo & \cite{Yang2015} \\
+	\hline
+
+	Bartlett &
+	\makecell[l]{Inference of tissue relative proportions of breast epithelial\\ subtypes (luminal progenitor, basal, luminal mature)} &
+	\yes & \noo & \cite{Bartlett2021} \\
+	\hline
+
+	Teschendorff &
+	\makecell[l]{EPISCORE: Cell-type deconvolution of bulk DNA methylomes\\ using single-cell RNA-seq data} &
+	\yes & \noo & \cite{Teschendorff2020} \\
+	\hline
+
+\end{tabular}
+\end{table}
+
+
+\begin{table}[H]
+    \centering
+    \caption{Tracking of consulted and cited references for Data Pre--processing \& quality control}
+    \label{tab:biblio-tracking}
+
+    \begin{tabular}{|l|l|c|c|c|}
+        \hline
+        \textbf{First author} &
+        \textbf{Full paper title} &
+        \textbf{Read} &
+        \textbf{Cited} &
+        \textbf{Ref.} \\
+        \hline
+	\multicolumn{5}{|l|}{\cellcolor{catbg}\textbf{Data Pre--processing \& quality control}} \\
+	\hline
+
+	Du &
+	\makecell[l]{Comparison of Beta-value and M-value methods\\ for quantifying methylation levels by microarray analysis} &
+	\yes & \yes & \cite{Du2010} \\
+	\hline
+
+	Cazaly &
+	\makecell[l]{Comparison of pre-processing methodologies for\\ Illumina 450k methylation array data in familial analyses} &
+	\yes & \noo & \cite{Cazaly2016} \\
+	\hline
+
+
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Tracking of consulted and cited references for Data Preparation}
+    \label{tab:biblio-tracking-preparation}
+
+    \begin{tabular}{|l|l|c|c|c|}
+        \hline
+        \textbf{First author} &
+        \textbf{Full paper title} &
+        \textbf{Read} &
+        \textbf{Cited} &
+        \textbf{Ref.} \\
+        \hline
+        \multicolumn{5}{|l|}{\cellcolor{catbg}\textbf{Data Preparation}} \\
+        \hline
+
+        Teschendorff &
+        \makecell[l]{A beta-mixture quantile normalization method for correcting\\
+        probe design bias in Illumina Infinium 450k DNA methylation data} &
+        \noo & \yes & \cite{Teschendorff2013} \\
+        \hline
+
+        de Almeida &
+        \makecell[l]{A multimodal conversational agent for DNA, RNA\\
+        and protein tasks} &
+        \noo & \yes & \cite{deAlmeida2025} \\
+        \hline
+
+        Sokolov &
+        \makecell[l]{Decoding depression: a comprehensive multi-cohort exploration of\\
+        blood DNA methylation using machine learning and deep learning approaches} &
+        \noo & \yes & \cite{Sokolov2024} \\
+        \hline
+
+    \end{tabular}
+\end{table}
+
+
+
+
+
+% -------------------------------------------------
+% Bibliografia completa
+% -------------------------------------------------
+\printbibliography
+
+\end{document}

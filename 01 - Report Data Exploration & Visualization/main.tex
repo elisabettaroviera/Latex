@@ -790,8 +790,6 @@ network structure.
 \paragraph{Dataset overview}
 \label{par:gse287331_overview}
 
-{\color{red} DA RISCRIVERE!}
-
 The GSE287331 dataset provides genome-wide DNA methylation profiles generated using the 
 Illumina Infinium MethylationEPIC v1.0 BeadChip on bisulfite-converted breast tissue DNA, 
 covering more than 700{,}000 CpG sites (702{,}573 CpGs in the working matrix). 
@@ -802,93 +800,27 @@ available on GEO under accession
 The original study is organised along a ``tumor proximity axis'' (TPxA), spanning healthy 
 donated breast tissue from cancer-unaffected donors (HDB), contralateral unaffected breast 
 (CUB), ipsilateral opposite quadrant (OQ), tumor-adjacent normal tissue (AN), and tumor (TU) 
-samples. In this thesis, these five tissue categories are mapped to a consistent three-class 
-scheme (Normal, Adjacent, Tumor) to enable cross-dataset comparison.
+samples. 
 
-The final working methylation matrix used for intra-dataset exploration contains 
-\textbf{446 breast tissue samples}:
+Overall, the dataset comprises \textbf{446 breast tissue samples} distributed across the 
+five tissue categories listed below. The initial phase of the analysis investigates all 
+five groups separately. Subsequently, in order to ensure comparability with the other 
+GEO series, the working cohort is restricted to the three main labels of interest 
+(Normal, Adjacent, Tumor) by retaining only HDB, AN and TU samples and discarding 
+CUB and OQ.
+
 \begin{itemize}[label=-]
-    \item 182 Normal samples, corresponding to healthy donated breast (HDB) tissue from 
-          cancer-unaffected donors and representing the physiological methylation baseline;
-    \item 195 Adjacent samples, aggregating benign tissues along the tumor proximity axis 
-          (CUB, OQ, AN) and capturing pre-neoplastic or field-defect contexts;
-    \item 69 Tumor samples (TU), providing the malignant endpoint of the 
-          HDB~$\rightarrow$~CUB~$\rightarrow$~OQ~$\rightarrow$~AN~$\rightarrow$~TU axis.
+    \item 182 HDB samples (healthy donated breast), representing cancer-unaffected breast tissue from donors and used as the physiological methylation baseline;
+    \item 60 AN samples (adjacent-normal), corresponding to histologically normal tissue sampled near the tumor and capturing early epigenetic alterations along the tumor-proximity axis;
+    \item 69 TU samples (tumor tissue), representing invasive breast cancer and defining the malignant endpoint of the axis;
+    \item 67 OQ samples (ipsilateral opposite quadrant), benign tissue from the same breast but distant from the tumor, reflecting intermediate proximity-associated alterations;
+    \item 68 CUB samples (contralateral unaffected breast), benign tissue from the opposite breast, representing a distal but still patient-matched non-malignant reference.
 \end{itemize}
+
 
 All methylation levels are stored as $\beta$-values in $[0,1]$, 
 yielding a compact working matrix of 446 tissue samples by 702{,}573 CpG probes that is 
 well suited for large-scale exploratory analysis and downstream modelling.
-
-
-% Giustificazione evidence che non e' stato fatto BMIQ
-\paragraph{Evidence of Missing Infinium Type~I/II Probe Bias Correction}
-
-During the exploratory analysis performed uniformly across all three datasets, the per-sample mean $\beta$ 
-distributions (Fig. \ref{fig:gse287331_mean_beta_1}, Fig. \ref{fig:gse287331_mean_beta_2}, Fig. 
- \ref{fig:gse287331_mean_beta_3}) revealed a marked inconsistency in \texttt{GSE287331}. 
-Whereas GSE69914 and GSE225845 displayed a single broad peak of global methylation levels, \texttt{GSE287331} 
-showed a much narrower distribution, shifted towards higher $\beta$-values and characterized by two distinct modes 
-in the high-$\beta$ range. 
-This unusual right-shifted bimodality, absent in the other datasets, suggested that a key preprocessing 
-step---namely the correction of the Infinium Type~I/II probe-design bias---might not have been applied 
-in the processed data released by the authors.
-
-
-\begin{figure}[h]
-    \centering
-    \begin{subfigure}{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Figures/GSE69914_08_mean_beta_per_sample.pdf}
-        \caption{GSE69914}
-        \label{fig:gse287331_mean_beta_1}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Figures/GSE225845_08_mean_beta_per_sample.pdf}
-        \caption{GSE225845}
-        \label{fig:gse287331_mean_beta_2}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.32\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{Figures/GSE287331_08_mean_beta_per_sample.pdf}
-        \caption{GSE287331}
-        \label{fig:gse287331_mean_beta_3}
-    \end{subfigure}
-    \caption{Per-sample mean $\beta$ distributions for the three datasets. 
-GSE69914 and GSE225845 show a single broad peak of global methylation, whereas GSE287331 exhibits a narrower, right-shifted distribution with two distinct modes, consistent with missing Type~I/II probe-bias correction.}
-    \label{fig:mean_beta_comparison_three}
-\end{figure}
-
-
-To confirm this hypothesis, I stratified all probes by Infinium design type (Type~I vs.~Type~II) using the official Illumina EPIC v1.0 manifest, obtained from the corresponding Bioconductor annotation package \cite{Illumina450kAnno}. 
-Using this manifest, the $\beta$-value distributions were separated by probe design and inspected through a dedicated diagnostic plot (Fig.~\ref{fig:gse287331_type_bias_check}). 
-According to the expected behaviour described by Teschendorff et~al.~\cite{Teschendorff2013BMIQ}, datasets that have undergone BMIQ (or equivalent) normalization should display nearly overlapping $\beta$-value distributions for the two probe types. 
-In contrast, the \texttt{GSE287331} data displayed a clear and systematic separation between Type~I and Type~II probe distributions, exactly matching the characteristic \emph{uncorrected} bias pattern. 
-This provides strong visual evidence that probe-design normalization was not performed by the original authors.
-
-
-To further support this conclusion, I examined the official publication associated with \texttt{GSE287331}~\cite{Lord2024GSE287331}. 
-The paper carefully describes the acquisition, processing, and analytical use of Illumina EPIC $\beta$-values, but it does \emph{not} mention BMIQ, SWAN, noob, or any other method aimed at correcting Infinium probe-type bias.  
-The absence of such a statement---combined with the strong visual mismatch between Type~I and Type~II probe distributions---confirms that no probe-design bias correction was applied before the release of the dataset.
-
-For these reasons, applying a dedicated Infinium Type~I/II bias correction step is necessary before performing any comparative analysis. 
-
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.5\textwidth]{Figures/GSE287331_23_type_bias_density.pdf}
-    \caption{Diagnostic Type~I vs.~Type~II probe design comparison. The strong separation between probe types indicates that no correction was applied.}
-    \label{fig:gse287331_type_bias_check}
-\end{figure}
-
-
-{\color{red} MANCA LA DESCRIZIONE DELLA CORREZIONE BMIQ}
-
-
-{\color{red} DA QUI IN AVANTI è TUTTO DA RIFARE...}
 
 % ============================================
 % Missingness
@@ -919,6 +851,96 @@ are replaced by probe-wise medians to avoid introducing group-specific bias, all
 NaN were imputed using the median $\beta$-value of each CpG across samples. This approach is consistent with recent harmonization methods such as mLiftOver, 
 where missing methylation values are explicitly replaced using probe-wise median 
 substitution to preserve biologically plausible levels \cite{chen2024_mliftover}.
+
+
+% Giustificazione evidence che non e' stato fatto BMIQ
+\paragraph{Evidence of Missing Infinium Type~I/II Probe Bias Correction}
+
+{\color{red} QUANDO AVREMO IL NUOVO PLOT HYST METTERLO PER FARE VEDERE CHE NON CI SONO PIù DUE PICCHI MA SOLO UNO!}
+{\color{red} AGGIUNGERE IL NUOVO PLOT DI BIAS CORRECTION PER FAR VEDERE CHE ORA è OK...!}
+{\color{red} SPIEGARE LA PROCEDURA ADOTTATA PER LA CORRECTION...!}
+During the exploratory analysis performed uniformly across all three datasets, the per-sample mean $\beta$ 
+distributions (Fig. \ref{fig:gse287331_mean_beta_1}, Fig. \ref{fig:gse287331_mean_beta_2}, Fig. 
+ \ref{fig:gse287331_mean_beta_3}) revealed a marked inconsistency in \texttt{GSE287331}. 
+Whereas GSE69914 and GSE225845 displayed a single broad peak of global methylation levels, \texttt{GSE287331} 
+showed a much narrower distribution, shifted towards higher $\beta$-values and characterized by two distinct modes 
+in the high-$\beta$ range. 
+This unusual right-shifted bimodality, absent in the other datasets, suggested that a key preprocessing 
+step---namely the correction of the Infinium Type~I/II probe-design bias---might not have been applied 
+in the processed data released by the authors.
+
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/GSE69914_08_mean_beta_per_sample.pdf}
+        \caption{GSE69914}
+        \label{fig:gse287331_mean_beta_1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/GSE225845_08_mean_beta_per_sample.pdf}
+        \caption{GSE225845}
+        \label{fig:gse287331_mean_beta_2}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/GSE287331_08_mean_beta_per_sample.pdf}
+        \caption{GSE287331 pre BMIQ}
+        \label{fig:gse287331_mean_beta_3}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/GSE287331_03_mean_beta_per_sample.pdf}
+        \caption{GSE287331 post BMIQ}
+        \label{fig:gse287331_mean_beta_3}
+    \end{subfigure}
+    \caption{Per-sample mean $\beta$ distributions for the three datasets. 
+GSE69914 and GSE225845 show a single broad peak of global methylation, whereas GSE287331 exhibits a narrower, right-shifted distribution with two distinct modes, consistent with missing Type~I/II probe-bias correction.}
+    \label{fig:mean_beta_comparison_three}
+\end{figure}
+
+
+To confirm this hypothesis, I stratified all probes by Infinium design type (Type~I vs.~Type~II) 
+using the official Illumina EPIC v1.0 manifest, obtained from the corresponding Bioconductor 
+annotation package \cite{Illumina450kAnno}. Using this manifest, the $\beta$-value distributions 
+were separated by probe design and inspected through a dedicated diagnostic plot 
+(Fig.~\ref{fig:gse287331_type_bias_check}). According to the expected behaviour described by 
+Teschendorff et~al.~\cite{Teschendorff2013BMIQ}, datasets that have undergone BMIQ (or equivalent) 
+normalization should display nearly overlapping $\beta$-value distributions for the two probe types.
+
+In contrast, the Q--Q plot comparing Type~I and Type~II probes revealed a markedly elevated 
+median absolute deviation (median $|\Delta| = 0.380$), indicating a strong and systematic 
+quantile-wise shift between the two designs. Such a deviation is fully incompatible with 
+BMIQ-corrected data, which should instead exhibit deviations close to zero across all quantiles. 
+Taken together, these observations provide clear visual evidence that no probe-design bias 
+correction was applied in the original processing of \texttt{GSE287331}.
+
+
+To further support this conclusion, I examined the official publication associated with \texttt{GSE287331}~\cite{Lord2024GSE287331}. 
+The paper carefully describes the acquisition, processing, and analytical use of Illumina EPIC $\beta$-values, but it does \emph{not} mention BMIQ, SWAN, noob, or any other method aimed at correcting Infinium probe-type bias.  
+The absence of such a statement---combined with the strong visual mismatch between Type~I and Type~II probe distributions---confirms that no probe-design bias correction was applied before the release of the dataset.
+
+For these reasons, applying a dedicated Infinium Type~I/II bias correction step is necessary before performing any comparative analysis. 
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{Figures/GSE287331_23_type_bias_density.pdf}
+    \caption{Diagnostic Type~I vs.~Type~II probe design comparison. The strong separation between probe types indicates that no correction was applied.}
+    \label{fig:gse287331_type_bias_check}
+\end{figure}
+
+
+{\color{red} MANCA LA DESCRIZIONE DELLA CORREZIONE BMIQ}
+
+
+{\color{red} DA QUI IN AVANTI è TUTTO DA RIFARE...}
+
 
 
 

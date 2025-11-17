@@ -287,14 +287,12 @@ For each GSM entry, the following attributes were extracted or derived:
 \end{itemize}
 All categorical labels were cast to \texttt{Int8}, and the resulting phenotype table was stored as an LZ4-compressed Parquet file to support efficient joins with the methylation matrix and downstream stratified analyses.
 
-\paragraph{Biological replicates and sample-count discrepancy.}
-The unified Parquet matrix contains 595 arrays (231 normal, 140 adjacent-normal, 224 tumors), exceeding the 402 samples reported in the original study description (185 tumors, 113 adjacent, 104 normal).  
-To investigate this discrepancy, I first searched for potential \emph{technical} duplicates by checking for repeated \texttt{idat\_basename} values, replicated \texttt{sample\_name} entries, and duplicate (\texttt{sample\_type\_raw}, \texttt{idat\_basename}) combinations; no such duplicates were detected.  
-Subsequently, I inspected the sample titles and extracted embedded numeric case identifiers using a regular expression, yielding a field \texttt{case\_id\_guess}.  
-Many of these inferred identifiers appeared exactly twice, typically associated with different tissue states (e.g., normal vs.~tumor or normal vs.~adjacent-normal), indicating the presence of \emph{biological} replicates (paired specimens from the same individual) rather than technical replication.  
+\paragraph{Metadata mismatch and filtering.}
+The phenotype table originally contained 595 entries, each associated with an \texttt{idat\_basename} and interpreted as an individual sample.  
+However, the processed $\beta$-value matrix provided by the authors includes only 402 samples.  
+To ensure consistency between metadata and methylation values, the phenotype table was filtered to retain only those entries whose sample identifiers (\texttt{idat\_basename}) appear in the $\beta$-value matrix.  
+This step guarantees a one-to-one correspondence between the methylation matrix and the phenotype table and ensures that all downstream analyses rely exclusively on samples for which both metadata and $\beta$-values are available.
 
-All arrays were retained in the working dataset to preserve the full normal–adjacent–tumor structure of the cohort.  
-However, these pairings must be handled with particular care in downstream machine-learning experiments: training, validation, and test splits must be defined at the patient level (e.g., grouping by \texttt{case\_id\_guess}) to avoid data leakage between splits and overly optimistic performance estimates.
 
 \subsection{GSE287331 — Dataset preparation}
 
