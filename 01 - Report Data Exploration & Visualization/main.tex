@@ -315,7 +315,7 @@ A complementary perspective is provided by the sample correlation heatmap
 (Fig.~\ref{fig:gse69914_var_corr_correlation}), which shows the expected high level of 
 pairwise similarity across all samples. This behaviour is typical of genome-wide DNA 
 methylation data, where a large fraction of CpG sites is stable across individuals, 
-resulting in consistently strong correlations \cite{teschendorff2013}. 
+resulting in consistently strong correlations \cite{Teschendorff2013BMIQ}. 
 Importantly, the heatmap also reveals that all samples are highly mutually correlated,
 with no sharp blocks or boundaries separating the three tissue labels. This confirms that 
 global methylation structure is largely conserved across Normal, Adjacent and Tumor tissues,
@@ -1154,7 +1154,7 @@ A complementary perspective is provided by the sample correlation heatmap
 (Fig.~\ref{fig:gse287331_var_corr_correlation}).  
 As expected for genome-wide DNA methylation data, correlations are uniformly high across 
 all samples, reflecting the large proportion of CpG sites that remain stable across 
-individuals \cite{teschendorff2013}.  
+individuals \cite{Teschendorff2013BMIQ}.  
 Although group labels are not displayed in the heatmap, several local blocks of 
 high correlation are visible, suggesting structured similarity within specific subsets of 
 samples.  
@@ -1678,7 +1678,10 @@ metrics in Table~\ref{tab:inter_summary_NA}.
 
     \caption{
         Two views of the t-SNE embedding computed on the 326k CpGs shared 
-        across GSE69914, GSE225845, and GSE287331. }
+        across GSE69914, GSE225845, and GSE287331. (a) Colouring by dataset reveals strong study- and platform-driven clustering, indicating that global
+methylation structure is dominated by inter-cohort effects. (b) Colouring by tissue state (Normal vs. Adjacent) shows
+a subtle within-dataset displacement of Adjacent samples, consistent with early localised methylation drift at the tissue
+margins. }
     \label{fig:tsne_two_views}
 \end{figure}
 
