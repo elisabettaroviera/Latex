@@ -1,0 +1,237 @@
+\documentclass[10pt]{extarticle}
+
+% Lingua e matematica
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,amsthm}
+
+% Grafica e tabelle
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{siunitx}
+
+% Codice (opzionale)
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.98,0.98,0.98}
+\lstdefinestyle{mystyle}{
+  backgroundcolor=\color{backcolour},
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true, keepspaces=true, numbers=none, tabsize=2
+}
+\lstset{style=mystyle}
+
+% Margini
+\usepackage[margin=0.6in]{geometry}
+\usepackage{ragged2e}
+\usepackage{enumitem}
+%\usepackage[utf8]{inputenc} % per caratteri UTF-8 nei .tex e nel .bib
+\usepackage[backend=biber,style=ieee,sorting=none,maxbibnames=99]{biblatex}
+\ExecuteBibliographyOptions{doi=true,url=true,isbn=false}
+\addbibresource{references.bib}
+\usepackage{csquotes}       % consigliato da biblatex (evita warning e parse strani)
+
+
+
+% Bibliografia (biblatex + biber)
+\usepackage[backend=biber,style=ieee]{biblatex}
+\addbibresource{references.bib}
+
+% TOC: includi anche \paragraph e numerali
+\setcounter{secnumdepth}{1}
+\setcounter{tocdepth}{1}
+
+% Hyperref (sempre *dopo* gli altri pacchetti)
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=teal,urlcolor=magenta]{hyperref}
+
+
+\begin{document}
+
+% Custom header without a separate titlepage
+\noindent
+\begin{minipage}{0.3\textwidth}
+    \includegraphics[width=1.3\linewidth]{Figures/polito_logo_2021_blu.jpg}
+\end{minipage}
+\hfill
+\begin{minipage}{0.68\textwidth}
+    \raggedleft
+    {\LARGE \textbf{Politecnico di Torino}}\\[0.2cm]
+    {\large Laurea Magistrale in Ingegneria Matematica}\\[0.7cm]
+    {\large \textbf{Studio avanzato dei meccanismi epigenetici\\ nello sviluppo di neoplasie}}\\[0.2cm]
+    \begin{tabular}{rl}
+        Elisabetta Roviera
+    \end{tabular}
+\end{minipage}
+
+\vspace{0.2cm}
+\hrule
+\vspace{0.2cm}
+
+\section*{Analisi Esplorativa Intra- e Inter-Dataset della Metilazione del DNA}
+
+\paragraph{Introduzione}
+L'obiettivo biologico alla base di questo lavoro di tesi è valutare se specifiche alterazioni della metilazione del DNA,
+presenti nel tessuto normale o istologicamente sano in prossimità del tumore, possano contribuire o precedere la
+trasformazione neoplastica. In tale contesto, l’esplorazione dei dati rappresenta un passaggio essenziale per valutare la
+qualità, la struttura interna e la comparabilità dei dataset utilizzati. 
+
+Sono state quindi condotte due tipologie di analisi:  
+\begin{itemize}[label=-]
+    \item un’analisi \textbf{intra-dataset}, volta a caratterizzare indipendentemente ciascuna coorte lungo l’asse
+Normal–Adjacent–Tumor;  
+    \item un’analisi \textbf{inter-dataset}, finalizzata a valutare la riproducibilità delle alterazioni osservate tra studi diversi.
+\end{itemize}
+
+\paragraph{Armonizzazione dei Dataset}
+Prima dell’esplorazione, i tre dataset GEO selezionati 
+(\href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE69914}{GSE69914}, 
+\href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE225845}{GSE225845},
+\href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE287331}{GSE287331}) 
+sono stati ricostruiti in un formato omogeneo e direttamente comparabile. Per ciascun dataset sono stati generati:
+
+\begin{itemize}[label=-]
+    \item una matrice di metilazione (\textit{campioni} $\times$ \textit{CpG}) contenente i valori di $\beta$ in formato \texttt{float32};
+    \item una tabella fenotipica strutturata e completa, contenente tutti i metadati disponibili per ogni campione.
+\end{itemize}
+
+Sono stati inoltre rimossi i campioni non confrontabili tra dataset, come i BRCA1-mutated in \texttt{GSE69914} e le categorie
+\texttt{OQ}/\texttt{CUB} in \texttt{GSE287331}.  
+
+\paragraph{Analisi Intra-Dataset}
+L’esplorazione indipendente delle tre coorti mette in evidenza alcuni pattern ricorrenti e differenze specifiche fra i dataset.
+Di seguito si riportano i principali risultati in forma sintetica:
+
+\begin{itemize}[label=-]
+
+    \item \textbf{Qualità dei dati.}  
+    I dataset \texttt{GSE69914} e \texttt{GSE225845} non presentano valori mancanti; \texttt{GSE287331} mostra una quantità minima di NaN,
+    corretti mediante filtraggio e imputazione. 
+
+    \item \textbf{Pattern globali di metilazione.}  
+    In tutte le coorti è presente il classico profilo bimodale delle piattaforme Illumina. I campioni Tumor mostrano un
+    appiattimento del picco ad alta metilazione e una maggiore eterogeneità globale; i campioni Adjacent evidenziano un
+    lieve spostamento verso il profilo tumorale, suggerendo un \textit{early drift} compatibile con fenomeni di 
+    \textit{field cancerization}.
+
+    \item \textbf{Alterazioni locali (CpG-specifiche).}  
+    L’analisi degli outlier CpG e delle distribuzioni di $\Delta\beta$ mostra in tutti i dataset una predominanza di loci
+    ipometilati nei Tumor. I campioni Adjacent presentano deviazioni più contenute ma sistematiche, indicative di
+    alterazioni iniziali o parziali.
+
+    \item \textbf{Struttura della variabilità e delle correlazioni.}  
+    La varianza CpG-wise è minima e quasi sovrapposta tra Normal e Adjacent nei dataset \texttt{GSE69914} e \texttt{GSE225845};
+    i campioni Tumor mostrano un aumento della variabilità. Nel dataset \texttt{GSE287331} la distinzione fra le tre classi
+    risulta più marcata.
+
+    \item \textbf{Embeddings a bassa dimensionalità.}  
+    PCA, t-SNE e UMAP mostrano una sostanziale sovrapposizione tra Normal e Adjacent nelle coorti \texttt{GSE69914} e
+    \texttt{GSE225845}. Nel dataset \texttt{GSE287331} (non normalizzato con BMIQ) emerge invece una chiara separazione tra
+    Normal, Adjacent e Tumor, evidenziando un segnale biologico più forte e definito.
+
+    \item \textbf{Bias di tipo I/II (solo GSE287331).}  
+    L’analisi ha evidenziato un marcato disallineamento tra le sonde Type~I e Type~II, indicativo dell’assenza di correzione
+    del bias di design nel dataset originale. Ho quindi applicato il metodo BMIQ per correggere tale bias: la normalizzazione
+    riduce parzialmente la discrepanza tra le due famiglie di sonde, ma tende anche ad appiattire, seppure leggermente, la
+    separazione biologica tra i gruppi. Per questo motivo, le successive analisi verranno condotte sulla versione non-BMIQ,
+    che preserva più fedelmente la struttura intrinseca dei dati.
+
+\end{itemize}
+
+
+\paragraph{Analisi Inter-Dataset}
+L’analisi inter-dataset è stata condotta considerando le sonde condivise fra le tre piattaforme (circa 326\,000 CpG).  
+Il confronto delle distribuzioni di $\Delta\beta$, della varianza e delle proiezioni multi-dimensionali mostra una buona
+coerenza dei pattern di drift Normal~$\rightarrow$~Adjacent tra i dataset, pur con differenze di intensità e sensibilità
+tecnica. Le analisi combinate PCA/t-SNE evidenziano un forte effetto di piattaforma e di studio, tale da rendere
+impossibile un’unificazione diretta dei dataset senza accesso ai dati grezzi (IDAT) e senza una pipeline di normalizzazione
+completamente condivisa.
+
+\paragraph{Conclusioni}
+L’analisi esplorativa, condotta sia a livello intra-dataset sia inter-dataset, evidenzia che:
+\begin{itemize}[label=-]
+    \item esistono alterazioni di metilazione riproducibili lungo l’asse Normal--Adjacent, più nette nel dataset \texttt{GSE287331};
+    \item la forza del segnale biologico varia tra le coorti, risultando più marcata e meglio definita nel dataset 
+          \texttt{GSE287331};
+    \item la struttura globale dei dati e il batch effect impediscono la fusione diretta delle coorti, rendendo necessaria
+          una pipeline di pre-processing avanzata per le analisi successive.
+\end{itemize}
+
+In base a queste evidenze, il dataset \texttt{GSE287331} verrà utilizzato come \textbf{coorte di discovery} per 
+l’identificazione delle alterazioni epigenetiche iniziali, mentre i dataset \texttt{GSE69914} e \texttt{GSE225845} 
+saranno impiegati come \textbf{coorti di validazione} per verificarne la robustezza e la riproducibilità.
+
+\paragraph{Risorse} Tutto il materiale utilizzato per questa tesi, inclusi notebook, report, script e documentazione,
+è disponibile nella repository:
+\begin{center}
+\href{https://github.com/elisabettaroviera/THESIS}{\texttt{github.com/elisabettaroviera/THESIS}}
+\end{center}
+
+I report completi sono disponibili ai seguenti link:
+
+\begin{center}
+\href{https://github.com/elisabettaroviera/THESIS/blob/main/03%20-%20Report/01%20-%20Notebook/00%20-%20Report%20Dataset%20Construction%2C%20Storage%20and%20Metadata%20acquisition.pdf}
+{\texttt{00 -- Report Dataset Construction, Storage and Metadata Acquisition (PDF)}}
+
+\href{https://github.com/elisabettaroviera/THESIS/blob/main/03%20-%20Report/01%20-%20Notebook/01%20-%20Report%20Data%20Exploration%20%26%20Visualization.pdf}
+{\texttt{01 -- Report Data Exploration \& Visualization (PDF)}} \\[6pt]
+
+\end{center}
+
+Di seguito si riportano tutti i notebook sviluppati e utilizzati.
+
+\begin{itemize}[label=-]
+
+  \item \href{https://github.com/elisabettaroviera/THESIS/blob/main/01%20-%20Notebook/00%20-%20Dataset%20Construction%20%26%20Metadata/GSE69914/00-dataset-preparation-GSE69914.ipynb}{\texttt{00-dataset-preparation-GSE69914.ipynb}}  
+  -- Ingestion e preparazione della matrice $\beta$ di GSE69914.
+
+  \item \href{https://github.com/elisabettaroviera/THESIS/blob/main/01%20-%20Notebook/00%20-%20Dataset%20Construction%20%26%20Metadata/GSE69914/00-dataset-metadata-GSE69914.ipynb}{\texttt{00-dataset-metadata-GSE69914.ipynb}}  
+  -- Estrazione e armonizzazione dei metadati di GSE69914.
+
+  \item \href{https://github.com/elisabettaroviera/THESIS/blob/main/01%20-%20Notebook/00%20-%20Dataset%20Construction%20%26%20Metadata/GSE225845/00-dataset-preparation-GSE225845.ipynb}{\texttt{00-dataset-preparation-GSE225845.ipynb}}  
+  -- Ingestion streaming e costruzione della matrice $\beta$ di GSE225845.
+
+  \item \href{https://github.com/elisabettaroviera/THESIS/blob/main/01%20-%20Notebook/00%20-%20Dataset%20Construction%20%26%20Metadata/GSE225845/00-dataset-metadata-GSE225845.ipynb}{\texttt{00-dataset-metadata-GSE225845.ipynb}}  
+  -- Estrazione dei metadati di GSE225845.
+
+  \item \href{https://github.com/elisabettaroviera/THESIS/blob/main/01%20-%20Notebook/00%20-%20Dataset%20Construction%20%26%20Metadata/GSE287331/00-dataset-preparation-GSE287331.ipynb}{\texttt{00-dataset-preparation-GSE287331.ipynb}}  
+  -- Ingestion e costruzione della matrice $\beta$ di GSE287331.
+
+  \item \href{https://github.com/elisabettaroviera/THESIS/blob/main/01%20-%20Notebook/00%20-%20Dataset%20Construction%20%26%20Metadata/GSE287331/00-dataset-metadata-GSE287331.ipynb}{\texttt{00-dataset-metadata-GSE287331.ipynb}}  
+  -- Estrazione dei metadati di GSE287331.
+
+  \item \href{https://github.com/elisabettaroviera/THESIS/blob/main/01%20-%20Notebook/00%20-%20Dataset%20Construction%20%26%20Metadata/00-uniformation-of-the-gse.ipynb}{\texttt{00-uniformation-of-the-gse.ipynb}}  
+  -- Armonizzazione delle matrici $\beta$ e delle tabelle fenotipiche tra i tre dataset.
+
+  \item \href{https://github.com/elisabettaroviera/THESIS/blob/main/01%20-%20Notebook/01%20-%20Data%20Exploration%20%26%20Visualization/a%20-%20Intra%20Dataset/01-data-exploration-visualization-gse69914.ipynb}{\texttt{01-data-exploration-visualization-GSE69914.ipynb}}  
+  -- Analisi esplorativa di GSE69914 (distribuzioni, outlier, varianza, embedding).
+
+  \item \href{https://github.com/elisabettaroviera/THESIS/blob/main/01%20-%20Notebook/01%20-%20Data%20Exploration%20%26%20Visualization/a%20-%20Intra%20Dataset/01-data-exploration-visualization-gse225845.ipynb}{\texttt{01-data-exploration-visualization-GSE225845.ipynb}}  
+  -- Analisi esplorativa di GSE225845 ($\Delta\beta$, outlier, embedding non lineari, network proxy).
+
+  \item \href{https://github.com/elisabettaroviera/THESIS/blob/main/01%20-%20Notebook/01%20-%20Data%20Exploration%20%26%20Visualization/a%20-%20Intra%20Dataset/01-data-exploration-visualization-gse287331.ipynb}{\texttt{01-data-exploration-visualization-GSE287331.ipynb}}  
+  -- Analisi esplorativa di GSE287331 (separazione Normal–Adjacent–Tumor).
+
+  \item \href{https://github.com/elisabettaroviera/THESIS/blob/main/01%20-%20Notebook/01%20-%20Data%20Exploration%20%26%20Visualization/b%20-%20Inter%20Dataset/01-data-explorationvisualization-inter-analysis.ipynb}{\texttt{01-data-explorationvisualization-inter-analysis.ipynb}}  
+  -- Confronto inter-dataset (CpG condivisi, $\Delta\beta$ concordanza, PCA/t-SNE combinati).
+
+  \item \href{https://github.com/elisabettaroviera/THESIS/blob/main/01%20-%20Notebook/01%20-%20Data%20Exploration%20%26%20Visualization/01-correction-bias-type-i-vs-type-ii.ipynb}{\texttt{01-correction-bias-type-i-vs-type-ii.ipynb}}  
+  -- Diagnostica del bias Type~I/II e applicazione BMIQ nel dataset GSE287331.
+
+\end{itemize}
+
+
+
+
+
+
+
+\end{document}

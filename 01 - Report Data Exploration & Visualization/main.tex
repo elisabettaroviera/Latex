@@ -195,7 +195,7 @@ In total, the dataset includes \textbf{407 breast tissue samples} spanning the t
 to this thesis:
 \begin{itemize}[label=-]
     \item 50 Normal samples, representing the physiological methylation baseline;
-    \item 42 Tumor-adjacent samples, reflecting early epigenetic alterations in proximity to the tumor;
+    \item 42 Adjacent samples, reflecting early epigenetic alterations in proximity to the tumor;
     \item 305 Tumor samples, providing the malignant endpoint of the Normal~$\rightarrow$~Adjacent~$\rightarrow$~Tumor axis.
 \end{itemize}
 
@@ -239,7 +239,7 @@ active (hypomethylated) or repressed (hypermethylated) \cite{bird2002, maksimovi
 When comparing tissue groups, a clear gradient emerges.  
 Tumor samples show a slightly flatter high-$\beta$ peak and a broader low-$\beta$ tail, 
 consistent with the well-described phenomenon of \textbf{global hypomethylation} and increased 
-heterogeneity in cancer \cite{ehrlich2002}. Tumor-adjacent samples lie between Normal and 
+heterogeneity in cancer \cite{ehrlich2002}. Adjacent samples lie between Normal and 
 Tumor, suggesting early epigenetic drift and subtle field effects occurring in histologically 
 non-neoplastic tissue \cite{teschendorff2016}.
 
@@ -306,7 +306,7 @@ tissue located near the tumor, supporting the field-cancerization model
 To quantify within-group epigenetic variability, I examined the distribution of CpG-wise
 variance across samples. The density curves (Fig.~\ref{fig:gse69914_var_corr_variance}) show that
 Tumor samples have markedly higher variance, reflecting increased epigenetic instability.
-In contrast, Normal and Tumor-adjacent samples display almost identical variance
+In contrast, Normal and Adjacent samples display almost identical variance
 distributions that are tightly concentrated near zero.  
 This indicates that, at the level of CpG-wise variability, Adjacent tissues do not yet
 exhibit detectable divergence from Normal samples.
@@ -473,7 +473,7 @@ The exploratory analysis of GSE69914 reveals a consistent but overall subtle sep
 between the three tissue states. Normal and Adjacent samples share highly similar 
 global methylation profiles, variance distributions, correlation structure, and 
 low-dimensional embeddings, indicating that large-scale methylome organisation remains 
-largely conserved in adjacent tissue. Across these global summaries, the two groups are 
+largely conserved in Adjacent tissue. Across these global summaries, the two groups are 
 so intermixed that no clear or marked distinction emerges between Normal and Adjacent 
 samples when using these whole-methylome descriptors. Tumor samples show the expected 
 increase in heterogeneity and a shift toward hypomethylation, but these differences remain 
@@ -509,7 +509,7 @@ publicly released on October 15, 2023, is available on GEO under accession
 \href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE225845}{GSE225845}.
 
 In its original design, the study profiled \textbf{402 fresh-frozen breast tissues from 289 women},
-including 185 tumor samples, 113 paired adjacent normal samples, and 104 normal tissues from
+including 185 Tumor samples, 113 paired Adjacent normal samples, and 104 Normal tissues from
 reduction mammoplasty. Neighbourhood-level socioeconomic deprivation was quantified via a
 Neighborhood Deprivation Index (NDI) and linked to DNA methylation and gene-expression
 changes in cancer- and immune-related pathways.
@@ -786,10 +786,7 @@ Normal, Adjacent, and Tumor tissues, with group differences not manifesting as b
 shifts.
 
 Local analyses, however, reveal clearer distinctions. Among the 200 CpGs with the highest outlier
-burden, instability is strongly directional: the dominant pattern is focal hypomethylation, especially
-in Tumor samples, while Adjacent tissues show a milder but consistent excess of negative $\Delta\beta$
-values. Variance distributions further support this picture, with Tumor samples exhibiting a heavier
-tail and Adjacent tissues differing from Normal without forming a simple intermediate pattern.
+burden, instability is strongly directional: the dominant pattern is focal hypomethylation. 
 
 Nonlinear embeddings (t-SNE and UMAP) highlight differences in dispersion rather than discrete
 cluster separation: Normal and Adjacent samples form relatively compact regions with only limited
@@ -800,7 +797,7 @@ of perturbed CpG--gene units, while Adjacent--Normal differences appear more fra
 Despite being the dataset with the largest number of samples among the three cohorts---providing
 substantial statistical power and highly stable estimates of global methylation structure---the
 separation between Normal and Adjacent tissues remains only modestly apparent. The Normal--Adjacent
-contrast is therefore not strongly marked in GSE225845, reinforcing the interpretation that early
+contrast is therefore not strongly marked, reinforcing the interpretation that early
 epigenetic drift in this cohort is subtle and primarily focal rather than globally disruptive.
 
 Overall, GSE225845 emerges as a technically clean and globally homogeneous dataset in which
@@ -826,7 +823,7 @@ available on GEO under accession
 
 The original study is organised along a ``tumor proximity axis'' (TPxA), spanning healthy 
 donated breast tissue from cancer-unaffected donors (HDB), contralateral unaffected breast 
-(CUB), ipsilateral opposite quadrant (OQ), tumor-adjacent normal tissue (AN), and tumor (TU) 
+(CUB), ipsilateral opposite quadrant (OQ), adjacent normal tissue (AN), and tumor (TU) 
 samples. 
 
 Overall, the dataset comprises \textbf{446 breast tissue samples} distributed across the 
