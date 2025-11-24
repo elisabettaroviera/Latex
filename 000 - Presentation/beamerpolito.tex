@@ -11,6 +11,8 @@
 \usetikzlibrary{arrows.meta}
 \usepackage{media9}
 \usepackage{multimedia}
+\usepackage{enumitem}
+
 
 \usepackage{tikz}
 \usetikzlibrary{positioning}
@@ -43,125 +45,175 @@
 
 \begin{frame}
     \titlepage
-    \begin{textblock*}{5cm}(10.5cm,2.5cm) % ↓ abbassato da 2.2cm a 1.75cm
-        \includegraphics[width=5cm,keepaspectratio]{slide1.png}
+    \begin{textblock*}{5.2cm}(10.5cm,2.6cm) % ↓ abbassato da 2.2cm a 1.75cm
+        \includegraphics[width=5.2cm,keepaspectratio]{slide1.png}
     \end{textblock*}
 \end{frame}
 
+
+
+\section{Introduction \& Motivation}
+
 \begin{frame}{Introduction: Goals of the Presentation}
-    \begin{itemize}
-        \item My background: Mathematical Engineering and Data Science
-        \item Objective: show how quantitative tools can be applied to biomedical problems
-        \item Case study: DNA methylation in breast cancer
+    \begin{itemize}[label=-]
+        \item Background in \textbf{Mathematical Engineering} with a focus on \textbf{Data Analysis}.
+        \item Goal: present a concrete thesis project integrating 
+            \alert{mathematics}, \alert{computer science}, and \alert{biomedicine}.
+        \item Case study: \emph{DNA methylation} analysis in \textbf{breast cancer}.
     \end{itemize}
+
+    \vspace{0.3cm}
+    {\small\color{gray}
+    A quantitative perspective on a real biomedical dataset.}
 \end{frame}
 
 \begin{frame}{Breast Cancer: Context and Relevance}
-    \begin{itemize}
-        \item High incidence worldwide
-        \item Importance of early detection for patient outcomes
-        \item Why data matters: quantitative analysis supports screening, diagnosis, and risk assessment
+    \begin{itemize}[label=-]
+        \item \textbf{High global incidence}, affecting millions of individuals.
+        \item \textbf{Early detection} strongly improves patient outcomes.
+        \item Why data matters: quantitative analysis supports 
+              \textbf{screening}, \textbf{diagnosis}, and \textbf{risk assessment}.
     \end{itemize}
 
-    \vspace{0.4cm}
+    \vspace{0.01cm}
     \centering
-    \includegraphics[width=0.65\textwidth]{slide3.png} % replace with actual figure
+    \includegraphics[width=0.85\textwidth]{slide3.png}
+    
+    %\vspace{0.001cm}
+    {\small
+    \textbf{Most common cancer site per country, 2022 (excl.\ NMSC).}  
+    \\Source: Cancer TODAY | IARC, International Agency for Research on Cancer  
+    Globocan 2022.
+    }
+
 \end{frame}
+
+
 
 \begin{frame}{CpG and $\beta$-values: The Language of Epigenetic Data}
-    \begin{itemize}
-        \item CpG sites: genomic positions where DNA methylation can occur
-        \item $\beta$-value $\in [0,1]$: proportion of methylation at each CpG
-        \item Methylation modulates gene regulation
-        \item In cancer: both hypermethylation and hypomethylation emerge
-    \end{itemize}
+    \begin{itemize}[label=-]
+    \item \textbf{CpG sites}: genomic positions where DNA methylation can occur.
+    \item \textbf{$\beta$-value $\in [0,1]$}: proportion of methylation at each CpG.
+    \item \textbf{DNA methylation} modulates \textbf{gene regulation}.
+    \item In cancer, both \textbf{hypermethylation} and \textbf{hypomethylation} emerge.
+\end{itemize}
 
-    \vspace{0.4cm}
+
+    \vspace{0.01cm}
     \centering
-    % Replace with your density plot
-    \includegraphics[width=0.70\textwidth]{slide4.pdf}
+    \includegraphics[width=0.55\textwidth]{slide4.pdf}
+
+    {\small
+    \textbf{Example $\beta$-value density curves from random samples.}  
+    Internal dataset visualisation (thesis exploratory analysis).
+    }
 \end{frame}
 
-\begin{frame}{Field Cancerization: The Central Research Question}
-    \begin{itemize}
-        \item Is “normal” tissue near the tumor already epigenetically altered?
-        \item As Dr.\ Gambino highlights: \\
-              \emph{“Identify early methylation alterations in normal tissues and assess their role in tumor initiation.”}
-        \item Concept of field cancerization
-    \end{itemize}
 
-    \vspace{0.4cm}
+\begin{frame}{Field Cancerization: The Central Research Question}
+    \begin{itemize}[label=-]
+    \item \alert{\textbf{Central question: is “normal” tissue near the tumor already epigenetically altered?}}
+    \item As Dr.\ Gambino highlights:\\ \emph{“Identify early methylation alterations in normal tissues and assess their role in tumor initiation.”} 
+    \item Concept of \textbf{field cancerization}. 
+\end{itemize}
+
+
     \centering
 
     \begin{columns}[c]
+        % Left image
         \column{0.48\textwidth}
+            \centering
             \includegraphics[width=\textwidth]{slide5_a.pdf}
 
+            {\small
+            \textbf{Mean $\beta$-value densities for Normal, Adjacent, and Tumor samples.}  
+            Internal dataset visualisation (exploratory analysis).
+            }
+
+        % Right image
         \column{0.48\textwidth}
+            \centering
             \includegraphics[width=\textwidth]{slide5_b.jpeg}
+
+            {\small
+            \textbf{Illustration of sampling locations in breast tissue.}  
+            Conceptual illustration of tumor, adjacent, and healthy breast tissue.
+            }
     \end{columns}
 \end{frame}
 
-
-\begin{frame}{Field Cancerization: The Central Research Question}
-    \begin{itemize}
-        \item Is “normal” tissue near the tumor already epigenetically altered?
-        \item As Dr.\ Gambino highlights: \\
-              \emph{“Identify early methylation alterations in normal tissues and assess their role in tumor initiation.”}
-        \item Concept of field cancerization
+\begin{frame}{Overall Research Workflow}
+    \begin{itemize}[label=-]
+        \item \textbf{Consultation of medical, statistical, and computational literature}  
+              to understand biological context and methodological constraints.
+        \item \textbf{Reproduction of key results from published studies}  
+              to confirm the consistency and reliability of each dataset.
+        \item \textbf{Progressive methodological innovation}:  
+              integrating statistical filtering, stratification strategies,  
+              dimensionality reduction, and ultimately ML/DL modelling  
+              with careful hyperparameter tuning.
     \end{itemize}
 
-    \vspace{0.4cm}
-    \centering
-
-    \begin{figure}
-        \includegraphics[width=0.48\textwidth]{slide5_a.pdf}
-        \includegraphics[width=0.48\textwidth]{slide5_b.jpeg}
-    \end{figure}
-
+    \vspace{0.25cm}
+    {\small\color{gray}
+    \textbf{Goal:} build a robust, reproducible, and biologically-consistent analysis pipeline.
+    }
 \end{frame}
+
+
+\section{Data \& Computational Challenges}
+
+
 
 \begin{frame}{Accessing and Understanding the Data}
-    \begin{itemize}
-        \item GEO datasets: heterogeneous formats and incomplete metadata
-        \item Small $n$, huge $p$ (up to 800k CpG sites)
-        \item Raw IDAT files vs.\ preprocessed $\beta$-value matrices
-        \item Unknown or inconsistent preprocessing in some datasets
+    \begin{itemize}[label=-]
+        \item GEO datasets: \textbf{heterogeneous formats} and \textbf{incomplete metadata}.
+        \item \alert{Small $n$, huge $p$} (up to $\sim$800k CpG sites).
+        \item Raw \textbf{IDAT files} vs.\ preprocessed \textbf{$\beta$-value matrices}.
+        \item \textbf{Unknown or inconsistent preprocessing} in some datasets.
     \end{itemize}
 
-    \vspace{0.4cm}
+    \vspace{0.45cm}
     \centering
     \begin{tabular}{lcc}
-        \toprule
-        \textbf{Dataset} & \textbf{Samples ($n$)} & \textbf{CpGs ($p$)} \\
-        \midrule
-        GSE69914   & 397 & 485{,}512 \\
-        GSE225845  & 477 & 750{,}426 \\
-        GSE287331  & 311 & 702{,}573 \\
-        \bottomrule
-    \end{tabular}
+    \toprule
+    \textbf{Dataset} & \textbf{Samples ($n$)} & \textbf{CpGs ($p$)} \\ \midrule
+    \href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE69914}{GSE69914}   & 397 & 485{,}512 \\
+    \href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE225845}{GSE225845} & 477 & 750{,}426 \\
+    \href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE287331}{GSE287331} & 311 & 702{,}573 \\ \bottomrule
+\end{tabular}
+
+\vspace{0.15cm}
+{\small 
+\textbf{Summary of the three GEO datasets used in the analysis.}  
+
+}
+
 \end{frame}
 
+
 \begin{frame}{Computational Challenges}
-    \begin{itemize}
-        \item Huge files → use of Parquet format, LZ4 compression, chunked loading
-        \item Strict RAM constraints on Kaggle environments
-        \item Need for Illumina manifest alignment to correctly map probe IDs
+    \begin{itemize}[label=-]
+        \item \textbf{Huge files} $\rightarrow$ use of \textbf{Parquet} format, \textbf{LZ4} compression, chunked loading.
+        \item \alert{Strict RAM constraints} on Kaggle environments.
+        \item Need for \textbf{Illumina manifest alignment} to correctly map probe IDs.
     \end{itemize}
 
     \vspace{0.6cm}
     \centering
 
     \begin{tikzpicture}[
-        node distance=1.8cm,
+        node distance=2cm,
         box/.style={
             rectangle,
             draw,
-            rounded corners,
-            minimum width=3.4cm,
-            minimum height=1.1cm,
+            rounded corners=6pt,
+            minimum width=3cm,
+            minimum height=1cm,
             align=center,
-            font=\small
+            font=\normalsize,
+            fill=white
         },
         arrow/.style={
             -{Latex[length=3mm]},
@@ -180,190 +232,260 @@
 
     \end{tikzpicture}
 
+    \vspace{0.2cm}
+    {\small
+    \textbf{Memory-aware processing pipeline.}  
+    From raw huge files to compressed Parquet storage, enabling analysis under strict RAM limits.
+    }
+
 \end{frame}
 
 
-\begin{frame}{Can We Merge the Datasets?}
-    \begin{itemize}
-        \item Different array platforms (HM450 vs.\ EPIC)
-        \item Heterogeneous and partly unknown preprocessing pipelines
-        \item Direct merge would introduce strong batch and platform effects
-        \item Decision: perform all analyses within each dataset (intra-dataset)
+
+
+\begin{frame}{Can I Merge the Datasets? NO}
+    \begin{itemize}[label=-]
+        \item Different array platforms (\textbf{HM450} vs.\ \textbf{EPIC}).
+        \item \textbf{Heterogeneous} and partly \textbf{unknown preprocessing pipelines}.
+        \item Direct merge would introduce \alert{strong batch and platform effects}.
+        \item Decision: perform all analyses \textbf{within each dataset} (intra-dataset).
     \end{itemize}
 
-    \vspace{0.5cm}
     \centering
 
     \begin{columns}[c]
+        % LEFT PANEL ----------------------------------------------------------
         \column{0.48\textwidth}
+            \centering
             \includegraphics[width=\textwidth]{slide8_a.pdf}
 
+            \vspace{0.02cm}
+            {\small
+            \textbf{$\Delta\beta$ correlation between GSE69914 and GSE225845.}\\
+            Intersection CpGs show minimal concordance across platforms.
+            }
+
+        % RIGHT PANEL ---------------------------------------------------------
         \column{0.48\textwidth}
+            \centering
             \includegraphics[width=\textwidth]{slide8_b.pdf}
+
+            \vspace{0.02cm}
+            {\small
+            \textbf{$\Delta\beta$ correlation between GSE287331 and GSE225845.}\\
+            Cross-dataset signal remains inconsistent, confirming strong batch effects.
+            }
     \end{columns}
 \end{frame}
 
 
+\section{Exploratory Data Analysis (EDA)}
+
 \begin{frame}{Global DNA Methylation Distributions}
-    \begin{itemize}
-        \item Canonical bimodal $\beta$-value distribution (unmethylated vs.\ highly methylated CpGs)
-        \item Tumor samples: shift towards hypomethylation and increased heterogeneity
-        \item Adjacent samples: early, subtle deviations from the Normal baseline
+    \begin{itemize}[label=-]
+        \item Canonical bimodal \textbf{$\beta$-value distribution}  
+              (unmethylated vs.\ highly methylated CpGs).
+        \item \textbf{Tumor samples}: shift towards \textbf{hypomethylation} and increased heterogeneity.
+        \item \textbf{Adjacent samples}: early, subtle deviations from the Normal baseline.
     \end{itemize}
 
-    \vspace{0.4cm}
     \centering
-    % Replace with your boxplot of global methylation summaries
-    \includegraphics[width=0.75\textwidth]{slide9.pdf}
+    \includegraphics[width=0.55\textwidth]{slide9.pdf}
+
+    \vspace{0.18cm}
+    {\small
+    \textbf{Per-sample mean $\beta$-value distributions across tissue groups.}\\
+    Tumor samples show global hypomethylation and higher variability compared to Normal and Adjacent samples.
+    }
 \end{frame}
 
 \begin{frame}{Variability and Epigenetic Outliers}
-    \begin{itemize}
-        \item Tumor samples show higher methylation variability
-        \item Adjacent tissue exhibits more focal, localized signals
-        \item Highly unstable CpGs are promising biomarker candidates
+    \begin{itemize}[label=-]
+        \item \textbf{Unstable CpGs} are identified as those showing the highest number of extreme methylation values across samples.
+        \item These CpGs highlight regions showing \textbf{focal hyper- or hypomethylation}.
+        \item Local methylation instability is a hallmark of \textbf{biologically relevant epigenetic alterations}.
     \end{itemize}
 
-    \vspace{0.4cm}
     \centering
-    % Heatmap of top outlier CpGs (e.g., per dataset or example dataset)
-    \includegraphics[width=0.75\textwidth]{slide10.pdf}
+    \includegraphics[width=0.58\textwidth]{slide10.pdf}
+
+    {\small
+    \textbf{Heatmap of the 200 most unstable CpGs.}\\
+    Colours represent \(\beta\)-values (blue = low methylation, yellow = high methylation). 
+    }
 \end{frame}
+
+
 
 \begin{frame}{Dataset Embeddings and Group Structure}
-    \begin{itemize}
-        \item GSE69914: strong overlap between groups
-        \item GSE225845: more complex, diffuse patterns
-        \item GSE287331: clear separation between Normal, Adjacent, and Tumor
+    \begin{itemize}[label=-]
+        \item \textbf{GSE69914}: strong overlap between tissue groups.
+        \item \textbf{GSE225845}: more complex and diffuse embedding structure.
+        \item \textbf{GSE287331}: clear separation between \textbf{Normal} and \textbf{Adjacent}.
     \end{itemize}
 
-    \vspace{0.4cm}
     \centering
-    \begin{columns}[c]
-        \column{0.48\textwidth}
-            \centering
-            \includegraphics[width=\textwidth]{slide11_a.pdf}\\
-            \scriptsize t-SNE coloured by tissue state
 
+    \begin{columns}[c]
+        % Left embedding ------------------------------------------------------
         \column{0.48\textwidth}
             \centering
-            \includegraphics[width=\textwidth]{slide11_b.pdf}\\
-            \scriptsize t-SNE coloured by dataset
+            \includegraphics[width=\textwidth]{slide11_b.pdf}
+
+            {\small
+            \textbf{t-SNE embedding colored by tissue state.}\\
+            Shows differences between Normal and Adjacent samples.
+            }
+
+        % Right embedding -----------------------------------------------------
+        \column{0.48\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{slide11_a.pdf}
+
+            {\small
+            \textbf{t-SNE embedding colored by dataset.}\\
+            Highlights strong dataset-specific clustering and batch effects.
+            }
     \end{columns}
 \end{frame}
+
 
 \begin{frame}{Probe-Design Bias and BMIQ Normalization}
-    \begin{itemize}
-        \item Two probe designs (Type I vs.\ Type II) with incompatible $\beta$-distributions
-        \item Real case: GSE287331 shows a strong uncorrected probe-design bias
-        \item BMIQ performs quantile mapping of Type II probes toward the Type I distribution
-        \item Caveat: BMIQ can reduce biological variability and partially mask real signals
+    \begin{itemize}[label=-]
+        \item Two probe designs (\textbf{Type I} vs.\ \textbf{Type II}) with incompatible $\beta$-value distributions.
+        \item \textbf{GSE287331} shows a strong uncorrected probe-design bias.
+        \item \textbf{BMIQ} performs quantile mapping of Type II probes toward the Type I distribution.
+        \item \alert{Caution: BMIQ may reduce biological variability and partially mask real signals.}
     \end{itemize}
 
-    \vspace{0.4cm}
     \centering
-    \begin{columns}[c]
-        \column{0.48\textwidth}
-            \includegraphics[width=\textwidth]{slide12_a.pdf}\\
-            \scriptsize Pre-BMIQ: Type I vs Type II
 
+    \begin{columns}[c]
+        % LEFT: pre-BMIQ
         \column{0.48\textwidth}
-            \includegraphics[width=\textwidth]{slide12_b.pdf}\\
-            \scriptsize Post-BMIQ: Type I vs Type II
+            \centering
+            \includegraphics[width=\textwidth]{slide12_a.pdf}
+
+            {\small
+            \textbf{Pre-BMIQ: Type I vs.\ Type II distributions.}\\
+            Strong mismatch between probe types highlights probe-design bias.
+            }
+
+        % RIGHT: post-BMIQ
+        \column{0.48\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{slide12_b.pdf}
+
+            {\small
+            \textbf{Post-BMIQ: Type I vs.\ Type II distributions.}\\
+            BMIQ aligns Type II probes to Type I, but may dampen biological signal.
+            }
     \end{columns}
 \end{frame}
 
+
+\section{Feature Engineering \& Modeling}
+
 \begin{frame}{Feature Selection in High Dimensions}
-    \begin{itemize}
-        \item $p \gg n$ → dimensionality reduction and filtering are essential
-        \item Technical filters: cross-reactive probes, SNP probes, non-CpG probes, Illumina manifest
-        \item Evaluate and correct potential batch effects (e.g., COMBAT)
+
+    \begin{itemize}[label=-]
+        \item $p \gg n$ → \textbf{dimensionality reduction} and filtering are essential.
+        \item Technical filters: cross-reactive probes, SNP probes, non-CpG probes, Illumina manifest.
+        \item Evaluate and correct potential batch effects (e.g., \textbf{COMBAT}).
         \item Three families of feature selection strategies:
-        \begin{itemize}
-            \item Statistical: $\Delta\beta$, variance filtering, stability measures
-            \item Biological: promoters, CpG islands, curated gene sets
-            \item ML-based: Lasso, decision trees, embedded model selection
+        \begin{itemize}[label=-]
+            \item \textbf{Statistical}: $\Delta\beta$, variance filtering, stability measures.
+            \item \textbf{Biological}: promoters, CpG islands, curated gene sets.
+            \item \textbf{ML-based}: Lasso, decision trees, embedded model selection.
         \end{itemize}
     \end{itemize}
 
-    \vspace{0.4cm}
-    \centering
 
-    \begin{tikzpicture}[
-        box/.style={
-            rectangle,
-            draw,
-            rounded corners,
-            minimum width=2.3cm,
-            minimum height=1cm,
-            align=center,
-            font=\small
-        },
-        arrow/.style={-{Latex[length=3mm]}, thick},
-        node distance=1.5cm
-    ]
 
-    \node[box] (d1) {700k CpGs};
-    \node[box, right=of d1] (d2) {300k};
-    \node[box, right=of d2] (d3) {150k};
-    \node[box, right=of d3] (d4) {3k Features};
-    \node[box, right=of d4] (model) {Model};
 
-    \draw[arrow] (d1) -- (d2);
-    \draw[arrow] (d2) -- (d3);
-    \draw[arrow] (d3) -- (d4);
-    \draw[arrow] (d4) -- (model);
-
-    \end{tikzpicture}
 
 \end{frame}
 
+
+
 \begin{frame}{ML in Non-Ideal Conditions}
-    \begin{itemize}
-        \item Train / validation / test with extremely small $n$
-        \item Generalizing across datasets (A $\rightarrow$ B) is often unreliable
-        \item How many features to select? Which metrics to use?
-        \item Overfitting, noise, limited interpretability
-        \item Deep Learning: training from scratch is infeasible $\rightarrow$ only pre-trained / transfer learning methods
+
+    \begin{itemize}[label=-]
+        \item \textbf{Train / validation / test} with extremely small $n$ (tens of samples).
+        \item Generalising across datasets (A $\rightarrow$ B) is often \textbf{unreliable} due to batch and platform effects.
+        \item \alert{\textbf{How many features} to select? \textbf{Which metrics} are stable in the $p \gg n$ regime?}
+        \item \textbf{Overfitting}, noise, and limited interpretability of complex models.
+        \item Deep Learning: training from scratch is \textbf{infeasible} $\rightarrow$ only \textbf{pre-trained / transfer learning} approaches are realistic.
     \end{itemize}
 
-    \vspace{0.45cm}
+    \vspace{0.4cm}
     \centering
     \begin{tabular}{lcccc}
         \toprule
-        \textbf{Approach} & \textbf{Data Need} & \textbf{Interpretability} & \textbf{Robustness} & \textbf{Use-case} \\
+        \textbf{Approach} & \textbf{Data need} & \textbf{Interpretability} & 
+        \textbf{Robustness (small $n$)} & \textbf{Typical use-case here} \\
         \midrule
-        Statistical & low--medium & high & high & $\Delta\beta$, variance, QC \\
-        ML          & medium--high & medium & medium & classification, FS \\
-        DL          & very high & low & low & transfer learning only \\
+        Statistical & low--medium & high   & high        & $\Delta\beta$, variance, QC summaries \\
+        ML          & medium--high & medium & medium--low & classification, feature selection     \\
+        DL          & very high   & low    & low         & transfer learning / pre-trained models only \\
         \bottomrule
     \end{tabular}
+
+    \vspace{0.15cm}
+    {\small 
+    \textbf{Comparison of modelling approaches under small-$n$ / large-$p$ constraints.}  
+    Summary of data requirements, interpretability, robustness, and typical use-cases in this thesis.
+    }
+
 \end{frame}
 
 
-\begin{frame}{Why This Matters for a Mathematician}
-    \begin{itemize}
-        \item Massive, high-dimensional biological datasets
-        \item Statistical modelling under $p \gg n$
-        \item Machine learning under real-world constraints
-        \item Normalization, modelling assumptions, variance structure
-        \item Full interdisciplinarity: biology, statistics, computing, modelling
-    \end{itemize}
-\end{frame}
+
+
+
+\section{Conclusions}
 
 \begin{frame}{Take-home Message}
-    \begin{itemize}
-        \item Epigenetics requires strong quantitative skills
-        \item Mathematical and statistical techniques genuinely help biology
-        \item Final message: research is closer than it seems
+    \begin{itemize}[label=-]
+        \item \textbf{Real-world bioinformatics pipeline}: from noisy GEO data and incomplete metadata 
+              to a \textbf{clean, analysable} methylation matrix via file conversion, manifest alignment, 
+              probe filtering, and batch assessment.
+        \item \textbf{Epigenetics is deeply quantitative}: hundreds of thousands of CpGs, 
+              \alert{$p \gg n$}, non-Gaussian $\beta$-distributions, strong batch and probe-design effects.
+        \item \textbf{Role of mathematics and statistics}: exploratory analysis, 
+              stability and variability measures, dimensionality reduction, feature selection, 
+              and careful model evaluation under small-$n$/large-$p$ constraints.
+        \item \textbf{Machine learning in non-ideal conditions}: limited data, strong regularisation, 
+              preference for simpler and interpretable models; deep learning only via 
+              \textbf{transfer learning} or as a complement, not as a starting point.
     \end{itemize}
+    
+    \vspace{0.25cm}
+    {\small\color{gray}
+    \textbf{Big picture}: working at the interface of \textbf{biology, statistics, and computing} 
+              is challenging but extremely rewarding — and research projects like this are 
+              \alert{much closer to our skill set than they might appear}.
+    }
 \end{frame}
 
-\begin{frame}{Thank you!}
+
+
+
+\begingroup
+\themecolor{main}  % attiva il tema blu solo per questa slide
+
+\begin{frame}[c]
+    \color{white}   % <-- rende tutto il testo bianco
     \centering
     \Huge \textbf{Thank you!} \\[0.4cm]
     \Large If you have any questions, I’d be happy to answer.
 \end{frame}
+
+\endgroup
+
+
+
+
 
 
 \end{document}
