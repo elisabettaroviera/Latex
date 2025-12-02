@@ -296,7 +296,7 @@ which resources contributed to its removal, ensuring full reproducibility of the
 \label{subpar:gse69914_mask}
 
 
-\paragraph{Step 2 — $\beta$-to-$M$ Conversion}
+\paragraph{Step~4 -- $\beta$-to-$M$ Conversion}
 \label{par:gse69914_step2}
 
 \subparagraph{Definition of $\beta_{\text{clean}}$}
@@ -309,7 +309,7 @@ which resources contributed to its removal, ensuring full reproducibility of the
 \label{subpar:gse69914_use_beta_m}
 
 
-\paragraph{Step 3 — Batch Effect Correction}
+\paragraph{Step~5 -- Batch Effect Correction}
 \label{par:gse69914_step3}
 
 \subparagraph{Pre-batch Diagnostics}
@@ -325,7 +325,7 @@ which resources contributed to its removal, ensuring full reproducibility of the
 \label{subpar:gse69914_postbatch}
 
 
-\paragraph{Step 5 — Final Outputs}
+\paragraph{Step~6 -- Final Outputs}
 \label{par:gse69914_step5}
 
 \subparagraph{Final Matrices ($\beta$\_final\_preFS, M\_final\_preFS)}
@@ -579,56 +579,6 @@ This validation confirms the dataset is structurally sound, numerically consiste
 
 
 
-
-\section{Filtering of Invariant CpGs}\label{sec:invariant_filtering}
-
-CpG sites exhibiting minimal methylation variability across samples provide no discriminatory information and may inflate the multiple-testing burden.  
-Following the empirically driven approach of Edgar \textit{et al.}~\cite{Edgar2017}, probes with low dispersion were identified using the inter-decile \textbf{beta-range}:
-$r_{\beta} = \mathrm{P90}(\beta) - \mathrm{P10}(\beta)$,
-which quantifies methylation variability in a robust and outlier-resistant manner.
-
-\paragraph{Whole-cohort variability analysis.}
-Across all tissue types, the $r_{\beta}$ distribution was highly right-skewed, with most loci showing limited variability (\autoref{fig:beta_range_all}).  
-Three candidate thresholds ($r_{\beta} < 0.01$, $0.02$, $0.05$) were evaluated, corresponding to:
-\good{$r_{\beta} <$ 0.01: 1,782\text{ CpGs removed}},
-\good{$r_{\beta} <$ 0.02: 28,569}, 
-\good{$r_{\beta} <$ 0.05: 79,433}.
-
-\paragraph{Normal and adjacent-tissue subset.}
-Given the final objective of identifying CpGs informative for distinguishing normal from adjacent tissues, this filtering step was applied specifically to the subset including 
-\textbf{normal} (label~0), \textbf{adjacent} (label~1), and \textbf{BRCA1-modified normal} (label~3) samples.  
-As expected, restricting to these tissues decreases overall dispersion (\autoref{fig:beta_range_subset}), yielding:
-\good{$r_{\beta} <$ 0.01: 3,972\text{ CpGs removed}}, 
-\good{$r_{\beta} <$ 0.02: 40,342}, 
-\good{$r_{\beta} <$ 0.05: 102,473}.
-
-This confirms that tumor samples contribute most of the global methylation variability, consistent with the increased stochastic variation reported in cancer tissues compared to normal~\cite{Hansen2011}.  
-\good{Accordingly, the reference threshold proposed by Edgar~\textit{et~al.}~\cite{Edgar2017}, $r_{\beta} < 0.05$, was adopted as a pragmatic cutoff and applied to the Normal--Adjacent subset, leaving a final matrix of \textbf{99 samples $\times$ 156,738 CpGs}.}  
-CpGs below this threshold in the restricted cohort were removed from the full dataset.  
-If subsequent analyses reveal that this choice is overly permissive—resulting in the exclusion of an excessive number of informative loci—the criterion will be re-evaluated and adjusted toward a more conservative threshold (e.g., $0.02$ or $0.01$).  
-This approach ensures that only loci exhibiting stable methylation within non-tumor tissues are discarded, preserving CpGs with potential biological relevance for the Normal--Adjacent classification task.
-
-\begin{figure}[H]
-    \centering
-    \begin{subfigure}[t]{0.49\textwidth}
-        \centering
-        \includegraphics[height=6.2cm]{Figures/GSE69914_r_beta_distribution_NA_study.pdf}
-        \caption{Whole cohort including Normal, Adjacent, and Tumor samples.  
-        The distribution is right-skewed, with most CpGs showing limited variability.}
-        \label{fig:beta_range_all}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[t]{0.49\textwidth}
-        \centering
-        \includegraphics[height=6.2cm]{Figures/GSE69914_r_beta_distribution_ALL_study.pdf}
-        \caption{Subset restricted to Normal, Adjacent, and BRCA1-modified Normal tissues.  
-        Excluding tumor samples reduces overall dispersion across CpGs.}
-        \label{fig:beta_range_subset}
-    \end{subfigure}
-    \caption{Distribution of inter-decile beta-range ($r_{\beta} = \mathrm{P90}-\mathrm{P10}$) across CpG sites.  
-    The analysis highlights reduced variability in non-tumor tissues, supporting the use of $r_{\beta}<0.05$ as a filtering criterion in the Normal--Adjacent subset.}
-    \label{fig:beta_range_compare}
-\end{figure}
 
 
 
