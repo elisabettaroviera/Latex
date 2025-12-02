@@ -1,0 +1,833 @@
+\documentclass[10pt]{extarticle}
+
+% Lingua e matematica
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,amsthm}
+
+% Grafica e tabelle
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{siunitx}
+\usepackage{wrapfig}
+\usepackage{placeins}
+
+
+% Codice (opzionale)
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.98,0.98,0.98}
+\lstdefinestyle{mystyle}{
+  backgroundcolor=\color{backcolour},
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true, keepspaces=true, numbers=none, tabsize=2
+}
+\lstset{style=mystyle}
+
+% Margini
+\usepackage[margin=0.6in]{geometry}
+\usepackage{ragged2e}
+\usepackage{enumitem}
+%\usepackage[utf8]{inputenc} % per caratteri UTF-8 nei .tex e nel .bib
+\usepackage[backend=biber,style=ieee,sorting=none,maxbibnames=99]{biblatex}
+\ExecuteBibliographyOptions{doi=true,url=true,isbn=false}
+\addbibresource{references.bib}
+\usepackage{csquotes}       % consigliato da biblatex (evita warning e parse strani)
+\usepackage{pifont}
+\newcommand{\good}[1]{\textcolor{teal!70!black}{\ding{51}~#1}}
+
+
+
+% Bibliografia (biblatex + biber)
+\usepackage[backend=biber,style=ieee]{biblatex}
+\addbibresource{references.bib}
+
+% TOC: includi anche \paragraph e numerali
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+
+% Hyperref (sempre *dopo* gli altri pacchetti)
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=teal,urlcolor=magenta]{hyperref}
+
+
+\begin{document}
+
+% Custom header without a separate titlepage
+\noindent
+\begin{minipage}{0.3\textwidth}
+    \includegraphics[width=1.3\linewidth]{Figures/polito_logo_2021_blu.jpg}
+\end{minipage}
+\hfill
+\begin{minipage}{0.68\textwidth}
+    \raggedleft
+    {\LARGE \textbf{Politecnico di Torino}}\\[0.2cm]
+    {\large Master's Degree in Mathematical Engineering}\\[0.7cm]
+    {\large \textbf{Material for Thesis}}\\[0.2cm]
+    {\large b-- Data Pre-processing Pipeline \\ Intra and Inter Analysis}\\[0.7cm]
+    \begin{tabular}{rl}
+        Elisabetta Roviera & \texttt{s328422} \\
+    \end{tabular}
+\end{minipage}
+
+\vspace{1cm}
+\hrule
+\vspace{0.5cm}
+
+\tableofcontents
+
+\vspace{0.5cm}
+\hrule
+\vspace{1cm}
+
+
+% Main content begins here, on the same page
+\justifying
+
+\begin{abstract}
+{\color{red}
+\textbf{MANCA L'ABSTRACT.}
+}
+\end{abstract}
+
+\section{Intra-Dataset Pre-processing}
+\label{sec:intra_preprocessing}
+Data pre-processing represents a foundational stage in DNA methylation analysis, particularly in cancer epigenomics,
+where technical artefacts, probe-design biases, and unwanted sources of variation can obscure or distort genuine
+biological signals. Before performing differential analyses, feature selection, or machine-learning models, it is essential
+to ensure that the methylation matrices used for statistical modelling are accurate, harmonised across platforms, and free
+from unreliable probes or batch-associated effects.
+
+In the context of breast cancer, where early epigenetic alterations may be subtle and highly localized, careful
+pre-processing is crucial to avoid confounding Normal–Adjacent differences with technical noise. Several well-established
+sources of unreliability—cross-reactive probes, SNP-affected loci, non-CpG targets, Infinium Type~I/II probe-design
+bias, and batch effects—must be addressed through a systematic and reproducible workflow.  
+
+The primary goal of this section is therefore to construct, for each dataset, a high-quality and biologically coherent
+methylation matrix suitable for downstream analyses. To this end, all datasets undergo the same structured pipeline:
+initial alignment and quality checks; removal of unreliable CpGs through literature-based technical filtering; conversion
+from $\beta$-values to M-values for statistical modelling; correction of batch effects; and identification of invariant CpGs that
+carry no discriminative information along the Normal–Adjacent axis.
+
+These steps ensure methodological consistency across the three cohorts (GSE69914 [\ref{subsec:gse69914_preproc}], GSE225845 [\ref{subsec:gse225845_preproc}], GSE287331 [\ref{subsec:gse287331_preproc}]) and
+provide a unified, denoised, and biologically meaningful set of features to be used in the subsequent analyses of early
+epigenetic alterations.
+
+
+% ============================================================
+\subsection{Dataset GSE69914}
+\label{subsec:gse69914_preproc}
+% ============================================================
+
+\paragraph{Step~0 -- Initial Pre-processing}
+\label{par:gse69914_step0}
+
+The initial pre-processing stage verifies the structural integrity of the dataset.
+The $\beta$-value matrix and its corresponding phenotype table were imported from
+their Parquet representations. Both tables contained \good{407 samples}, and the $\beta$-matrix included
+\good{485{,}512 CpGs}, confirming full dataset availability at load time.
+
+Sample identifiers in the phenotype table were inspected to ensure uniqueness and correct metadata structure. No
+duplicated \texttt{id\_tissue} entries were detected \good{(0 duplicates)}, and all required fields (\texttt{id\_tissue}, \texttt{label})
+were present \good{(0 missing fields)}, indicating that the phenotype annotation is complete and coherent. Alignment
+between the phenotype table and the $\beta$-matrix was assessed by intersecting sample IDs. All samples were shared
+across matrices, yielding \good{perfect correspondence (407/407 matched)}.
+
+A probe-level and sample-level missingness check was then performed to verify the completeness of the methylation
+matrix. The entire dataset was found to be fully observed, with \good{0 missing CpG values} and \good{0 missing sample
+entries}. This confirms that no early NaN filtering or imputation is required for this dataset.
+
+\paragraph{Step~1 -- Infinium Type I/II Bias Diagnostics}
+\label{subpar:gse69914_typebias}
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[height=6cm]{Figures/GSE69914_type_bias_density.pdf}
+        \caption{$\beta$-value distribution by Infinium probe design (Type~I vs.~Type~II). 
+        The near-overlapping shapes indicate effective correction of probe-type bias.}
+        \label{fig:type_bias_density}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[height=6cm]{Figures/GSE69914_type_bias_qqplot.pdf}
+        \caption{Q--Q plot comparing quantiles of Type~II vs.~Type~I probes. 
+        The alignment to the diagonal ($y = x$) confirms balanced signal distributions after normalization.}
+        \label{fig:type_bias_qq}
+    \end{subfigure}
+    \caption{Diagnostic evaluation of Infinium Type~I/II probe bias correction in the GSE69914 dataset. 
+    The consistent $\beta$-value and quantile distributions demonstrate the effectiveness of the BMIQ normalization previously applied.}
+    \label{fig:type_bias_combined}
+\end{figure}
+
+Raw methylation intensity data (\textit{IDAT} files) were processed by the original authors using the \texttt{minfi} package (v1.8.9) and \texttt{BMIQ} normalization (v1.4), as reported in \cite{GSE69914}.
+This preprocessing pipeline includes the \textbf{bias correction between Infinium Type~I and Type~II probes}, ensuring that $\beta$-value distributions from both probe designs are comparable prior to downstream analysis.
+
+I independently verified that this probe-type bias correction had been successfully applied.
+To this aim, the $\beta$-value distributions were stratified by probe design (Type~I vs.~Type~II) using the official Illumina 450K manifest obtained from the Bioconductor package~\cite{Illumina450kAnno}.
+Following the diagnostic framework proposed by Teschendorff et~al.~\cite{Teschendorff2013BMIQ}, two diagnostic plots were generated:
+\begin{enumerate}
+    \item The $\beta$-value density distributions of Type~I and Type~II probes (Fig. \ref{fig:type_bias_density}) show extensive overlap, with no evident design-driven bias in the normalized data;
+    \item The Q--Q plot comparing Type~II versus Type~I quantiles (Fig. \ref{fig:type_bias_qq}) exhibits a near-diagonal alignment, confirming effective bias correction.
+\end{enumerate}
+
+The observed post-normalization pattern closely reproduces the characteristic outcome described by Teschendorff~et~al.~\cite{Teschendorff2013BMIQ} and Wang~et~al.~\cite{Wang2015Normalization450K}, 
+who demonstrated that BMIQ substantially reduces Infinium Type~II probe bias, yielding overlapping $\beta$-value distributions and near-diagonal Q--Q relationships.
+\good{Hence, this verification confirms that the dataset underwent proper BMIQ normalization.}
+
+
+
+\paragraph{Step~2 -- Technical Filtering}
+\label{par:gse69914_step2}
+
+\begin{figure}[t]
+    \centering
+
+    % Panel (a)
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/GSE69914_technical_lists_barplot.pdf}
+        \caption{
+            CpGs flagged by each technical filtering resource 
+            (Naeem, Pidsley, Zhou \texttt{MASK\_*}, Chen, McCartney). 
+        }
+        \label{fig:gse69914_tech_barplot}
+    \end{subfigure}
+    \hfill
+    % Panel (b)
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/GSE69914_technical_lists_redundancy_histogram.pdf}
+        \caption{
+            Redundancy distribution of probes flagged by 1--5 lists. 
+        }
+        \label{fig:gse69914_tech_redundancy}
+    \end{subfigure}
+
+    \caption{
+        Summary of technical filtering for the GSE69914 methylation dataset. 
+        \textbf{(a)} Intersection between the dataset and each external probe-filtering resource, 
+        showing the number of CpGs flagged by Naeem, Pidsley, Zhou, Chen, and McCartney lists. 
+        \textbf{(b)} Redundancy analysis indicating how many probes were simultaneously flagged 
+        by 1 to 5 independent resources, quantifying the concordance among technical annotations.
+    }
+    \label{fig:gse69914_technical_filtering}
+\end{figure}
+
+
+Technical filtering aims to remove unreliable or biologically confounded probes prior to statistical modelling.  
+This stage reduces noise, improves downstream reproducibility, and ensures that only high-confidence CpG loci are
+retained for analysis (Fig.~\ref{fig:gse69914_technical_filtering}).
+
+\subparagraph{Exclusion of technical probe sets}
+A collection of curated probe resources was used to exclude loci known to exhibit technical artefacts  
+(see Appendix~\ref{app:probe-filters} for details).  
+These include probes affected by common genetic variants at the CpG or single-base extension site
+\cite{zhou2016,pidsley2016}, probes with demonstrated multi-mapping or off-target hybridisation  
+\cite{chen2013,mccartney2016}, and probes flagged by the \texttt{MASK\_*} reliability annotations  
+\cite{zhou2016}.  
+Additional quality control criteria follow the hierarchical filtering strategy of Naeem et al.\ \cite{naeem2014},
+which targets multi-mapping loci, repeat structures, and disruptive SNPs.
+
+The overlaps between these resources and the $\beta$-matrix were substantial  
+(Fig.~\ref{fig:gse69914_tech_barplot}).  
+A total of \good{190{,}672 probes} were flagged by Naeem et al., \good{39{,}737} by Pidsley et al.,
+\good{29{,}233} by Chen et al., \good{96{,}541} by the Zhou \texttt{MASK\_*} fields, and
+\good{28{,}582} by McCartney et al.\  
+These lists are known to partially overlap—particularly those focused on multi-mapping and SNP-associated
+unreliability—and their union resulted in the removal of \good{225{,}426 unique CpGs}.  
+After this operation, \good{260{,}086 CpGs} remained.
+
+\subparagraph{Annotation-based filtering (Illumina manifest)}
+\label{subpar:gse69914_noncpg}
+
+To ensure consistency with the manufacturer’s official annotation, the HumanMethylation450 v1.2 manifest \cite{Illumina450kManifest} was used to
+validate probe identity and genomic mapping.  
+Through this annotation, probes lacking valid chromosome information, those with undefined genomic coordinates, and
+those targeting non-CpG contexts (IDs beginning with ``\texttt{ch}'') were identified and removed.  
+This step aligns the working feature set with Illumina's reference genome definition and follows the recommendations
+of Zhou~et al.~\cite{zhou2016} and Pidsley~et al.~\cite{pidsley2016}.  
+A total of \good{875 non-CpG probes} were excluded, reducing the feature space to \good{259{,}211 CpGs}.
+
+\subparagraph{Removal of sex-chromosome probes (X/Y)}
+\label{subpar:gse69914_xy}
+
+To avoid sex-related confounding effects and to maintain cross-dataset consistency, all probes located on chromosomes~X 
+and~Y were removed based on manifest annotations. This choice is consistent with established preprocessing workflows 
+for Illumina 450K data, where probes on sex chromosomes are excluded when male and female samples are mixed, as 
+recommended by Maksimovic et~al.\ \cite{Maksimovic2012}. Moreover, sex-chromosome CpGs exhibit substantially different 
+methylation profiles between males and females, and joint normalization of autosomal and sex-chromosome probes has been 
+shown to introduce artificial sex-related bias into thousands of autosomal CpGs \cite{Wang2022InterpolatedXY}. Removing 
+X/Y probes therefore provides a conservative and robust strategy when sex-specific methylation is not under investigation. 
+This filtering step eliminated \good{7{,}728 CpGs}, producing a final autosomal working set of \good{251{,}483 CpGs}.
+
+
+\subparagraph{Technical filtering summary}
+Overall, the initial set of \good{485{,}512 CpGs} was reduced to \good{251{,}483 autosomal CpGs} after applying all
+technical lists, manifest-based validation, and sex-chromosome exclusion.  
+In total, \good{234{,}029 unique CpGs} were removed across all criteria.  
+A per-probe summary file \href{https://github.com/elisabettaroviera/THESIS/blob/main/05%20-%20CpG%20list/Removed%20CpGs%20per%20Dataset/removed_cpgs_all_filters_summary_gse69914.csv}
+{\texttt{removed\_cpgs\_all\_filters\_summary\_gse69914.csv}} records, for each excluded probe,
+which resources contributed to its removal, ensuring full reproducibility of the filtering pipeline.  
+
+\paragraph{Step~3 -- Invariance Filtering on Normal+Adjacent}
+\label{par:gse69914_step4}
+
+\subparagraph{Selection of the NA Subset}
+\label{subpar:gse69914_na_subset}
+
+\subparagraph{Variability Metrics ($r_\beta$, variance)}
+\label{subpar:gse69914_variability}
+
+\subparagraph{Threshold Selection}
+\label{subpar:gse69914_threshold}
+
+\subparagraph{Creation of Final CpG Mask}
+\label{subpar:gse69914_mask}
+
+
+\paragraph{Step 2 — $\beta$-to-$M$ Conversion}
+\label{par:gse69914_step2}
+
+\subparagraph{Definition of $\beta_{\text{clean}}$}
+\label{subpar:gse69914_bclean}
+
+\subparagraph{Logit Transformation to $M$-values}
+\label{subpar:gse69914_mvalues}
+
+\subparagraph{Use of $\beta$ and M-values in Downstream Analyses}
+\label{subpar:gse69914_use_beta_m}
+
+
+\paragraph{Step 3 — Batch Effect Correction}
+\label{par:gse69914_step3}
+
+\subparagraph{Pre-batch Diagnostics}
+\label{subpar:gse69914_prebatch}
+
+\subparagraph{Definition of the Batch Model}
+\label{subpar:gse69914_batchmodel}
+
+\subparagraph{ComBat Correction}
+\label{subpar:gse69914_combat}
+
+\subparagraph{Post-batch Verification}
+\label{subpar:gse69914_postbatch}
+
+
+\paragraph{Step 5 — Final Outputs}
+\label{par:gse69914_step5}
+
+\subparagraph{Final Matrices ($\beta$\_final\_preFS, M\_final\_preFS)}
+\label{subpar:gse69914_final_matrices}
+
+\subparagraph{CpG Tracking}
+\label{subpar:gse69914_tracking}
+
+\subparagraph{Mini-report Summary (optional)}
+\label{subpar:gse69914_minireport}
+
+
+
+% ============================================================
+\subsection{Dataset GSE225845}
+\label{subsec:gse225845_preproc}
+% ============================================================
+
+\paragraph{Step 0 — Initial Pre-processing}
+\label{par:gse225845_step0}
+
+\subparagraph{Ingestion and Alignment}
+\label{subpar:gse225845_ingestion}
+
+\subparagraph{Coarse NaN Assessment}
+\label{subpar:gse225845_nan}
+
+\subparagraph{Infinium Type I/II Bias Diagnostics}
+\label{subpar:gse225845_typebias}
+
+
+\paragraph{Step 1 — Technical Filtering}
+\label{par:gse225845_step1}
+
+\subparagraph{Cross-reactive Probes}
+\label{subpar:gse225845_chen_pidsley}
+
+\subparagraph{EPIC Unreliable Probes}
+\label{subpar:gse225845_mccartney}
+
+\subparagraph{SNP-affected Probes}
+\label{subpar:gse225845_snp}
+
+\subparagraph{Non-CpG Probes}
+\label{subpar:gse225845_noncpg}
+
+\subparagraph{Sex-chromosome Probes}
+\label{subpar:gse225845_xy}
+
+\subparagraph{Technical Filtering Summary}
+\label{subpar:gse225845_filter_summary}
+
+
+\paragraph{Step 2 — $\beta$-to-$M$ Conversion}
+\label{par:gse225845_step2}
+
+\subparagraph{Definition of $\beta_{\text{clean}}$}
+\label{subpar:gse225845_bclean}
+
+\subparagraph{Logit Transformation}
+\label{subpar:gse225845_mvalues}
+
+\subparagraph{Usage of $\beta$ and M-values}
+\label{subpar:gse225845_use_beta_m}
+
+
+\paragraph{Step 3 — Batch Effect Correction}
+\label{par:gse225845_step3}
+
+\subparagraph{Pre-batch Diagnostics}
+\label{subpar:gse225845_prebatch}
+
+\subparagraph{Batch Model Definition}
+\label{subpar:gse225845_batchmodel}
+
+\subparagraph{ComBat Application}
+\label{subpar:gse225845_combat}
+
+\subparagraph{Post-batch Verification}
+\label{subpar:gse225845_postbatch}
+
+
+\paragraph{Step 4 — Invariance Filtering on Normal+Adjacent}
+\label{par:gse225845_step4}
+
+\subparagraph{NA Subset Selection}
+\label{subpar:gse225845_na_subset}
+
+\subparagraph{Variability Metrics}
+\label{subpar:gse225845_variability}
+
+\subparagraph{Threshold Selection}
+\label{subpar:gse225845_threshold}
+
+\subparagraph{Final CpG Mask}
+\label{subpar:gse225845_mask}
+
+
+\paragraph{Step 5 — Final Outputs}
+\label{par:gse225845_step5}
+
+\subparagraph{Final Matrices}
+\label{subpar:gse225845_final_matrices}
+
+\subparagraph{CpG Tracking}
+\label{subpar:gse225845_tracking}
+
+\subparagraph{Mini-report Summary (optional)}
+\label{subpar:gse225845_minireport}
+
+
+
+% ============================================================
+\subsection{Dataset GSE287331}
+\label{subsec:gse287331_preproc}
+% ============================================================
+
+\paragraph{Step 0 — Initial Pre-processing}
+\label{par:gse287331_step0}
+
+\subparagraph{Ingestion and Alignment}
+\label{subpar:gse287331_ingestion}
+
+\subparagraph{Coarse NaN Assessment}
+\label{subpar:gse287331_nan}
+
+\subparagraph{Infinium Type I/II Bias Diagnostics}
+\label{subpar:gse287331_typebias}
+
+
+\paragraph{Step 1 — Technical Filtering}
+\label{par:gse287331_step1}
+
+\subparagraph{Cross-reactive Probes}
+\label{subpar:gse287331_chen_pidsley}
+
+\subparagraph{EPIC Unreliable Probes}
+\label{subpar:gse287331_mccartney}
+
+\subparagraph{SNP-affected Probes}
+\label{subpar:gse287331_snp}
+
+\subparagraph{Non-CpG Probes}
+\label{subpar:gse287331_noncpg}
+
+\subparagraph{Sex-chromosome Probes}
+\label{subpar:gse287331_xy}
+
+\subparagraph{Technical Filtering Summary}
+\label{subpar:gse287331_filter_summary}
+
+
+\paragraph{Step 2 — $\beta$-to-$M$ Conversion}
+\label{par:gse287331_step2}
+
+\subparagraph{Definition of $\beta_{\text{clean}}$}
+\label{subpar:gse287331_bclean}
+
+\subparagraph{Logit Transformation}
+\label{subpar:gse287331_mvalues}
+
+\subparagraph{Usage of $\beta$ and M-values}
+\label{subpar:gse287331_use_beta_m}
+
+
+\paragraph{Step 3 — Batch Effect Correction}
+\label{par:gse287331_step3}
+
+\subparagraph{Pre-batch Diagnostics}
+\label{subpar:gse287331_prebatch}
+
+\subparagraph{Batch Model}
+\label{subpar:gse287331_batchmodel}
+
+\subparagraph{ComBat Application}
+\label{subpar:gse287331_combat}
+
+\subparagraph{Post-batch Verification}
+\label{subpar:gse287331_postbatch}
+
+
+\paragraph{Step 4 — Invariance Filtering on Normal+Adjacent}
+\label{par:gse287331_step4}
+
+\subparagraph{NA Subset Selection}
+\label{subpar:gse287331_na_subset}
+
+\subparagraph{Variability Metrics}
+\label{subpar:gse287331_variability}
+
+\subparagraph{Threshold Selection}
+\label{subpar:gse287331_threshold}
+
+\subparagraph{Creation of Final Mask}
+\label{subpar:gse287331_mask}
+
+
+\paragraph{Step 5 — Final Outputs}
+\label{par:gse287331_step5}
+
+\subparagraph{Final Matrices}
+\label{subpar:gse287331_final_matrices}
+
+\subparagraph{CpG Tracking}
+\label{subpar:gse287331_tracking}
+
+\subparagraph{Mini-report Summary (optional)}
+\label{subpar:gse287331_minireport}
+
+
+
+% ============================================================
+\section{Inter-Dataset Analysis}
+\label{sec:inter_dataset}
+
+% (intentionally left empty)
+
+
+
+\section{Data Validation and Integrity Check}\label{sec:data_validation}
+
+
+
+\paragraph{Missing Value Analysis.}
+Next, I performed a comprehensive check for missing values ($\text{NaN}$), as these can severely impact model performance and must be addressed before training.
+
+\begin{itemize}[label=-]
+    \item No missing entries ($\text{NaN}$) were detected across any CpG probe.
+    \good{Total NaN count: 0 |  Overall missing rate: 0\%.}
+    
+    \item The methylation matrix is therefore \textbf{complete}, requiring \textbf{no filtering or imputation} procedures.
+    \good{Dataset confirmed fully complete.}
+    
+    \item For future datasets:
+    \begin{itemize}[label=--]
+        \item If the overall missing rate is $< 1\%$, imputation may be considered as an optional step.
+        \item If probe missingness exceeds $5\%$ or sample missingness exceeds $10\%$, the affected entities should be discarded, following standard preprocessing practices~\cite{zhou2016}.
+    \end{itemize}
+\end{itemize}
+
+
+This validation confirms the dataset is structurally sound, numerically consistent, and complete, enabling unbiased downstream variance modeling, differential methylation testing, and batch correction without any further cleaning.
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Filtering of Invariant CpGs}\label{sec:invariant_filtering}
+
+CpG sites exhibiting minimal methylation variability across samples provide no discriminatory information and may inflate the multiple-testing burden.  
+Following the empirically driven approach of Edgar \textit{et al.}~\cite{Edgar2017}, probes with low dispersion were identified using the inter-decile \textbf{beta-range}:
+$r_{\beta} = \mathrm{P90}(\beta) - \mathrm{P10}(\beta)$,
+which quantifies methylation variability in a robust and outlier-resistant manner.
+
+\paragraph{Whole-cohort variability analysis.}
+Across all tissue types, the $r_{\beta}$ distribution was highly right-skewed, with most loci showing limited variability (\autoref{fig:beta_range_all}).  
+Three candidate thresholds ($r_{\beta} < 0.01$, $0.02$, $0.05$) were evaluated, corresponding to:
+\good{$r_{\beta} <$ 0.01: 1,782\text{ CpGs removed}},
+\good{$r_{\beta} <$ 0.02: 28,569}, 
+\good{$r_{\beta} <$ 0.05: 79,433}.
+
+\paragraph{Normal and adjacent-tissue subset.}
+Given the final objective of identifying CpGs informative for distinguishing normal from adjacent tissues, this filtering step was applied specifically to the subset including 
+\textbf{normal} (label~0), \textbf{adjacent} (label~1), and \textbf{BRCA1-modified normal} (label~3) samples.  
+As expected, restricting to these tissues decreases overall dispersion (\autoref{fig:beta_range_subset}), yielding:
+\good{$r_{\beta} <$ 0.01: 3,972\text{ CpGs removed}}, 
+\good{$r_{\beta} <$ 0.02: 40,342}, 
+\good{$r_{\beta} <$ 0.05: 102,473}.
+
+This confirms that tumor samples contribute most of the global methylation variability, consistent with the increased stochastic variation reported in cancer tissues compared to normal~\cite{Hansen2011}.  
+\good{Accordingly, the reference threshold proposed by Edgar~\textit{et~al.}~\cite{Edgar2017}, $r_{\beta} < 0.05$, was adopted as a pragmatic cutoff and applied to the Normal--Adjacent subset, leaving a final matrix of \textbf{99 samples $\times$ 156,738 CpGs}.}  
+CpGs below this threshold in the restricted cohort were removed from the full dataset.  
+If subsequent analyses reveal that this choice is overly permissive—resulting in the exclusion of an excessive number of informative loci—the criterion will be re-evaluated and adjusted toward a more conservative threshold (e.g., $0.02$ or $0.01$).  
+This approach ensures that only loci exhibiting stable methylation within non-tumor tissues are discarded, preserving CpGs with potential biological relevance for the Normal--Adjacent classification task.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[height=6.2cm]{Figures/GSE69914_r_beta_distribution_NA_study.pdf}
+        \caption{Whole cohort including Normal, Adjacent, and Tumor samples.  
+        The distribution is right-skewed, with most CpGs showing limited variability.}
+        \label{fig:beta_range_all}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[height=6.2cm]{Figures/GSE69914_r_beta_distribution_ALL_study.pdf}
+        \caption{Subset restricted to Normal, Adjacent, and BRCA1-modified Normal tissues.  
+        Excluding tumor samples reduces overall dispersion across CpGs.}
+        \label{fig:beta_range_subset}
+    \end{subfigure}
+    \caption{Distribution of inter-decile beta-range ($r_{\beta} = \mathrm{P90}-\mathrm{P10}$) across CpG sites.  
+    The analysis highlights reduced variability in non-tumor tissues, supporting the use of $r_{\beta}<0.05$ as a filtering criterion in the Normal--Adjacent subset.}
+    \label{fig:beta_range_compare}
+\end{figure}
+
+
+
+\section{Comparison of Beta-value and M-value Quantifications}\label{sec:beta_mvalue_comparison}
+
+Illumina Infinium reports two background-corrected signals per CpG, methylated $y^{(M)}$ and unmethylated $y^{(U)}$.  
+The \textbf{Beta-value} is the proportion of methylated intensity,
+\[
+\beta_i=\frac{\max(y_i^{(M)},0)}{\max(y_i^{(M)},0)+\max(y_i^{(U)},0)+\alpha},\quad 0\le\beta_i\le 1,
+\]
+while the \textbf{M-value} is the log-ratio,
+\[
+M_i=\log_2\!\left(\frac{\max(y_i^{(M)},0)+\alpha}{\max(y_i^{(U)},0)+\alpha}\right)
+=\log_2\!\left(\frac{\beta_i}{1-\beta_i}\right).
+\]
+
+\paragraph{Rationale.}
+As shown by Du \textit{et al.}~\cite{Du2010}, $\beta$ is \emph{bounded} and \emph{heteroscedastic} (its variance depends on the mean, especially near 0 and 1), whereas $M$ is approximately \emph{homoscedastic} and therefore more suitable for linear modeling and $t$-tests.  
+However, $\beta$ retains higher interpretability since it directly reflects the methylation fraction.  
+Consequently, $M$-values are adopted for inferential analyses, while $\beta$-values are preferred for reporting and visualization.
+
+\paragraph{Implementation in this dataset.}
+The GSE69914 matrix provides $\beta$ only; therefore, $M$ was derived as
+\[
+M = \log_2\!\bigg(\frac{\beta+\varepsilon}{1-\beta+\varepsilon}\bigg),
+\]
+using a small $\varepsilon = 10^{-6}$ to ensure numerical stability for extreme $\beta$ values.  
+\good{The working matrix was converted to $M$-values for all subsequent statistical analyses.}
+
+\paragraph{Distributional comparison.}
+\autoref{fig:hist_msd} illustrates the distributional differences between $\beta$ and $M$ quantifications across Normal and Normal-adjacent tissues.  
+As evident in the upper panels, $\beta$ exhibits a bounded, U-shaped distribution, while $M$ yields approximately symmetric profiles.  
+The lower panels confirm the pronounced mean-dependent variance of $\beta$ and the near-homoscedastic behavior of $M$, \good{in agreement with Du \textit{et al.}~\cite{Du2010}.}
+
+% ==========================================
+% --- DISTRIBUTIONS AND MEAN–SD RELATIONSHIPS
+% ==========================================
+\begin{figure}[H]
+  \centering
+
+  % ---------- First row: histograms ----------
+  \begin{subfigure}{0.24\textwidth}
+    \includegraphics[width=\textwidth]{Figures/GSE69914_hist_normal_beta.pdf}
+    \caption{Histogram of $\beta$ values in Normal samples}
+  \end{subfigure}
+  \begin{subfigure}{0.24\textwidth}
+    \includegraphics[width=\textwidth]{Figures/GSE69914_hist_adjacent_beta.pdf}
+    \caption{Histogram of $\beta$ values in Normal-adjacent samples}
+  \end{subfigure}
+  \begin{subfigure}{0.24\textwidth}
+    \includegraphics[width=\textwidth]{Figures/GSE69914_hist_normal_m.pdf}
+    \caption{Histogram of $M$ values in Normal samples}
+  \end{subfigure}
+  \begin{subfigure}{0.24\textwidth}
+    \includegraphics[width=\textwidth]{Figures/GSE69914_hist_adjacent_m.pdf}
+    \caption{Histogram of $M$ values in Normal-adjacent samples}
+  \end{subfigure}
+
+  \vspace{1em}
+
+  % ---------- Second row: mean–SD relationships ----------
+  \begin{subfigure}{0.24\textwidth}
+    \includegraphics[width=\textwidth]{Figures/GSE69914_msd_normal_beta.pdf}
+    \caption{Mean–SD trend for $\beta$ in Normal samples}
+  \end{subfigure}
+  \begin{subfigure}{0.24\textwidth}
+    \includegraphics[width=\textwidth]{Figures/GSE69914_msd_adjacent_beta.pdf}
+    \caption{Mean–SD trend for $\beta$ in Normal-adjacent samples}
+  \end{subfigure}
+  \begin{subfigure}{0.24\textwidth}
+    \includegraphics[width=\textwidth]{Figures/GSE69914_msd_normal_m.pdf}
+    \caption{Mean–SD trend for $M$ in Normal samples}
+  \end{subfigure}
+  \begin{subfigure}{0.24\textwidth}
+    \includegraphics[width=\textwidth]{Figures/GSE69914_msd_adjacent_m.pdf}
+    \caption{Mean–SD trend for $M$ in Normal-adjacent samples}
+  \end{subfigure}
+
+  \caption{
+  \textbf{Distributional properties of Normal vs Normal-adjacent tissue methylation.}
+  Top row: $\beta$-value (bounded fractional) and $M$-value (log-ratio) histograms illustrate the characteristic U-shaped $\beta$ distributions and the more symmetric $M$ profiles.  
+  Bottom row: Mean–SD relationships across CpGs reveal pronounced mean-dependent heteroscedasticity in $\beta$, which is substantially reduced after logit transformation to $M$, confirming the homoscedasticity advantage described by Du \textit{et al.}~\cite{Du2010}.  
+  All plots were computed on the current working set of 156{,}738 CpGs remaining after the filtering steps applied so far.
+}
+  \label{fig:hist_msd}
+\end{figure}
+
+
+
+
+
+
+
+
+\section{Batch-Effect Correction} 
+Remove inter-array technical variation using \textbf{ComBat} 
+(\href{https://academic.oup.com/biostatistics/article/8/1/118/252073}{Johnson et al., 2007}) 
+or its methylation-specific extension \textbf{ComBat-met} 
+(\href{https://pubmed.ncbi.nlm.nih.gov/40391088/}{Wang et al., 2025}). \\
+If batch effects are confounded with biological groups, 
+include the batch variable as a covariate in linear modeling (e.g., \textit{limma}).
+
+\clearpage
+
+\appendix
+\section{Filtering lists}
+\label{app:probe-filters}
+
+This appendix details the major technical filtering lists and annotations applied in Illumina 450K and EPIC methylation arrays to remove unreliable or ambiguous CpG probes. 
+
+\begin{table}[H]
+\small
+\caption{Technical categories covered by each filtering resource.}
+\centerline{ % <-- USA QUESTO
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Category} & \textbf{Naeem} \ref{app:naeem2014} & \textbf{Chen} \ref{app:chen2013} & \textbf{Pidsley} \ref{app:pidsley2016} & \textbf{Zhou} \ref{app:zhou2016} & \textbf{McCartney} \ref{app:mccartney2016}\\
+\midrule
+Cross-hybridisation / multi-mapping & Yes (Steps 1–2) & Yes & Yes & \texttt{MASK\_mapping} & Table~2+3 \\
+SNP at CpG / extension base   	& Yes (Step 5) & -- & Yes & \texttt{MASK\_snp5, MASK\_extBase} & -- \\
+Nearby SNP tolerated   	& Conditional (Step 6) & -- & -- & -- & -- \\
+INDEL / structural variant   	& Yes (Step 3) & -- & -- & -- & -- \\
+Non-CpG probes   	& -- & -- & Yes 	& \texttt{MASK\_nonCG} & Table~3 \\
+
+\bottomrule
+\end{tabular}
+} 
+\end{table}
+
+\subsection{Reducing the risk of false discovery enabling identification of biologically significant genome-wide methylation status using the humanmethylation450 array}
+\label{app:naeem2014}
+\begin{wrapfigure}{r}{0.29\textwidth} % {r}=destra, {0.4\textwidth}=larghezza
+    \centering
+    \includegraphics[width=\linewidth]{Figures/Workflow for determining affected Probes.jpg} % o .png, .pdf, .eps...
+    \caption{Workflow for determining affected Probes.}
+    \label{fig:Workflow}
+\end{wrapfigure}
+Naeem \emph{et al.} \cite{naeem2014} proposed a structured filtering framework to reduce false discoveries by sequentially discarding probes based on hybridisation specificity and genomic integrity (Figure \ref{fig:Workflow}).  
+The main exclusion steps are:
+\begin{enumerate}[label=-]
+  \item Multi-mapping or cross-hybridising probes $\Rightarrow$ \textit{discard}.
+  \item Probes overlapping repetitive elements (LINE/SINE/ALU) $\Rightarrow$ \textit{discard}.
+  \item Probes targeting regions with INDELs $\Rightarrow$ \textit{discard}.
+  \item Probes overlapping SNPs:
+    \begin{enumerate}[label=--]
+      \item SNP at CpG or extension site $\Rightarrow$ \textit{discard}.
+      \item SNP near target but not interfering in bisulfite space $\Rightarrow$ \textit{keep}.
+    \end{enumerate}
+\end{enumerate}
+The resulting ``discard'' set therefore removes probes affected by cross-reactivity, structural polymorphisms (INDELs), and SNPs that alter CpG interrogation.
+
+\subsection{Discovery of cross-reactive probes and polymorphic cpgs in the illumina infinium humanmethylation450 microarray}
+\label{app:chen2013}
+Chen \emph{et al.} \cite{chen2013} empirically identified probes in the 450K array that exhibit off-target hybridisation or overlap with common SNPs.  
+For this project, only the \textbf{cross-reactive list} is available and used.  
+This list enumerates $\sim$29k multi-mapping probes whose methylation signal cannot be uniquely attributed to one genomic locus.
+
+\subsection{Critical evaluation of the Illumina MethylationEPIC BeadChip microarray for whole-genome DNA methylation profiling}
+\label{app:pidsley2016}
+Pidsley \emph{et al.} \cite{pidsley2016} provide a platform-level assessment of the EPIC array, with explicit \emph{annotated probe lists} that flag probes whose methylation signal may be confounded by design- or genome-related artefacts. The focus is on probe categories and positions where technical bias arises, rather than on a universal, prescriptive blacklist. In particular, they catalogue:
+
+\begin{itemize}[label=-]
+  \item \textbf{Cross-hybridising CpG-targeting probes:} CpG probes showing sequence homology (off-target matches) to additional genomic loci, yielding non-unique hybridisation and potentially inflated or ambiguous $\beta$ signals.
+  \item \textbf{Cross-hybridising non-CpG-targeting probes:} off-target issues among CNG/non-CpG probes; these are typically excluded in CpG-centric analyses due to limited interpretability and higher risk of artefacts.
+  \item \textbf{Probes overlapping common genetic variation:} annotation of variants from population data at three critical positions:
+  \begin{enumerate}[label=--]
+    \item \textit{At the interrogated CpG} (polymorphic CpG) --- directly affects the presence of the CpG dinucleotide and the measured methylation state;
+    \item \textit{At the single-base extension (SBE) site} (Type~I) --- perturbs extension and dye chemistry, biasing intensity ratios;
+    \item \textit{Within the probe body} --- can reduce binding affinity or alter hybridisation kinetics, especially for common variants.
+  \end{enumerate}
+\end{itemize}
+
+
+\subsection{Comprehensive characterization, annotation and innovative use of infinium dna methylation beadchip probes}
+\label{app:zhou2016}
+Zhou \emph{et al.} \cite{zhou2016} released a unified probe annotation for both 450K and EPIC arrays with multiple binary mask columns (\texttt{MASK\_*}).  
+Each \href{https://zwdzwd.github.io/InfiniumAnnotation/mask.html}{mask} flags probes to be removed due to specific technical artifacts.
+\begin{itemize}[label=-]
+  \item \texttt{MASK.mapping}: probes with low or inconsistent mapping quality (non-unique alignment or presence of INDELs);
+  \item \texttt{MASK.typeINextBaseSwitch}: Type-I probes carrying a SNP in the extension base that causes a color-channel switch (\emph{CCS} probes);
+  \item \texttt{MASK.extBase}: probes whose extension base is inconsistent with the expected color channel or CpG context;
+  \item \texttt{MASK.sub30.copy}: probes with non-unique 30-bp 3' subsequences (potential cross-hybridisation);
+  \item \texttt{MASK.snp5.common}: probes overlapping a SNP within $\pm5$\,bp of the interrogated CpG (even with global MAF < 1\%);
+  \item \texttt{MASK.snp5.GMAF1p}: probes overlapping SNPs with global MAF > 1\%;
+  \item \texttt{MASK.general}: recommended composite mask integrating mapping, SNP, and cross-reactivity filters for general use;
+  \item \texttt{MASK.rmsk15}: probes overlapping RepeatMasker regions (not recommended for exclusion in standard workflows).
+\end{itemize}
+
+This resource provides a programmatic and reproducible way to perform fine-grained probe masking.
+
+\subsection{Identification of polymorphic and off-target probe binding sites on the Illumina Infinium MethylationEPIC BeadChip}
+\label{app:mccartney2016}
+McCartney \emph{et al.} \cite{mccartney2016} assessed probe design artifacts and published supplementary tables that include:
+\begin{itemize}[label=-]
+  \item Cross-hybridising CpG-targeting probes;
+  \item Cross-hybridising non-CpG-targeting probes.
+\end{itemize}
+
+
+
+\printbibliography
+\end{document}
