@@ -12,7 +12,10 @@
 \usepackage{multirow}
 \usepackage{siunitx}
 \usepackage{wrapfig}
-\usepackage[section]{placeins}
+%\usepackage[section]{placeins}  % mantiene i float dentro la SECTION
+%\let\Oldsubsection\subsection   % estendo il comportamento anche alle SUBSECTION
+%\renewcommand{\subsection}{\FloatBarrier\Oldsubsection}
+\usepackage{placeins}
 
 
 % Codice (opzionale)
@@ -149,7 +152,7 @@ entries}. This confirms that no early NaN filtering or imputation is required fo
 \paragraph{Step~1 -- Infinium Type I/II Bias Diagnostics}
 \label{subpar:gse69914_typebias}
 
-\begin{figure}[!htbp]
+\begin{figure}[t]
     \centering
     \begin{subfigure}[t]{0.49\textwidth}
         \centering
@@ -205,7 +208,7 @@ consistent with the probe-type discrepancies originally analysed by Maksimovic \
 \paragraph{Step~2 -- Technical Filtering}
 \label{par:gse69914_step2}
 
-\begin{figure}[!htbp]
+\begin{figure}[t]
     \centering
 
     % Panel (a)
@@ -292,7 +295,7 @@ which resources contributed to its removal, ensuring full reproducibility of the
 \label{par:gse69914_step3}
 
 
-\begin{figure}[!htbp]
+\begin{figure}[t]
     \centering
     \begin{subfigure}[t]{0.49\textwidth}
         \centering
@@ -314,7 +317,7 @@ which resources contributed to its removal, ensuring full reproducibility of the
     \label{fig:gse69914_rbeta_distributions}
 \end{figure}
 
-\begin{figure}[!htbp]
+\begin{figure}[t]
     \centering
     % Left: scatter
     \begin{subfigure}[t]{0.49\textwidth}
@@ -339,7 +342,7 @@ which resources contributed to its removal, ensuring full reproducibility of the
     \label{fig:gse69914_variability_scatter}
 \end{figure}
 
-\begin{figure}[!htbp]
+\begin{figure}[t]
     \centering
     \includegraphics[width=0.72\textwidth]{Figures/GSE69914_venn_universal_vs_NA_vs_NT.pdf}
     \caption{
@@ -418,7 +421,7 @@ Furthermore, more detailed comparisons between Edgar et al.’s invariant CpGs a
 % ============================================================
 % FIGURES: HISTOGRAMS + MEAN–SD FOR BETA AND M
 % ============================================================
-\begin{figure}[!htbp]
+\begin{figure}[t]
     \centering
 
     % ---------------- ROW 1: HISTOGRAMS (Beta, Normal & Adjacent) ----------------
@@ -529,7 +532,7 @@ Accordingly, no early NaN filtering or imputation was required before proceeding
 \paragraph{Step~1 -- Infinium Type I/II Bias Diagnostics}
 \label{subpar:gse225845_typebias}
 
-\begin{figure}[!htbp]
+\begin{figure}[t]
     \centering
     \begin{subfigure}[t]{0.49\textwidth}
         \centering
@@ -572,7 +575,7 @@ The curvature of the Q--Q profile confirms the presence of a residual probe-desi
 \paragraph{Step~2 -- Technical Filtering}
 \label{par:gse225845_step2}
 
-\begin{figure}[!htbp]
+\begin{figure}[t]
     \centering
     \begin{subfigure}[t]{0.48\textwidth}
         \centering
@@ -599,7 +602,7 @@ Beginning from an initial set of \good{750{,}426 CpGs}, the intersection with th
 showed substantial overlap across multiple sources.
 
 \textbf{Exclusion of technical probe sets.}
-The curated technical resources flagged a substantial fraction of probes as potentially unreliable (Fig.~\ref{fig:gse69914_tech_barplot}): \good{190{,}672 CpGs} were flagged by Naeem, \good{39{,}737} by Pidsley, \good{96{,}541} by the Zhou fields, \good{29{,}233} by Chen, and \good{28{,}582} by McCartney. 
+The curated technical resources flagged a substantial fraction of probes as potentially unreliable (Fig.~\ref{fig:gse69914_tech_barplot}): \good{101{,}014 CpGs} were flagged by Naeem, \good{11{,}759} by Pidsley, \good{114{,}407} by the Zhou fields, \good{0} by Chen, and \good{1{,}585} by McCartney. 
 The union of all technical lists resulted in the removal of \good{204{,}899 unique CpGs}, 
 leaving \good{545{,}527 CpGs} for subsequent steps.
 
@@ -616,15 +619,16 @@ A total of \good{14{,}071 CpGs} were removed, producing a filtered autosomal set
 Across all steps, \good{219{,}743 unique CpGs} were removed from the initial \good{750{,}426}, 
 yielding a final feature set of \good{530{,}683 CpGs}.  
 A detailed per-probe summary of the filtering decisions is provided in  
-\texttt{removed\_cpgs\_all\_filters\_summary.csv}.
-
+\href{https://github.com/elisabettaroviera/THESIS/blob/main/05%20-%20CpG%20list/Removed%20CpGs%20per%20Dataset/removed_cpgs_all_filters_summary_gse225845.csv
+}
+{\texttt{removed\_cpgs\_all\_filters\_summary\\\_gse225845.csv}}.
 
 \paragraph{Step~3 -- Invariance Filtering on Normal+Adjacent}
 \label{par:gse225845_step3}
 
 
 
-\begin{figure}[!htbp]
+\begin{figure}[t]
     \centering
     \begin{subfigure}[t]{0.49\textwidth}
         \centering
@@ -641,14 +645,14 @@ A detailed per-probe summary of the filtering decisions is provided in
         \label{fig:gse225845_rbeta_NT}
     \end{subfigure}
     \caption{
-        Variability range analysis for GSE225845.  
+        Variability range analysis.  
         A large block of CpGs shows low dispersion in both N+A and N+T groups,
         supporting the use of invariance filtering to remove biologically uninformative loci.
     }
     \label{fig:gse225845_rbeta_distributions}
 \end{figure}
 
-\begin{figure}[!htbp]
+\begin{figure}[t]
     \centering
     \begin{subfigure}[t]{0.49\textwidth}
         \centering
@@ -672,13 +676,11 @@ A detailed per-probe summary of the filtering decisions is provided in
     \label{fig:gse225845_variability_scatter}
 \end{figure}
 
-\begin{figure}[!htbp]
+\begin{figure}[t]
     \centering
     \includegraphics[width=0.72\textwidth]{Figures/GSE225845_venn_universal_vs_NA_vs_NT.pdf}
     \caption{
-        Intersection between universal invariant CpGs (Edgar) and breast-tissue invariants.
-        Breakdown loci represent sites with conserved stability across tissues that lose
-        invariance in the tumour context.
+        Intersection between universal invariant CpGs and breast-tissue invariants.
     }
     \label{fig:gse225845_edgar_comparison}
 \end{figure}
@@ -702,7 +704,7 @@ To evaluate the stability of variability estimates when tumour samples are inclu
 $r_\beta$ was computed on the N+T subset, identifying  
 \good{103{,}622 non-variable CpGs}.  
 The comparison between N+A and N+T revealed strong concordance  
-(\good{Spearman $\rho = 0.881$}), with a visible deviation band corresponding to
+(\good{Spearman $\rho = 0.881$}, Fig. \ref{fig:gse225845_rbeta_scatter}), with a visible deviation band corresponding to
 CpGs that lose stability when tumour samples are added. Set comparisons yielded:
 \begin{itemize}[label=-]
     \item \textbf{Stable invariants} (N+A $\cap$ N+T): \good{102{,}765 CpGs};
@@ -711,7 +713,7 @@ CpGs that lose stability when tumour samples are added. Set comparisons yielded:
 \end{itemize}
 
 The invariants were compared with the universal CpGs reported by Edgar
-(\good{42{,}315 loci} shared across blood, buccal, and placenta tissues).  
+(\good{42{,}315 loci} shared across blood, buccal, and placenta tissues, Fig. \ref{fig:gse225845_edgar_comparison}).  
 In this dataset:
 \begin{itemize}[label=-]
     \item \good{27{,}895} were invariant in N+A breast tissue;
@@ -719,19 +721,19 @@ In this dataset:
     \item \good{1{,}353} universal loci became variable in tumour tissue (breakdown).
 \end{itemize}
 
+
 Applying the threshold \( r_\beta < 0.05 \) yielded  
 \good{130{,}939 N+A invariants} and  
 \good{399{,}744 retained CpGs},  
 now forming the working autosomal matrix for downstream modelling.  
-All per-probe decisions have been recorded in the updated removal summary, which now
-includes an Edgar invariance flag and an updated \texttt{Source\_Count}.
 
 \paragraph{Step~4 -- $\beta$ to $M$ Conversion}
 \label{par:gse225845_step4}
 
-\begin{figure}[!htbp]
+\begin{figure*}[!htbp]
     \centering
-    % ---------------- ROW 1: HISTOGRAMS FOR BETA ----------------
+
+    % ---------------- ROW 1: HISTOGRAMS ----------------
     \begin{subfigure}{0.24\textwidth}
         \includegraphics[width=\textwidth]{Figures/GSE225845_hist_normal_beta.pdf}
         \caption{Normal ($\beta$)}
@@ -740,7 +742,6 @@ includes an Edgar invariance flag and an updated \texttt{Source\_Count}.
         \includegraphics[width=\textwidth]{Figures/GSE225845_hist_adjacent_beta.pdf}
         \caption{Adjacent ($\beta$)}
     \end{subfigure}
-    % ---------------- ROW 1: HISTOGRAMS FOR M ----------------
     \begin{subfigure}{0.24\textwidth}
         \includegraphics[width=\textwidth]{Figures/GSE225845_hist_normal_m.pdf}
         \caption{Normal ($M$)}
@@ -750,17 +751,8 @@ includes an Edgar invariance flag and an updated \texttt{Source\_Count}.
         \caption{Adjacent ($M$)}
     \end{subfigure}
 
-    \caption{
-        \textbf{Distributional comparison between $\beta$ and $M$ quantifications in Normal and Adjacent breast tissue.}  
-        In $\beta$-space, both groups display the expected U-shaped distribution,
-        whereas the logit transformation yields approximately symmetric patterns in $M$-space.  
-        All panels computed on the filtered set of \good{399{,}744 CpGs}.
-    }
-    \label{fig:gse225845_beta_m_histograms}
-\end{figure}
+    \vspace{0.3cm}
 
-\begin{figure}[!htbp]
-    \centering
     % ---------------- ROW 2: MEAN–SD RELATIONS ----------------
     \begin{subfigure}{0.24\textwidth}
         \includegraphics[width=\textwidth]{Figures/GSE225845_msd_normal_beta.pdf}
@@ -780,32 +772,28 @@ includes an Edgar invariance flag and an updated \texttt{Source\_Count}.
     \end{subfigure}
 
     \caption{
-        \textbf{Mean–SD relationship before and after $\beta \rightarrow M$ conversion.}  
-        The pronounced mean-dependent variance in $\beta$-space is substantially
-        flattened in $M$-space, confirming the variance-stabilising effect of the logit transformation.
+        \textbf{Distributional and variance-structure comparison of $\beta$ and $M$ values in Normal and Adjacent breast tissue.}  
+        Top row: $\beta$- and $M$-value histograms, showing the characteristic U-shape in $\beta$-space and the approximate symmetry induced by the logit transformation.  
+        Bottom row: mean–SD relationships illustrating how the strong mean-dependent variance in $\beta$-space is markedly stabilised in $M$-space.  
+        All panels computed on the filtered set of \good{399{,}744 CpGs}.
     }
-    \label{fig:gse225845_msd_beta_m}
-\end{figure}
+    \label{fig:gse225845_beta_m_combined}
+\end{figure*}
 
-Following technical and invariance filtering, the working matrix contained
-\good{399{,}744 CpGs} across \good{477 samples}.  
+
 All $\beta$-values were transformed into $M$-values using the standard logit relation
 yielding an unbounded and approximately homoscedastic scale suitable for linear modelling
 and batch correction procedures.  
 The transformed dataset, denoted \texttt{M\_clean}, preserves the same sample structure and CpG ordering as the $\beta$ matrix and was saved in Parquet format for downstream analysis.
 
-A manual inspection of numerical values confirmed correct transformation across the entire CpG panel, including loci with extreme methylation levels.
-
-\noindent\textbf{Distributional effects of the transformation.}
-The empirical distributions of Normal and Adjacent samples, shown in Fig.~\ref{fig:gse225845_beta_m_histograms}, exhibit the characteristic U-shape in $\beta$-space and the expected approximately symmetric profiles after conversion.  
+\textbf{Distributional effects of the transformation.}
+The empirical distributions of Normal and Adjacent samples exhibit the characteristic U-shape in $\beta$-space and the expected approximately symmetric profiles after conversion.  
 The mean–SD relationship demonstrates the well-known variance inflation at intermediate $\beta$ levels, which becomes substantially stabilised in $M$-space
-(Fig.~\ref{fig:gse225845_msd_beta_m}).  
+(Fig.~\ref{fig:gse225845_beta_m_combined}).  
 These patterns confirm that the $M$-value representation provides a more appropriate scale for statistical inference.
 
 The filtered $\beta$-matrix (\good{399{,}744 CpGs}, \good{477 samples}) was successfully converted into
 the corresponding $M$-value representation and stored as a Parquet object.  
-$M$-values will be used for all inferential analyses, while $\beta$-values will be retained for
-visualisation and biological interpretation.
 
 \paragraph{Step~5 -- Batch Effect Correction}
 \label{par:gse225845_step5}
@@ -819,7 +807,43 @@ visualisation and biological interpretation.
 \label{subsec:gse287331_preproc}
 % ============================================================
 
-\begin{figure}[!htbp]
+\paragraph{Step~0 -- Initial Pre-processing}
+\label{par:gse287331_step0}
+
+The dataset was imported from its Parquet representation, yielding an initial
+$\beta$-value matrix of \good{446 samples} and \good{866{,}553 CpGs}.
+The accompanying phenotype table reported the same number of entries and contained
+all required metadata fields.  
+Before continuing with probe-level preprocessing, the dataset underwent a dedicated
+missingness-cleaning stage to ensure high-quality input for downstream analysis.
+After harmonising phenotype labels and applying dataset-specific selection rules, only samples belonging to the three core tissue states of interest—Normal, Adjacent, and Tumour—were kept.
+This resulted in a final working cohort of \good{311 samples}, used for all downstream preprocessing and analysis.
+
+\textbf{Missingness filtering and imputation.}
+Probe-wise missingness was quantified across the $\beta$-matrix.  
+Consistent with recommendations from Islam \textit{et al.}~\cite{islam2019_pediatric_dnamm}
+and Mansell \textit{et al.}~\cite{mansell2019guidance}, a stringent threshold was applied:
+all CpG sites missing in more than \good{1\%} of samples were removed.
+This filter ensures high-confidence measurements while leveraging the
+large dimensionality of the EPIC platform.
+
+After applying this criterion, the remaining level of sparsity was extremely low,
+with only \good{58{,}561 NaN} values (\good{0.0187\%} of all entries).  
+These residual missing values were imputed using probe-wise median substitution,
+a strategy that avoids introducing group-specific bias and is also adopted in
+recent harmonisation workflows such as mLiftOver~\cite{chen2024_mliftover}.
+
+\good{The resulting $\beta$-matrix contained no missing values}.
+
+\textbf{Data integrity verification.}
+After missingness filtering and imputation, the final working matrix consisted of  
+\good{311 samples} and \good{702{,}916 CpGs}.  
+All entries were fully observed (\good{0 residual NaN}).
+
+\paragraph{Step~1 -- Infinium Type I/II Bias Diagnostics}
+\label{subpar:gse287331_typebias}
+
+\begin{figure}[t]
     \centering
     \begin{subfigure}[t]{0.49\textwidth}
         \centering
@@ -846,7 +870,33 @@ visualisation and biological interpretation.
     \label{fig:gse287331_type_bias_combined}
 \end{figure}
 
-\begin{figure}[!htbp]
+ Using the official EPIC v1.0 manifest,  
+\good{115{,}705 Type~I} and \good{585{,}514 Type~II} probes were identified. The $\beta$-value distributions of the two chemistries showed a marked mismatch
+(Fig.~\ref{fig:gse287331_type_bias_density}), with Type~II probes displaying a strong
+right-shifted profile. The quantile--quantile comparison confirmed a substantial systematic
+offset, with a median absolute deviation of \good{0.380}
+(Fig.~\ref{fig:gse287331_type_bias_qq}), indicating the absence of any Infinium
+probe-design bias correction in the originally released data.
+
+Given this discrepancy, a per-sample BMIQ normalization step was applied using the
+\texttt{wateRmelon} implementation, operating strictly on individual samples to minimise
+cross-sample distortion. Post-correction diagnostics showed a modest reduction in
+probe-type mismatch ($|\Delta| : 0.380 \rightarrow 0.370$) and a slight improvement in the
+alignment of high-$\beta$ regions, but the overall distributional discrepancy remained
+substantial. 
+Due to this limited harmonization and the known tendency of BMIQ to attenuate biological
+differences when global distributional shifts are present, the corrected matrix is not used
+for downstream modelling. All subsequent analyses therefore rely on the non-BMIQ
+version of the dataset, which preserves clearer group-level structure and avoids
+normalization-induced shrinkage (for more details, see 
+\href{https://github.com/elisabettaroviera/THESIS/blob/main/03%20-%20Report/01%20-%20Notebook/01%20-%20Report%20Data%20Exploration%20%26%20Visualization.pdf}%
+{\textit{01 -- Report Data Exploration \& Visualization}}.
+).
+
+\paragraph{Step~2 -- Technical Filtering}
+\label{par:gse287331_step2}
+
+\begin{figure}[t]
     \centering
     \begin{subfigure}[t]{0.48\textwidth}
         \centering
@@ -873,7 +923,33 @@ visualisation and biological interpretation.
     \label{fig:gse287331_technical_filtering}
 \end{figure}
 
-\begin{figure}[!htbp]
+Technical probe filtering excluded CpG loci affected by unreliable hybridisation, SNP interference, multi-mapping or annotation inconsistencies.
+Across the established probe-filtering resources, \good{124{,}511} CpGs were flagged by Naeem, \good{8{,}992} by the Pidsley blacklist, \good{102{,}802} by Zhou’s fields, \good{1{,}730} by Chen’s cross-reactive probe set, and \good{3{,}672} by McCartney’s cross-hybridisation catalogue.
+The union of these lists removed \good{203{,}114 unique CpGs}, leaving \good{499{,}804 CpGs} prior to annotation-based filtering.
+
+
+\textbf{Annotation-based filtering (Illumina manifest).}
+Using the EPIC v1.0 manifest, probes lacking valid genomic coordinates or targeting
+non-CpG contexts were removed.  
+This eliminated \good{500 non-CpG probes}, reducing the feature set to
+\good{499{,}304 CpGs}.
+
+\textbf{Removal of sex-chromosome probes (X/Y).}
+Probes mapped to chromosomes~X and~Y were removed to avoid sex-driven confounding.
+A total of \good{12{,}579 CpGs} were discarded, resulting in an autosomal
+working set of \good{486{,}725 CpGs}.
+
+Across all filters, \good{216{,}193 unique CpGs} were removed from the initial
+\good{702{,}916}, leaving a final autosomal set of \good{486{,}725 CpGs}.
+A probe-level removal summary is provided in 
+\href{https://github.com/elisabettaroviera/THESIS/blob/main/05%20-%20CpG%20list/Removed%20CpGs%20per%20Dataset/removed_cpgs_all_filters_summary_gse287331.csv}%
+{\texttt{removed\_cpgs\_all\_filters\_summary\_gse287331.csv}}.
+
+
+\paragraph{Step~3 -- Invariance Filtering on Normal+Adjacent}
+\label{par:gse287331_step3}
+
+\begin{figure}[t]
     \centering
     % r_beta NA
     \begin{subfigure}[t]{0.49\textwidth}
@@ -891,14 +967,14 @@ visualisation and biological interpretation.
         \label{fig:gse287331_rbeta_NT}
     \end{subfigure}
     \caption{
-        Variability range distributions for GSE287331.  
+        Variability range distributions.  
         A substantial block of CpGs displays low dispersion in both N+A and N+T subsets,
         supporting the application of invariance filtering.
     }
     \label{fig:gse287331_rbeta_distributions}
 \end{figure}
 
-\begin{figure}[!htbp]
+\begin{figure}[t]
     \centering
     % Scatter
     \begin{subfigure}[t]{0.49\textwidth}
@@ -918,20 +994,64 @@ visualisation and biological interpretation.
     \label{fig:gse287331_scatter_enrichment}
 \end{figure}
 
-\begin{figure}[!htbp]
+\begin{figure}[t]
     \centering
     \includegraphics[width=0.72\textwidth]{Figures/GSE287331_venn_universal_vs_NA_vs_NT.pdf}
     \caption{
-        Intersection between universal invariants (Edgar) and breast-tissue invariants.
+        Intersection between universal invariants and breast-tissue invariants.
         Breakdown loci represent universal CpGs that lose stability specifically in tumour tissue.
     }
     \label{fig:gse287331_edgar_comparison}
 \end{figure}
 
-\begin{figure}[!htbp]
+A variability-based filtering analysis was performed to identify CpG loci exhibiting
+minimal dispersion in Normal+Adjacent (N+A) breast tissue.  
+For each CpG, the variability statistic
+\(
+r_\beta = P90(\beta) - P10(\beta)
+\)
+was computed across \good{486{,}725 autosomal probes}, producing the distribution
+shown in Fig.~\ref{fig:gse287331_rbeta_distributions}.
+The density exhibited a large concentration of low-variability loci.  
+Applying the study threshold \( r_\beta < 0.05 \) resulted in
+\good{201{,}978 non-variable CpGs} (\good{41.5\%}),
+leaving \good{284{,}747 CpGs} for downstream modelling.
+
+\textbf{Variability comparison with Normal+Tumor.}
+To assess whether tissue-specific variability patterns were preserved upon inclusion of tumour
+samples, the same computation was applied to the N+T subset, identifying  
+\good{168{,}663 non-variable CpGs}.  
+The two variability measures showed strong concordance
+(\good{Spearman $\rho = 0.933$}), with a distinct set of loci deviating from the identity
+line (Fig.~\ref{fig:gse287331_scatter_enrichment}).  
+These correspond to CpGs that lose stability when tumour samples are added. The set comparison yielded:
+\begin{itemize}[label=-]
+    \item \textbf{Stable invariants} (N+A $\cap$ N+T): \good{165{,}833 CpGs};
+    \item \textbf{Breakdown loci} (N+A \textbackslash{} N+T): \good{36{,}145 CpGs};
+    \item \textbf{N+T-only invariants}: \good{2{,}830 CpGs}.
+\end{itemize}
+
+\textbf{Comparison with universal invariant CpGs.}
+Invariant loci were compared with the universal CpG set reported by Edgar
+(\good{42{,}315 CpGs}).  
+In this dataset:
+\begin{itemize}[label=-]
+    \item \good{28{,}073} overlapped with N+A invariants;
+    \item \good{27{,}646} remained invariant in N+T;
+    \item \good{496} universal invariants became variable when tumour samples were added.
+\end{itemize}
+
+Using the threshold \(r_\beta < 0.05\), a total of 
+\good{201{,}978 N+A invariants} (\good{41.5\%}) were removed,
+yielding a working matrix of \good{284{,}747 CpGs} across \good{446 samples}.  
+
+\paragraph{Step~4 -- $\beta$ to $M$ Conversion}
+\label{par:gse287331_step4}
+
+\begin{figure}[t]
     \centering
 
-    % ---------------- ROW 1: HISTOGRAMS (Beta) ----------------
+    % ---------------- ROW 1: HISTOGRAMS ----------------
     \begin{subfigure}{0.24\textwidth}
         \includegraphics[width=\textwidth]{Figures/GSE287331_hist_normal_beta.pdf}
         \caption{Normal ($\beta$)}
@@ -949,17 +1069,7 @@ visualisation and biological interpretation.
         \caption{Adjacent ($M$)}
     \end{subfigure}
 
-    \caption{
-        \textbf{Empirical distributions of $\beta$-values and $M$-values.}  
-        The U-shaped $\beta$ distributions become substantially more symmetric after
-        logit transformation, without distorting relative methylation patterns
-        between Normal and Adjacent tissue.
-    }
-    \label{fig:gse287331_beta_m_dists}
-\end{figure}
-
-\begin{figure}[!htbp]
-    \centering
+    \vspace{0.35cm}
 
     % ---------------- ROW 2: MEAN–SD RELATIONS ----------------
     \begin{subfigure}{0.24\textwidth}
@@ -980,178 +1090,18 @@ visualisation and biological interpretation.
     \end{subfigure}
 
     \caption{
-        \textbf{Mean--SD structure before and after $\beta \to M$ transformation.}  
-        $M$-values exhibit markedly reduced dependence between mean and variance,
-        providing a more suitable scale for downstream statistical inference.
+        \textbf{Distributional and variance-structure comparison of $\beta$ and $M$ values in Normal and Adjacent breast tissue.}
+        Top row: empirical $\beta$- and $M$-value distributions, illustrating the U-shaped behaviour of $\beta$-values and the symmetry introduced by the logit transformation.  
+        Bottom row: mean--SD relationships showing strong mean-dependent variance in $\beta$-space and its stabilisation in $M$-space, supporting the use of $M$-values for downstream modelling.
     }
-    \label{fig:gse287331_msd}
+    \label{fig:gse287331_beta_m_combined}
 \end{figure}
 
 
-\paragraph{Step~0 -- Initial Pre-processing}
-\label{par:gse287331_step0}
-
-The GSE287331 dataset was imported from its Parquet representation, yielding an initial
-$\beta$-value matrix of \good{446 samples} and \good{703{,}168 CpGs}.
-The accompanying phenotype table reported the same number of entries and contained
-all required metadata fields.  
-Before continuing with probe-level preprocessing, the dataset underwent a dedicated
-missingness-cleaning stage to ensure high-quality input for downstream analysis.
-
-Following phenotype harmonisation and sample selection criteria specific to this
-dataset, the working cohort consisted of \good{311 samples}, which were used for all
-subsequent steps of the pipeline.  
-Sample identifiers were unique, correctly formatted, and in perfect correspondence
-between the methylation and phenotype tables.
-
-\textbf{Missingness filtering and imputation}
-Probe-wise missingness was quantified across the $\beta$-matrix.  
-Consistent with recommendations from Islam \textit{et al.}~\cite{islam2019_pediatric_dnamm}
-and Mansell \textit{et al.}~\cite{mansell2019guidance}, a stringent threshold was applied:
-all CpG sites missing in more than \good{1\%} of samples were removed.
-This filter ensures high-confidence measurements while leveraging the
-large dimensionality of the EPIC platform.
-
-After applying this criterion, the remaining level of sparsity was extremely low,
-with only \good{58{,}561 NaN} values (\good{0.0187\%} of all entries).  
-These residual missing values were imputed using probe-wise median substitution,
-a strategy that avoids introducing group-specific bias and is also adopted in
-recent harmonisation workflows such as mLiftOver~\cite{chen2024_mliftover}.
-
-The resulting $\beta$-matrix contained no missing values and was suitable for
-probe-design diagnostics and technical filtering.
-
-\textbf{Data integrity verification}
-After missingness filtering and imputation, the final working matrix consisted of  
-\good{311 samples} and \good{703{,}168 CpGs}.  
-All entries were fully observed (\good{0 residual NaN}), and sample alignment
-between metadata and methylation values was complete, allowing the preprocessing
-pipeline to proceed with Infinium Type~I/II bias diagnostics.
-
-\paragraph{Step~1 -- Infinium Type I/II Bias Diagnostics}
-\label{subpar:gse287331_typebias}
-
-A probe–design diagnostic analysis was performed to assess potential discrepancies between
-Infinium Type~I and Type~II probes. Using the official EPIC v1.0 manifest,  
-\good{115{,}705 Type~I} and \good{585{,}514 Type~II} probes were identified.
-
-The $\beta$-value distributions of the two chemistries showed a marked mismatch
-(Fig.~\ref{fig:gse287331_type_bias_density}), with Type~II probes displaying a strong
-right-shifted profile. The quantile--quantile comparison confirmed a substantial systematic
-offset, with a median absolute deviation of \good{0.380}
-(Fig.~\ref{fig:gse287331_type_bias_qq}), indicating the absence of any Infinium
-probe-design bias correction in the originally released data.
-
-Given this discrepancy, a per-sample BMIQ normalization step was applied using the
-\texttt{wateRmelon} implementation, operating strictly on individual samples to minimise
-cross-sample distortion. Post-correction diagnostics showed a modest reduction in
-probe-type mismatch ($|\Delta| : 0.380 \rightarrow 0.370$) and a slight improvement in the
-alignment of high-$\beta$ regions, but the overall distributional discrepancy remained
-substantial. 
-Due to this limited harmonization and the known tendency of BMIQ to attenuate biological
-differences when global distributional shifts are present, the corrected matrix is not used
-for downstream modelling. All subsequent analyses therefore rely on the non-BMIQ
-version of the dataset, which preserves clearer group-level structure and avoids
-normalization-induced shrinkage.
-
-\paragraph{Step~2 -- Technical Filtering}
-\label{par:gse287331_step2}
-
-Technical probe filtering was applied to exclude CpG loci affected by unreliable
-hybridisation, SNP interference, multi-mapping, or annotation inconsistencies.
-The initial working matrix contained \good{702{,}918 CpGs} across the 311 selected
-samples. The intersection with established technical probe-filtering resources
-showed substantial overlap across multiple lists.
-
-\begin{itemize}[label=-]
-    \item \good{124{,}511} CpGs flagged by Naeem et al.~\cite{naeem2014};
-    \item \good{8{,}992} CpGs in the Pidsley/Chen blacklist~\cite{pidsley2016,chen2013};
-    \item \good{102{,}802} CpGs annotated by Zhou’s \texttt{MASK\_*} fields~\cite{zhou2016};
-    \item \good{1{,}730} cross-reactive probes from Chen et al.~\cite{chen2013};
-    \item \good{3{,}672} cross-hybridising loci identified by McCartney et al.~\cite{mccartney2016}.
-\end{itemize}
-
-The union of all lists resulted in the removal of \good{203{,}114 unique CpGs},
-leaving \good{499{,}804 CpGs} before annotation-based filtering.
-
-
-\subparagraph{Annotation-based filtering (Illumina manifest)}
-Using the EPIC v1.0 manifest, probes lacking valid genomic coordinates or targeting
-non-CpG contexts (IDs beginning with ``\texttt{ch}'') were removed.  
-This eliminated \good{500 non-CpG probes}, reducing the feature set to
-\good{499{,}552 CpGs}.
-
-\subparagraph{Removal of sex-chromosome probes (X/Y)}
-Probes mapped to chromosomes~X and~Y were removed to avoid sex-driven confounding.
-A total of \good{12{,}579 CpGs} were discarded, resulting in an autosomal
-working set of \good{486{,}973 CpGs}.
-
-\subparagraph{Technical filtering summary}
-Across all filters, \good{216{,}193 unique CpGs} were removed from the initial
-\good{702{,}918}, leaving a final autosomal set of \good{486{,}725 CpGs}.
-A probe-level removal summary, including all contributing lists and
-the \texttt{Source\_Count} redundancy indicator, is provided in
-\texttt{removed\_cpgs\_all\_filters\_summary.csv}.
-
-\paragraph{Step~3 -- Invariance Filtering on Normal+Adjacent}
-\label{par:gse287331_step3}
-
-A variability-based filtering analysis was performed to identify CpG loci exhibiting
-minimal dispersion in Normal+Adjacent (N+A) breast tissue.  
-For each CpG, the variability statistic
-\[
-r_\beta = P90(\beta) - P10(\beta)
-\]
-was computed across \good{486{,}725 autosomal probes}, producing the distribution
-shown in Fig.~\ref{fig:gse287331_rbeta_distributions}.
-The density exhibited a large concentration of low-variability loci.  
-Applying the study threshold \( r_\beta < 0.05 \) resulted in
-\good{201{,}978 non-variable CpGs} (\good{41.5\%}),
-leaving \good{284{,}747 CpGs} for downstream modelling.
-
-\subparagraph{Variability comparison with Normal+Tumor}
-To assess whether tissue-specific variability patterns were preserved upon inclusion of tumour
-samples, the same computation was applied to the N+T subset, identifying  
-\good{168{,}663 non-variable CpGs}.  
-The two variability measures showed strong concordance
-(\good{Spearman $\rho = 0.933$}), with a distinct set of loci deviating from the identity
-line (Fig.~\ref{fig:gse287331_scatter_enrichment}).  
-These correspond to CpGs that lose stability when tumour samples are added.
-
-The set comparison yielded:
-\begin{itemize}[label=-]
-    \item \textbf{Stable invariants} (N+A $\cap$ N+T): \good{165{,}833 CpGs};
-    \item \textbf{Breakdown loci} (N+A \textbackslash{} N+T): \good{36{,}145 CpGs};
-    \item \textbf{N+T-only invariants}: \good{2{,}830 CpGs}.
-\end{itemize}
-
-\subparagraph{Comparison with universal invariant CpGs (Edgar et al.)}
-Invariant loci were compared with the universal CpG set reported by Edgar
-(\good{42{,}315 CpGs}).  
-In this dataset:
-\begin{itemize}[label=-]
-    \item \good{28{,}073} overlapped with N+A invariants;
-    \item \good{27{,}646} remained invariant in N+T;
-    \item \good{496} universal invariants became variable when tumour samples were added.
-\end{itemize}
-
-Using the threshold \(r_\beta < 0.05\), a total of 
-\good{201{,}978 N+A invariants} (\good{41.5\%}) were removed,
-yielding a working matrix of \good{284{,}747 CpGs} across \good{446 samples}.  
-All decisions were recorded in the updated per-probe summary, which now includes
-an Edgar invariance flag and updated \texttt{Source\_Count}.
-
-\paragraph{Step~4 -- $\beta$ to $M$ Conversion}
-\label{par:gse287331_step4}
-
 Given the strong mean--variance dependence intrinsic to $\beta$-values, the working
 matrix obtained after technical and invariance filtering  
-(\good{284{,}747 CpGs} across \good{446 samples}) 
-was transformed into $M$-values using the logit mapping
-\[
-M = \log_2\!\left(\frac{\beta + \varepsilon}{1 - \beta + \varepsilon}\right),
-\qquad \varepsilon = 10^{-6}.
-\]
+(\good{284{,}747 CpGs} across \good{311 samples}) 
+was transformed into $M$-values.
 This transformation yields an approximately homoscedastic scale and is the standard
 input for linear models, empirical Bayes moderation, and batch-effect correction.
 
@@ -1160,23 +1110,8 @@ The transformation was applied to all CpG columns (\good{284{,}745 CpGs}, exclud
 The resulting object, \texttt{M\_clean}, preserves the same schema as the
 $\beta$-matrix and was stored as a memory-efficient \texttt{LazyFrame}.
 
-As in previous datasets, $M$-values were computed only for samples belonging to the
-Normal, Adjacent, and Tumor groups.  
-Since the harmonized phenotype indicates that \good{311} samples belong to these
-categories (labels 0/1/2), the final $M$-matrix contains:
-\[
-\text{M\_clean shape: } \good{311 \times 284{,}747}.
-\]
-This reduction reflects the exclusion of samples annotated with non-biological
-labels (e.g.\ quality-control entries or non-breast tissues), and is consistent with
-the dataset’s experimental design.
-
-A preview of the resulting table confirms numerical correctness across the full CpG
-panel, including loci with extreme $\beta$ values near the boundaries of the unit
-interval.
-
-\noindent\textbf{Distributional effects of the $\beta \rightarrow M$ transformation.}
-Figures~\ref{fig:gse287331_beta_m_dists} and~\ref{fig:gse287331_msd} illustrate the
+\textbf{Distributional effects of the $\beta \rightarrow M$ transformation.}
+Fig. \ref{fig:gse287331_beta_m_combined} illustrates the
 impact of the transformation on the empirical data distribution.  
 As expected, the U-shaped $\beta$-profiles for Normal and Adjacent tissues become
 substantially more symmetric after conversion, while the pronounced mean--SD
@@ -1184,14 +1119,6 @@ dependence flattens into a markedly more stable variance structure across the fu
 range of $M$-values.  
 These properties make $M$-values preferable for statistical modelling, whereas
 $\beta$-values are retained for biological interpretation and visualisation.
-
-\subparagraph{Summary}
-The $M$-value matrix (\good{311 samples} × \good{284{,}747 CpGs}) was saved to disk in
-compressed Parquet format and is used for all modelling tasks.  
-The $\beta$-matrix is retained for interpretability-focused analyses such as
-heatmaps, density plots, and outlier visualisation.
-
-
 
 
 % ============================================================
@@ -1283,7 +1210,7 @@ Each \href{https://zwdzwd.github.io/InfiniumAnnotation/mask.html}{mask} flags pr
 
 This resource provides a programmatic and reproducible way to perform fine-grained probe masking.
 
-\begin{figure}[!htbp]
+\begin{figure}[t]
     \centering
     \includegraphics[width=0.4\textwidth]{Figures/Workflow for determining affected Probes.jpg}
 
