@@ -1,0 +1,240 @@
+\documentclass[10pt]{extarticle}
+
+% Lingua e matematica
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,amsthm}
+
+% Grafica e tabelle
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{siunitx}
+\usepackage{wrapfig}
+%\usepackage[section]{placeins}  % mantiene i float dentro la SECTION
+%\let\Oldsubsection\subsection   % estendo il comportamento anche alle SUBSECTION
+%\renewcommand{\subsection}{\FloatBarrier\Oldsubsection}
+\usepackage{placeins}
+
+
+% Codice (opzionale)
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.98,0.98,0.98}
+\lstdefinestyle{mystyle}{
+  backgroundcolor=\color{backcolour},
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true, keepspaces=true, numbers=none, tabsize=2
+}
+\lstset{style=mystyle}
+
+% Margini
+\usepackage[margin=0.6in]{geometry}
+\usepackage{ragged2e}
+\usepackage{enumitem}
+%\usepackage[utf8]{inputenc} % per caratteri UTF-8 nei .tex e nel .bib
+\usepackage[backend=biber,style=ieee,sorting=none,maxbibnames=99]{biblatex}
+\ExecuteBibliographyOptions{doi=true,url=true,isbn=false}
+\addbibresource{references.bib}
+\usepackage{csquotes}       % consigliato da biblatex (evita warning e parse strani)
+\usepackage{pifont}
+\newcommand{\good}[1]{\textcolor{teal!70!black}{\ding{51}~#1}}
+
+
+
+% Bibliografia (biblatex + biber)
+\usepackage[backend=biber,style=ieee]{biblatex}
+\addbibresource{references.bib}
+
+% TOC: includi anche \paragraph e numerali
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+
+% Hyperref (sempre *dopo* gli altri pacchetti)
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=teal,urlcolor=magenta]{hyperref}
+
+
+\begin{document}
+
+% Custom header without a separate titlepage
+\noindent
+\begin{minipage}{0.3\textwidth}
+    \includegraphics[width=1.3\linewidth]{Figures/polito_logo_2021_blu.jpg}
+\end{minipage}
+\hfill
+\begin{minipage}{0.68\textwidth}
+    \raggedleft
+    {\LARGE \textbf{Politecnico di Torino}}\\[0.2cm]
+    {\large Master's Degree in Mathematical Engineering}\\[0.7cm]
+    {\large \textbf{Material for Thesis}}\\[0.2cm]
+    {\large e-- Data Pre-processing Pipeline \\ Age Study}\\[0.7cm]
+    \begin{tabular}{rl}
+        Elisabetta Roviera & \texttt{s328422} \\
+    \end{tabular}
+\end{minipage}
+
+\vspace{1cm}
+\hrule
+\vspace{0.5cm}
+
+\tableofcontents
+
+\vspace{0.5cm}
+\hrule
+\vspace{1cm}
+
+
+% Main content begins here, on the same page
+\justifying
+
+\begin{abstract}
+{\color{red}
+\textbf{MANCA L'ABSTRACT.}
+}
+\end{abstract}
+
+% ============================================================
+% Epigenetic Age Estimation
+% ============================================================
+
+\section{Epigenetic Age Estimation}
+
+\paragraph{Concept of DNA methylation age}
+DNA methylation age (DNAmAge) is an estimate of biological aging derived from DNA methylation levels at specific CpG sites. Unlike chronological age, which reflects the time elapsed since birth, DNAmAge captures cumulative molecular changes associated with aging processes, environmental exposures, and tissue-specific stressors. Numerous studies have shown that DNAmAge correlates with age-related phenotypes and disease risk, and that deviations between DNAmAge and chronological age—commonly referred to as \emph{age acceleration}—may reflect altered biological aging trajectories.
+
+\paragraph{The Horvath multi-tissue epigenetic clock}
+The epigenetic clock developed by Horvath (2013) represents the first large-scale, multi-tissue DNA methylation age predictor \cite{Horvath2013}. The model was trained on approximately 8,000 samples from 82 publicly available datasets, spanning 51 distinct human tissues and cell types, including solid tissues and pathological samples. This broad training design explicitly aimed to construct an age predictor that is robust across heterogeneous biological contexts, rather than being restricted to a single tissue type.
+
+\paragraph{Model formulation}
+The Horvath clock is based on a penalized linear regression model (elastic net), trained on a candidate set of 21,369 CpG sites shared across Illumina 27k and 450k platforms. From this candidate set, the model selects 353 CpG sites whose methylation levels jointly predict chronological age. DNAmAge is computed as a weighted linear combination of the methylation beta values at these 353 CpGs plus an intercept term,
+\[
+\text{DNAmAge} = \sum_{i=1}^{353} w_i \beta_i + b,
+\]
+where $\beta_i$ denotes the methylation level of the $i$-th CpG and $w_i$ the corresponding regression coefficient. The simplicity and interpretability of this formulation, combined with its multi-tissue training strategy, have made the Horvath clock a widely adopted reference standard for epigenetic age estimation.
+
+\paragraph{Applicability and limitations in breast tissue}
+While the Horvath clock is designed to operate across multiple tissues, its original publication explicitly notes that age prediction accuracy varies by tissue type, with breast tissue among the most challenging contexts for accurate estimation \cite{Horvath2013}. Increased cellular heterogeneity, hormonal influences, and tissue-specific epigenetic remodeling contribute to this difficulty. Nevertheless, the clock remains applicable to breast tissue and is extensively used in oncological and pre-neoplastic studies, provided that results are interpreted in light of these limitations.
+
+% ============================================================
+% Application to GSE225845
+% ============================================================
+
+\section{Application of the Horvath Clock to GSE225845}
+
+\paragraph{Input data and preprocessing}
+Epigenetic age estimation was performed on the GSE225845 dataset using beta values obtained after the complete preprocessing pipeline described in the previous sections. Briefly, preprocessing included probe-level technical filtering (removal of cross-reactive probes, polymorphic CpGs, non-CpG probes, and sex-chromosome probes), handling of missing values, and normalization using BMIQ to correct for Infinium Type I/II probe design bias. This ensured compatibility with the assumptions underlying the original Horvath clock and reduced technical sources of variation.
+
+\paragraph{Sample selection}
+The analysis was restricted to Normal and Tumor-Adjacent breast tissue samples (Normal + Adjacent). Tumor samples were deliberately excluded from epigenetic age estimation, as malignant transformation induces extensive and non-age-related DNA methylation changes that violate the biological assumptions of epigenetic clocks and can lead to systematically distorted age estimates. Restricting the analysis to non-tumoral tissues allows DNAmAge to be interpreted as a marker of biological aging and tissue stress rather than as a direct consequence of malignant epigenetic reprogramming.
+
+\paragraph{CpG coverage and imputation strategy}
+The Horvath clock requires methylation measurements for 353 CpG sites. In GSE225845, generated using the Illumina EPIC (850k) array, 316 of these CpGs were directly available, while 37 CpGs were missing due to platform differences between EPIC and the arrays used during model training. Missing CpGs were imputed following the original procedure described in the Supplementary Methods of Horvath (2013), using platform-specific reference values (goldstandard or goldstandard2) when available, and a conservative default value of $\beta = 0.5$ otherwise \cite{Horvath2013}. After imputation, a complete set of 353 CpGs was obtained for each sample, enabling consistent application of the clock across all individuals.
+
+\paragraph{Computation of DNAmAge and downstream metrics}
+For each sample, DNAmAge was computed using the published regression coefficients and intercept of the Horvath model. Chronological age at surgery was used as the reference age variable. Model performance was subsequently evaluated using standard accuracy metrics, including mean absolute error (MAE), root mean squared error (RMSE), Pearson correlation coefficient ($R$), coefficient of determination ($R^2$), and mean absolute percentage error (MAPE). In addition, age acceleration was defined as the signed difference between DNAmAge and chronological age and analyzed both globally and stratified by tissue group.
+
+% ============================================================
+% Results
+% ============================================================
+
+\section{Results}
+
+\paragraph{Global performance of epigenetic age estimation}
+Epigenetic age estimation using the Horvath clock was successfully performed on all Normal and Tumor-Adjacent samples of the GSE225845 dataset ($n = 253$). Overall, DNAmAge showed a moderate-to-strong linear association with chronological age, with a Pearson correlation coefficient of $R = 0.770$ and a coefficient of determination of $R^2 = 0.593$. The mean absolute error (MAE) was 9.989 years, while the root mean squared error (RMSE) was 11.691 years. These values are consistent with previously reported performance of the Horvath clock when applied to EPIC data and to tissue types that were not explicitly optimized during model training \cite{Horvath2013}.
+
+\paragraph{Performance stratified by tissue group}
+When stratifying by tissue type, distinct behaviors emerged between Normal and Tumor-Adjacent samples. Normal tissues exhibited a higher estimation error (MAE = 11.6 years) compared to Adjacent tissues (MAE = 8.71 years). A similar trend was observed for RMSE and MAPE. Despite the increased error, correlations with chronological age remained comparable between groups, indicating that DNAmAge retains a consistent linear relationship with age across tissue contexts. The improved performance observed in Adjacent tissues may reflect more homogeneous epigenetic alterations shared across samples, potentially related to common environmental exposures or early field effects.
+
+\paragraph{Age acceleration patterns}
+Age acceleration was defined as the signed difference between DNAmAge and chronological age. At the global level, samples displayed a pronounced positive age acceleration, with a mean value of +7.57 years and a median of +9.10 years, indicating that breast tissue in this cohort is epigenetically older than expected based on chronological age alone. Stratified analysis revealed markedly different distributions between tissue groups. Normal samples showed strong age acceleration (mean $\approx$ +10.9 years), whereas Adjacent samples exhibited a more moderate acceleration (mean $\approx$ +4.9 years) accompanied by higher variability. This pattern suggests that a subset of clinically normal tissues already displays substantial epigenetic aging, consistent with early stress or pre-neoplastic alterations.
+
+\paragraph{Visualization of age effects and methylation structure}
+Figure~\ref{fig:age_and_pca} summarizes the relationship between DNAmAge, chronological age, and global methylation structure. Scatter plots of DNAmAge versus chronological age illustrate the overall linear association and highlight group-specific differences in dispersion and bias. Principal component analysis (PCA) performed on raw methylation data reveals a dominant age-related axis, indicating that chronological age constitutes a major source of variance in the methylome. After regressing out age-related effects, PCA embeddings show a markedly altered structure, confirming that age acts as a strong confounding factor shaping global methylation patterns.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tabular}{ccc}
+        \includegraphics[width=0.30\textwidth]{Figures/age_by_label_1.pdf} &
+        \includegraphics[width=0.30\textwidth]{Figures/pca_raw_1.pdf} &
+        \includegraphics[width=0.30\textwidth]{Figures/pca_residual_1.pdf} \\
+        \includegraphics[width=0.30\textwidth]{Figures/age_by_label_2.pdf} &
+        \includegraphics[width=0.30\textwidth]{Figures/pca_raw_2.pdf} &
+        \includegraphics[width=0.30\textwidth]{Figures/pca_residual_2.pdf}
+    \end{tabular}
+    \caption{Epigenetic age estimation and age-related structure in GSE225845. 
+    \textbf{Top row:} DNAmAge versus chronological age for Normal samples, Adjacent samples, and the combined cohort, respectively. 
+    \textbf{Bottom row:} PCA of methylation data before age adjustment (raw), after removal of age-related effects (residual), and residual PCA colored by tissue group. 
+    The comparison highlights the dominant role of age in shaping global methylation variance and the structural changes induced by age correction.}
+    \label{fig:age_and_pca}
+\end{figure}
+
+\paragraph{Interpretation}
+Collectively, these results indicate that epigenetic age captures a substantial component of methylation variability in breast tissue. The strong age-related signal observed in raw methylation data, together with the marked age acceleration detected in Normal samples, supports the hypothesis that age-associated epigenetic remodeling precedes overt tumorigenesis. The more moderate but heterogeneous acceleration observed in Adjacent tissue suggests an intermediate epigenetic state, potentially reflecting early field cancerization effects rather than fully developed malignant reprogramming.
+
+% ============================================================
+% Biological rationale for age modelling
+% ============================================================
+
+\section{Biological Rationale for Age Modelling}
+
+\paragraph{Age-dependent DNA methylation as a cancer-related process}
+Age is one of the strongest determinants of DNA methylation variability in human tissues. Beyond a gradual accumulation of stochastic changes, age-related methylation alterations preferentially affect specific genomic regions and functional categories. Teschendorff et al.\ demonstrated that CpG sites showing age-dependent hypermethylation are significantly enriched in genes that are suppressed in stem cells and regulated by Polycomb group proteins, a molecular signature that is recurrently observed in cancer \cite{Teschendorff2010}. This convergence between aging-associated epigenetic remodeling and oncogenic epigenetic patterns suggests that age-related methylation changes may actively contribute to cancer susceptibility rather than merely reflecting passive molecular drift.
+
+\paragraph{Implications for breast tissue and field cancerization}
+In breast tissue, age-related epigenetic alterations are particularly relevant due to the interplay between aging, hormonal exposure, and cumulative environmental stress. The presence of age-dependent methylation changes in histologically normal tissue supports the concept of \emph{field cancerization}, whereby molecular alterations precede overt malignant transformation and extend beyond the tumor boundaries. In this context, DNAmAge and age acceleration provide a quantitative proxy for the biological aging and stress state of breast tissue, enabling the identification of early epigenetic alterations that may predispose to tumor development.
+
+% ============================================================
+% Age binning strategy
+% ============================================================
+
+\section{Age Binning Strategy}
+
+\paragraph{Rationale for discretizing age}
+Chronological age was discretized into biologically motivated bins rather than treated exclusively as a continuous variable. This choice reflects the non-linear relationship between age, breast cancer risk, and underlying molecular processes. Epidemiological and clinical studies indicate that breast cancer arising in younger women constitutes a biologically distinct entity, characterized by different tumor subtypes, aggressiveness, and outcomes compared to disease in older women \cite{Azim2012}. Consequently, discretizing age allows the analysis to reflect clinically and biologically meaningful transitions rather than assuming a uniform linear effect across the entire age range.
+
+\paragraph{Biological interpretation of age bins}
+Age bins were defined to capture distinct phases of breast tissue aging that are associated with different hormonal and molecular environments. In particular, younger age groups correspond to premenopausal or early perimenopausal states, while older age groups reflect postmenopausal conditions, which are known to profoundly influence breast tissue biology and cancer risk. The binning strategy is therefore intended to enhance interpretability and robustness of downstream analyses, rather than to improve the numerical accuracy of epigenetic age prediction.
+
+\paragraph{Methodological considerations}
+Importantly, age discretization was not employed to optimize or artificially reduce prediction error of the epigenetic clock. Instead, bins were introduced solely for downstream stratified analyses aimed at comparing methylation patterns across biologically distinct age groups. This approach avoids circular reasoning and preserves the independence between age estimation and subsequent analyses of age-associated methylation changes.
+
+% ============================================================
+% Downstream analysis constraints
+% ============================================================
+
+\section{Downstream Analysis Constraints}
+
+\paragraph{Removal of Horvath clock CpGs}
+To prevent information leakage and circularity in downstream analyses, all CpG sites used by the Horvath epigenetic clock were explicitly removed from the set of CpGs considered for subsequent feature selection and differential methylation analyses. This step ensures that age-related signals captured by the clock do not trivially reappear in later analyses, thereby preserving the interpretability and validity of age-adjusted results.
+
+\paragraph{Implications for downstream analyses}
+By separating CpGs used for age estimation from those used for downstream investigation, the analytical pipeline maintains a clear distinction between age modelling and the discovery of novel methylation patterns associated with tissue state or age group. This constraint is particularly important in the context of breast cancer epigenomics, where age represents a dominant confounding factor and must be carefully controlled to avoid spurious associations.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.32\textwidth]{Figures/GSE69914_bin_counts.pdf}
+    \includegraphics[width=0.32\textwidth]{Figures/GSE225845_bin_counts.pdf}
+    \includegraphics[width=0.32\textwidth]{Figures/GSE287331_bin_counts.pdf}
+    \caption{
+    Distribution of samples across epigenetic age bins in the three analyzed datasets.
+    Age bins are defined as: young ($\leq 40$ years), peri-menopausal (41--52 years),
+    post-menopausal (53--64 years), and elderly ($\geq 65$ years).
+    For each cohort, bars report the number of samples falling within each age bin.
+    }
+    \label{fig:age_bin_distribution}
+\end{figure}
+
+
+
+
+
+\printbibliography
+\end{document}
