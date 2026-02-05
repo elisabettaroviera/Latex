@@ -116,8 +116,9 @@ bias, and batch effects—must be addressed through a systematic and reproducibl
 
 The primary goal of this section is therefore to construct, for each dataset, a high-quality and biologically coherent
 methylation matrix suitable for downstream analyses. To this end, all datasets undergo the same structured pipeline:
-initial alignment and quality checks; removal of unreliable CpGs through literature-based technical filtering; and conversion
-from $\beta$-values to M-values for statistical modelling.
+initial alignment and quality checks; removal of unreliable CpGs through literature-based technical filtering; identification of invariant CpGs that
+carry no discriminative information along the Normal–Adjacent axis; conversion
+from $\beta$-values to M-values for statistical modelling; and correction of batch effects.
 
 These steps ensure methodological consistency across the three cohorts (GSE69914 [\ref{subsec:gse69914_preproc}], GSE225845 [\ref{subsec:gse225845_preproc}], GSE287331 [\ref{subsec:gse287331_preproc}]) and
 provide a unified, denoised, and biologically meaningful set of features to be used in the subsequent analyses of early
@@ -290,7 +291,131 @@ A per-probe summary file \href{https://github.com/elisabettaroviera/THESIS/blob/
 {\texttt{removed\_cpgs\_all\_filters\_summary\_gse69914.csv}} records, for each excluded probe,
 which resources contributed to its removal, ensuring full reproducibility of the filtering pipeline.  
 
-\paragraph{Step~3 -- $\beta$ to $M$ Conversion}
+\paragraph{Step~3 -- Invariance Filtering on Normal+Adjacent}
+\label{par:gse69914_step3}
+
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/GSE69914_r_beta_distribution_NA_study_1.pdf}
+        \caption{\(r_\beta\) distribution on Normal+Adjacent samples, with thresholds
+        at 0.01, 0.02, and 0.05.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/GSE69914_r_beta_distribution_NT_study_1.pdf}
+        \caption{\(r_\beta\) distribution on Normal+Tumor samples, with thresholds
+        at 0.01, 0.02, and 0.05.}
+    \end{subfigure}
+    \caption{\textbf{Variability range analysis}.  
+    The Normal+Adjacent subset displays a large block of CpGs with extremely low
+    variability (\(r_\beta < 0.05\)), supporting the use of invariance filtering
+    to reduce biologically uninformative loci.}
+    \label{fig:gse69914_rbeta_distributions}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    % Left: scatter
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/GSE69914_plot_scatter_rbeta_NA_vs_NT.pdf}
+        \caption{Comparison of CpG variability between N+A and N+T.  
+        Breakdown loci diverge from the identity line.}
+    \end{subfigure}
+    \hfill
+    % Right: barplot enrichment
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/GSE69914_plot_enrichment_gene_invariant.pdf}
+        \caption{Genomic enrichment of invariant N+A CpGs across gene features.}
+        \label{fig:gse69914_invariant_enrichment}
+    \end{subfigure}
+    \caption{
+        \textbf{Variability concordance and genomic context of invariant CpGs}.  
+        Stable loci dominate the diagonal, while breakdown loci reflect tumour-induced
+        methylation variability. Promoter regions show the strongest enrichment of
+        invariant CpGs.}
+    \label{fig:gse69914_variability_scatter}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.72\textwidth]{Figures/GSE69914_venn_universal_vs_NA_vs_NT.pdf}
+    \caption{
+        \textbf{Intersection between universal invariant CpGs (Edgar) and breast invariants}.  
+        Core invariants (Edgar~\(\cap\)~N+A~\(\cap\)~N+T) represent strongly conserved loci,
+        whereas “breakdown loci’’ highlight CpGs losing stability specifically in tumour
+        tissue.}
+    \label{fig:gse69914_edgar_comparison}
+\end{figure}
+
+A stage of feature-level pre-processing was applied to remove CpG loci
+that exhibit minimal biological variability in \textbf{normal breast tissue}.
+This strategy follows the empirically driven framework proposed by
+Edgar~et~al.~\cite{Edgar2017} for detecting non-variable CpGs across tissues
+using the \(\beta\)-value range statistic
+\[
+r_\beta = P90(\beta) - P10(\beta),
+\]
+computed here separately on \textbf{Normal+Adjacent} (N+A) and
+\textbf{Normal+Tumor} (N+T) subsets.
+
+For the N+A group, \(r_\beta\) was computed for all
+\good{251{,}483 autosomal CpGs}.  
+The distribution of variability revealed that a substantial proportion of
+CpGs display extremely narrow dynamic range
+(Fig.~\ref{fig:gse69914_rbeta_distributions}).  
+Following Edgar et al.'s recommended threshold of
+\(\,r_\beta < 0.05\,\), a total of
+\good{100{,}683 CpGs (40.0\%)} were classified as \textbf{non-variable} and
+removed from subsequent modelling, leaving \good{150{,}800 CpGs} as the
+\textbf{post-invariance feature set}
+used to construct the matrix \texttt{beta\_final\_preFS}
+(\good{397 samples $\times$ 150{,}800 CpGs}).
+
+A parallel computation on the N+T subset showed reduced invariance:
+\good{77{,}687 CpGs (30.9\%)} were non-variable under the same threshold.
+Comparing the two invariance sets revealed three biologically informative
+categories:
+\begin{itemize}[label=-]
+    \item \textbf{Stable invariants} (\good{75{,}029 CpGs}):  
+    loci consistently non-variable in both N+A and N+T;
+    \item \textbf{Breakdown loci} (\good{25{,}654 CpGs}):  
+    CpGs variable only when tumour samples are introduced, indicating possible
+    \emph{tumour-driven epigenetic disruption};
+    \item \textbf{NT-only invariants} (\good{2{,}658 CpGs}):  
+    CpGs non-variable in N+T but variable in normal breast tissue.
+\end{itemize}
+
+To assess whether variability patterns in N+A were consistent with N+T, a
+scatter comparison between \(r_\beta^{(NA)}\) and \(r_\beta^{(NT)}\) was
+generated (Fig.~\ref{fig:gse69914_variability_scatter}).  
+The two measures exhibited strong concordance
+(\good{Spearman~\(\rho = 0.845\)}), although a clear band of CpGs deviated
+from the diagonal, corresponding precisely to the \textbf{breakdown loci}
+defined above.
+
+Further annotation-based analysis showed that invariants are not uniformly
+distributed across genomic elements.
+Invariant CpGs were enriched in promoter-proximal regions—particularly
+\texttt{TSS200} and \texttt{1stExon}—while gene bodies and 3'UTRs were
+underrepresented (Fig.~\ref{fig:gse69914_invariant_enrichment}).
+This pattern mirrors the findings of Edgar~et~al.~\cite{Edgar2017}, who
+reported that invariant CpGs preferentially occupy regulatory elements with
+constitutively stable methylation profiles.
+
+Invariants in breast tissue were compared with the three tissue
+invariance sets published by Edgar~et~al.\ (blood, buccal, placenta).
+Their intersection yielded \good{42{,}315 universal CpGs} shared across all tissues.
+Among these, \good{30{,}251} remained invariant in Normal+Adjacent breast, and \good{28{,}351} remained invariant even after including tumour samples.
+A biologically relevant subset of \good{2{,}010 CpGs} belonged to the breakdown category, suggesting possible tissue-specific loss of epigenetic stability in tumourigenesis.
+Furthermore, more detailed comparisons between Edgar et al.’s invariant CpGs and the subset invariant in normal breast tissue are presented in the Inter-Dataset Analysis chapter (see Section~\ref{sec:inter_dataset}). 
+
+\paragraph{Step~4 -- $\beta$ to $M$ Conversion}
 \label{par:gse69914_step4}
 
 % ============================================================
@@ -491,7 +616,111 @@ A detailed per-probe summary of the filtering decisions is provided in
 }
 {\texttt{removed\_cpgs\_all\_filters\_summary\\\_gse225845.csv}}.
 
-\paragraph{Step~3 -- $\beta$ to $M$ Conversion}
+\paragraph{Step~3 -- Invariance Filtering on Normal+Adjacent}
+\label{par:gse225845_step3}
+
+
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/GSE225845_r_beta_distribution_NA_study.pdf}
+        \caption{$r_\beta$ distribution on Normal+Adjacent samples, with thresholds at  
+        0.01, 0.02, and 0.05.}
+        \label{fig:gse225845_rbeta_NA}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/GSE225845_r_beta_distribution_NT_study.pdf}
+        \caption{$r_\beta$ distribution on Normal+Tumor samples under the same thresholds.}
+        \label{fig:gse225845_rbeta_NT}
+    \end{subfigure}
+    \caption{
+        Variability range analysis.  
+        A large block of CpGs shows low dispersion in both N+A and N+T groups,
+        supporting the use of invariance filtering to remove biologically uninformative loci.
+    }
+    \label{fig:gse225845_rbeta_distributions}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/GSE225845_plot_scatter_rbeta_NA_vs_NT.pdf}
+        \caption{Comparison of N+A vs.\ N+T variability.  
+        Breakdown loci deviate from the identity line.}
+        \label{fig:gse225845_rbeta_scatter}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/GSE225845_plot_enrichment_gene_invariant.pdf}
+        \caption{Genomic enrichment of N+A invariant CpGs across annotated gene features.}
+        \label{fig:gse225845_invariant_enrichment}
+    \end{subfigure}
+    \caption{
+        Variability concordance and genomic context of invariant CpGs.  
+        Promoter-associated regions show the strongest enrichment, while tumour-induced
+        breakdown loci reveal loss of stability upon inclusion of tumour samples.
+    }
+    \label{fig:gse225845_variability_scatter}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.72\textwidth]{Figures/GSE225845_venn_universal_vs_NA_vs_NT.pdf}
+    \caption{
+        Intersection between universal invariant CpGs and breast-tissue invariants.
+    }
+    \label{fig:gse225845_edgar_comparison}
+\end{figure}
+
+For each CpG, the variability statistic
+\(
+r_\beta = P90(\beta) - P10(\beta)
+\)
+was computed on the \good{530{,}683} autosomal probes remaining after technical filtering.
+The distribution displayed a substantial concentration of loci with limited dynamic range,
+supporting the application of invariance filtering.
+
+Using the study threshold \( r_\beta < 0.05 \), a total of  
+\good{130{,}939 CpGs} (\good{24.7\%})  
+were classified as non-variable in N+A tissue and removed.  
+The resulting feature matrix \texttt{beta\_final\_preFS} contains  
+\good{399{,}744 CpGs} across \good{477 samples}.
+
+
+To evaluate the stability of variability estimates when tumour samples are included,
+$r_\beta$ was computed on the N+T subset, identifying  
+\good{103{,}622 non-variable CpGs}.  
+The comparison between N+A and N+T revealed strong concordance  
+(\good{Spearman $\rho = 0.881$}, Fig. \ref{fig:gse225845_rbeta_scatter}), with a visible deviation band corresponding to
+CpGs that lose stability when tumour samples are added. Set comparisons yielded:
+\begin{itemize}[label=-]
+    \item \textbf{Stable invariants} (N+A $\cap$ N+T): \good{102{,}765 CpGs};
+    \item \textbf{Breakdown loci} (N+A \textbackslash{} N+T): \good{28{,}174 CpGs};
+    \item \textbf{N+T-only invariants}: \good{857 CpGs}.
+\end{itemize}
+
+The invariants were compared with the universal CpGs reported by Edgar
+(\good{42{,}315 loci} shared across blood, buccal, and placenta tissues, Fig. \ref{fig:gse225845_edgar_comparison}).  
+In this dataset:
+\begin{itemize}[label=-]
+    \item \good{27{,}895} were invariant in N+A breast tissue;
+    \item \good{26{,}608} remained invariant in N+T;
+    \item \good{1{,}353} universal loci became variable in tumour tissue (breakdown).
+\end{itemize}
+
+
+Applying the threshold \( r_\beta < 0.05 \) yielded  
+\good{130{,}939 N+A invariants} and  
+\good{399{,}744 retained CpGs},  
+now forming the working autosomal matrix for downstream modelling.  
+
+\paragraph{Step~4 -- $\beta$ to $M$ Conversion}
 \label{par:gse225845_step4}
 
 \begin{figure*}[!htbp]
@@ -703,7 +932,107 @@ A probe-level removal summary is provided in
 \href{https://github.com/elisabettaroviera/THESIS/blob/main/05%20-%20CpG%20list/Removed%20CpGs%20per%20Dataset/removed_cpgs_all_filters_summary_gse287331.csv}%
 {\texttt{removed\_cpgs\_all\_filters\_summary\_gse287331.csv}}.
 
-\paragraph{Step~3 -- $\beta$ to $M$ Conversion}
+
+\paragraph{Step~3 -- Invariance Filtering on Normal+Adjacent}
+\label{par:gse287331_step3}
+
+\begin{figure}[t]
+    \centering
+    % r_beta NA
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/GSE287331_r_beta_distribution_NA_study.pdf}
+        \caption{$r_\beta$ distribution on Normal+Adjacent samples.}
+        \label{fig:gse287331_rbeta_NA}
+    \end{subfigure}
+    \hfill
+    % r_beta NT
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/GSE287331_r_beta_distribution_NT_study.pdf}
+        \caption{$r_\beta$ distribution on Normal+Tumor samples.}
+        \label{fig:gse287331_rbeta_NT}
+    \end{subfigure}
+    \caption{
+        Variability range distributions.  
+        A substantial block of CpGs displays low dispersion in both N+A and N+T subsets,
+        supporting the application of invariance filtering.
+    }
+    \label{fig:gse287331_rbeta_distributions}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    % Scatter
+    \begin{subfigure}[t]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{Figures/GSE287331_plot_scatter_rbeta_NA_vs_NT.pdf}
+        \caption{Comparison of N+A vs.\ N+T variability.}
+    \end{subfigure}
+    \hfill
+    % Enrichment
+    \begin{subfigure}[t]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{Figures/GSE287331_plot_enrichment_gene_invariant.pdf}
+        \caption{Genomic enrichment of N+A invariant CpGs.}
+    \end{subfigure}
+    \caption{
+        Variability concordance and genomic context of invariant CpGs.
+        Promoter-associated elements exhibit the strongest enrichment.
+    }
+    \label{fig:gse287331_scatter_enrichment}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.72\textwidth]{Figures/GSE287331_venn_universal_vs_NA_vs_NT.pdf}
+    \caption{
+        Intersection between universal invariants and breast-tissue invariants.
+        Breakdown loci represent universal CpGs that lose stability specifically in tumour tissue.
+    }
+    \label{fig:gse287331_edgar_comparison}
+\end{figure}
+
+A variability-based filtering analysis was performed to identify CpG loci exhibiting
+minimal dispersion in Normal+Adjacent (N+A) breast tissue.  
+For each CpG, the variability statistic
+\(
+r_\beta = P90(\beta) - P10(\beta)
+\)
+was computed across \good{486{,}725 autosomal probes}, producing the distribution
+shown in Fig.~\ref{fig:gse287331_rbeta_distributions}.
+The density exhibited a large concentration of low-variability loci.  
+Applying the study threshold \( r_\beta < 0.05 \) resulted in
+\good{201{,}978 non-variable CpGs} (\good{41.5\%}),
+leaving \good{284{,}747 CpGs} for downstream modelling.
+
+\textbf{Variability comparison with Normal+Tumor.}
+To assess whether tissue-specific variability patterns were preserved upon inclusion of tumour
+samples, the same computation was applied to the N+T subset, identifying  
+\good{168{,}663 non-variable CpGs}.  
+The two variability measures showed strong concordance
+(\good{Spearman $\rho = 0.933$}), with a distinct set of loci deviating from the identity
+line (Fig.~\ref{fig:gse287331_scatter_enrichment}).  
+These correspond to CpGs that lose stability when tumour samples are added. The set comparison yielded:
+\begin{itemize}[label=-]
+    \item \textbf{Stable invariants} (N+A $\cap$ N+T): \good{165{,}833 CpGs};
+    \item \textbf{Breakdown loci} (N+A \textbackslash{} N+T): \good{36{,}145 CpGs};
+    \item \textbf{N+T-only invariants}: \good{2{,}830 CpGs}.
+\end{itemize}
+
+\textbf{Comparison with universal invariant CpGs.}
+Invariant loci were compared with the universal CpG set reported by Edgar
+(\good{42{,}315 CpGs}).  
+In this dataset:
+\begin{itemize}[label=-]
+    \item \good{28{,}073} overlapped with N+A invariants;
+    \item \good{27{,}646} remained invariant in N+T;
+    \item \good{496} universal invariants became variable when tumour samples were added.
+\end{itemize}
+
+Using the threshold \(r_\beta < 0.05\), a total of 
+\good{201{,}978 N+A invariants} (\good{41.5\%}) were removed,
+yielding a working matrix of \good{284{,}747 CpGs} across \good{446 samples}.  
+
+\paragraph{Step~4 -- $\beta$ to $M$ Conversion}
 \label{par:gse287331_step4}
 
 \begin{figure}[t]
@@ -783,63 +1112,26 @@ $\beta$-values are retained for biological interpretation and visualisation.
 \section{Inter-Dataset Analysis}
 \label{sec:inter_dataset}
 
-After completing the intra-dataset pre-processing for each cohort, a concise inter-dataset analysis is performed to summarise the effects of the pipeline and to motivate the subsequent feature selection step. The objective of this section is not to introduce additional transformations, but rather to consolidate the preprocessing outcomes across datasets and to assess the resulting dimensional structure.
-
-\paragraph{Summary of the pre-processing pipeline}
-All three datasets underwent a harmonised pre-processing workflow, including initial integrity checks, literature-based technical filtering, manifest-driven probe validation, removal of sex-chromosome loci, and transformation from $\beta$-values to M-values. While the specific implementation details differ slightly depending on platform characteristics and data quality, the conceptual structure of the pipeline is consistent across datasets.
-
-Table~\ref{tab:preprocessing-summary} reports, for each dataset, the number of samples retained and the dimensionality of the methylation matrix before and after pre-processing. Despite substantial differences in initial platform coverage (450K vs EPIC), technical filtering consistently removes a large fraction of probes, yielding cleaner and more reliable feature spaces.
-
-\begin{table}[t]
-\centering
-\caption{Summary of sample size and CpG dimensionality before and after pre-processing.}
-\label{tab:preprocessing-summary}
-\begin{tabular}{lcccccc}
-\hline
-Dataset & Platform & Samples & Normal & Adjacent & CpGs (pre) & CpGs (post) \\
-\hline
-GSE69914  & 450K & 92  & 50  & 42  & 485{,}512 & 252{,}321 \\
-GSE225845 & EPIC & 253 & 113 & 140 & 750{,}426 & 530{,}683 \\
-GSE287331 & EPIC & 242 & 182 & 60  & 703{,}166 & 486{,}725 \\
-\hline
-\end{tabular}
-\end{table}
-
-\paragraph{CpG overlap across datasets}
-To further characterise the relationship between datasets, CpG overlap was evaluated both before and after pre-processing. Figure~\ref{fig:venn-pre} illustrates the overlap of CpG identifiers across the three datasets prior to filtering, reflecting platform design constraints and baseline annotation differences. As expected, the intersection is dominated by probes shared between the two EPIC datasets, with a smaller but substantial core common to all three cohorts.
-
-Figure~\ref{fig:venn-post} reports the corresponding overlap after the complete pre-processing pipeline. Although the total number of CpGs is markedly reduced, a large shared core remains, indicating that technical filtering primarily removes platform- or annotation-specific probes while preserving a common, high-confidence CpG backbone.
-
-\begin{figure}[t]
-\centering
-\begin{subfigure}[t]{0.48\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{Figures/venn_cpg_overlap_pre_preprocessing.pdf}
-    \caption{CpG overlap across datasets before pre-processing.}
-    \label{fig:venn-pre}
-\end{subfigure}
-\hfill
-\begin{subfigure}[t]{0.48\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{Figures/venn_cpg_overlap_post_preprocessing.pdf}
-    \caption{CpG overlap across datasets after pre-processing.}
-    \label{fig:venn-post}
-\end{subfigure}
-\caption{Comparison of CpG overlap across datasets before and after pre-processing.}
-\label{fig:venn-comparison}
-\end{figure}
-
-
-\paragraph{Rationale for feature selection}
-Despite extensive technical filtering, the post-processed datasets remain highly dimensional, with hundreds of thousands of CpGs retained in each cohort. Moreover, the large shared CpG intersection across datasets suggests that technical artefacts have been effectively mitigated, shifting the primary challenge from data quality to signal extraction.
-
-At this stage, the limiting factor is no longer technical reliability but statistical and biological relevance. The remaining feature space is expected to contain a substantial proportion of CpGs that are either weakly informative or irrelevant for distinguishing Normal and Adjacent breast tissue. Consequently, a dedicated feature selection strategy is required to identify a reduced subset of CpGs that captures biologically meaningful variation while improving interpretability, robustness, and downstream modelling performance.
-
-The next chapter therefore focuses on feature selection methodologies applied to these pre-processed datasets, building on the stable and harmonised CpG space established here.
-
-
 % (intentionally left empty)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\clearpage
 
 \appendix
 \section{Filtering lists}
