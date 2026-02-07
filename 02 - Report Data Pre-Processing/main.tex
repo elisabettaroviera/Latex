@@ -96,10 +96,19 @@
 \justifying
 
 \begin{abstract}
-{\color{red}
-\textbf{MANCA L'ABSTRACT.}
-}
+This document describes the data pre-processing pipeline applied to the three breast-tissue DNA methylation datasets employed in this thesis (GSE69914, GSE225845, GSE287331). 
+The pipeline follows a unified methodological framework while accounting for dataset-specific technical characteristics. Core steps include data ingestion and alignment, missing-value handling, probe-level technical filtering, probe-design bias diagnostics, $\beta$-to-$M$ value transformation, and the generation of harmonized outputs for subsequent analyses. Special attention is devoted to identifying and correcting array-specific artifacts in order to ensure comparability across cohorts.
+
+All procedures are implemented in Jupyter notebooks, available in the thesis 
+\href{https://github.com/elisabettaroviera/THESIS/tree/main}{GitHub repository}:
+ \href{https://github.com/elisabettaroviera/THESIS/blob/main/01\%20-\%20Notebook/02\%20-\%20Data\%20Pre-Processing/02-data-pre-processing-gse69914.ipynb}{02-data-pre-processing-gse69914.ipynb},
+\href{https://github.com/elisabettaroviera/THESIS/blob/main/01\%20-\%20Notebook/02\%20-\%20Data\%20Pre-Processing/02-data-pre-processing-gse225845.ipynb}{02-data-pre-processing-gse225845.ipynb},
+ \href{https://github.com/elisabettaroviera/THESIS/blob/main/01\%20-\%20Notebook/02\%20-\%20Data\%20Pre-Processing/02-data-pre-processing-gse287331.ipynb}{02-data-pre-processing-gse287331.ipynb}, and
+ \href{https://github.com/elisabettaroviera/THESIS/blob/main/01\%20-\%20Notebook/02\%20-\%20Data\%20Pre-Processing/02-inter-analysis-data-pre-processing.ipynb}{02-inter-analysis-data-pre-processing.ipynb}.
+
+Together, these notebooks define the final pre-processing stage of the analytical workflow, providing standardized and reproducible inputs for all subsequent modeling and biological interpretation steps.
 \end{abstract}
+
 
 \section{Intra-Dataset Pre-processing}
 \label{sec:intra_preprocessing}
@@ -190,10 +199,10 @@ assessments were performed:
 
 \begin{enumerate}
     \item \textbf{Density comparison.}  
-    As shown in Fig.~\ref{fig:type_bias_density}, the $\beta$-value distributions of Type~I and Type~II probes
+    As shown in Figure~\ref{fig:type_bias_density}, the $\beta$-value distributions of Type~I and Type~II probes
     substantially overlap, indicating the absence of the multi-modal distortion typical of unnormalized data.
     \item \textbf{Quantile--quantile alignment.}  
-    The Q--Q plot in Fig.~\ref{fig:type_bias_qq} exhibits quite a diagonal trend for Type~II vs.~Type~I
+    The Q--Q plot in Figure~\ref{fig:type_bias_qq} exhibits quite a diagonal trend for Type~II vs.~Type~I
     quantiles, which is the expected signature of balanced probe-type scaling after normalization.
 \end{enumerate}
 
@@ -243,7 +252,7 @@ consistent with the probe-type discrepancies originally analysed by Maksimovic \
 
 Technical filtering aims to remove unreliable or biologically confounded probes prior to statistical modelling.  
 This stage reduces noise, improves downstream reproducibility, and ensures that only high-confidence CpG loci are
-retained for analysis (Fig.~\ref{fig:gse69914_technical_filtering}).
+retained for analysis (Figure~\ref{fig:gse69914_technical_filtering}).
 
 \textbf{Exclusion of technical probe sets}.
 A collection of curated probe resources was used to exclude loci known to exhibit technical artefacts  
@@ -256,7 +265,7 @@ Additional quality control criteria follow the hierarchical filtering strategy o
 which targets multi-mapping loci, repeat structures, and disruptive SNPs.
 
 The overlaps between these resources and the $\beta$-matrix were substantial  
-(Fig.~\ref{fig:gse69914_tech_barplot}).  
+(Figure~\ref{fig:gse69914_tech_barplot}).  
 A total of \good{190{,}672 probes} were flagged by Naeem et al., \good{39{,}737} by Pidsley et al.,
 \good{29{,}233} by Chen et al., \good{96{,}541} by the Zhou \texttt{MASK\_*} fields, and
 \good{28{,}582} by McCartney et al.\  
@@ -289,6 +298,37 @@ In total, \good{234{,}029 unique CpGs} were removed across all criteria.
 A per-probe summary file \href{https://github.com/elisabettaroviera/THESIS/blob/main/05%20-%20CpG%20list/Removed%20CpGs%20per%20Dataset/removed_cpgs_all_filters_summary_gse69914.csv}
 {\texttt{removed\_cpgs\_all\_filters\_summary\_gse69914.csv}} records, for each excluded probe,
 which resources contributed to its removal, ensuring full reproducibility of the filtering pipeline.  
+
+\begin{table}[t]
+\centering
+\caption{CpG filtering summary for the GSE69914 dataset.}
+\label{tab:gse69914_cpg_filtering}
+\begin{tabular}{c c c c c c c c c}
+\hline
+Initial CpGs &
+Naeem &
+Pidsley &
+Zhou &
+Chen &
+McCartney &
+Non-CpG &
+X/Y &
+Final CpGs \\
+\hline
+485{,}512 &
+190{,}672 &
+39{,}737 &
+96{,}541 &
+29{,}233 &
+28{,}582 &
+875 &
+7{,}728 &
+251{,}483 \\
+\hline
+\end{tabular}
+\end{table}
+
+
 
 \paragraph{Step~3 -- $\beta$ to $M$ Conversion}
 \label{par:gse69914_step4}
@@ -341,8 +381,7 @@ which resources contributed to its removal, ensuring full reproducibility of the
         \textbf{Distributional comparison between $\beta$ and $M$ quantifications in Normal and Normal-adjacent tissues.}  
         Top row: $\beta$ exhibits a bounded, U-shaped distribution, whereas $M$ shows an approximately symmetric profile.  
         Bottom row: The substantial mean-dependent variance in $\beta$ is dramatically reduced after transformation, confirming that $M$-values provide a more homoscedastic scale for statistical modeling.  
-        All panels computed on the working set of \good{150{,}800 CpGs} after complete technical and invariance filtering.
-    }
+        }
     \label{fig:hist_msd_beta_m}
 \end{figure}
 
@@ -364,10 +403,10 @@ Several high-impact studies routinely perform statistical modelling in $M$-space
 Examples include the differential methylation analysis of purified human blood cell types by Reinius~\textit{et al.}~\cite{Reinius2012}, the methodological framework underlying the \texttt{minfi} pipeline described by Triche~\textit{et al.}~\cite{Triche2013}, and oncological applications such as the tumour hypoxia study by Thienpont~\textit{et al.}~\cite{Thienpont2016}, where all $\beta$-values were explicitly transformed to $M$-values prior to statistical testing.  
 These examples illustrate that $M$-values have become a de facto standard for inferential analyses in Illumina 450K/EPIC workflows.
 
-\good{The conversion was applied to the complete post-filtering matrix (150{,}800 CpGs across 397 samples).}  
+\good{The conversion was applied to the complete post-filtering matrix (251{,}483 CpGs across 397 samples).}  
 
 \textbf{Distributional consequences of the transformation.}
-Fig.~\ref{fig:hist_msd_beta_m} illustrates in detail how the $\beta \rightarrow M$ mapping reshapes the empirical distribution of methylation.  
+Figure~\ref{fig:hist_msd_beta_m} illustrates in detail how the $\beta \rightarrow M$ mapping reshapes the empirical distribution of methylation.  
 Normal and Adjacent tissues display the expected U-shaped profiles in $\beta$-space, reflecting biological accumulation near fully unmethylated or fully methylated states.  
 After logit transformation, the corresponding $M$-value distributions become substantially more symmetric and comparable across groups, indicating that the transformation regularises the scale without distorting biological structure.
 
@@ -430,11 +469,11 @@ Accordingly, no early NaN filtering or imputation was required before proceeding
 
 All probes were stratified, this yielded \good{119{,}760 Type~I} and \good{627{,}842 Type~II} probes.
 
-The density representation of the two probe families (Fig.~\ref{fig:GSE225845_type_bias_density}) reveals a marked discrepancy between their empirical $\beta$-value distributions.  
+The density representation of the two probe families (Figure~\ref{fig:GSE225845_type_bias_density}) reveals a marked discrepancy between their empirical $\beta$-value distributions.  
 Type~I probes exhibit a highly concentrated pattern near the unmethylated and fully methylated boundaries, whereas Type~II probes display a broader and right-shifted distribution.  
 Such divergence indicates that the two probe chemistries retain systematically different scaling behaviour.
 
-This finding is reinforced by the quantile--quantile comparison in Fig.~\ref{fig:GSE225845_type_bias_qq}.  
+This finding is reinforced by the quantile--quantile comparison in Figure~\ref{fig:GSE225845_type_bias_qq}.  
 Type~II quantiles deviate substantially from the identity line, with a  
 \good{median absolute deviation of 0.2933}, demonstrating that the expected alignment between the two probe types is not present.  
 The curvature of the Q--Q profile confirms the presence of a residual probe-design imbalance that has not been fully corrected by preprocessing.
@@ -466,35 +505,7 @@ The curvature of the Q--Q profile confirms the presence of a residual probe-desi
     \label{fig:gse225845_technical_filtering}
 \end{figure}
 
-Beginning from an initial set of \good{750{,}426 CpGs}, the intersection with the external probe-filter lists 
-showed substantial overlap across multiple sources.
-
-\textbf{Exclusion of technical probe sets.}
-The curated technical resources flagged a substantial fraction of probes as potentially unreliable (Fig.~\ref{fig:gse69914_tech_barplot}): \good{101{,}014 CpGs} were flagged by Naeem, \good{11{,}759} by Pidsley, \good{114{,}407} by the Zhou fields, \good{0} by Chen, and \good{1{,}585} by McCartney. 
-The union of all technical lists resulted in the removal of \good{204{,}899 unique CpGs}, 
-leaving \good{545{,}527 CpGs} for subsequent steps.
-
-\textbf{Annotation-based filtering (Illumina manifest)}.
-Using the EPIC v1.0 manifest, all probes lacking valid genomic coordinates or 
-targeting non-CpG contexts were removed.  
-This step eliminated \good{773 non-CpG loci}, reducing the working set to \good{544{,}754 CpGs}.
-
-\textbf{Removal of sex-chromosome probes (X/Y)}.
-Probes mapped to chromosomes~X and~Y were excluded.  
-A total of \good{14{,}071 CpGs} were removed, producing a filtered autosomal set of 
-\good{530{,}683 CpGs}.
-
-Across all steps, \good{219{,}743 unique CpGs} were removed from the initial \good{750{,}426}, 
-yielding a final feature set of \good{530{,}683 CpGs}.  
-A detailed per-probe summary of the filtering decisions is provided in  
-\href{https://github.com/elisabettaroviera/THESIS/blob/main/05%20-%20CpG%20list/Removed%20CpGs%20per%20Dataset/removed_cpgs_all_filters_summary_gse225845.csv
-}
-{\texttt{removed\_cpgs\_all\_filters\_summary\\\_gse225845.csv}}.
-
-\paragraph{Step~3 -- $\beta$ to $M$ Conversion}
-\label{par:gse225845_step4}
-
-\begin{figure*}[!htbp]
+\begin{figure}[t]
     \centering
 
     % ---------------- ROW 1: HISTOGRAMS ----------------
@@ -539,11 +550,67 @@ A detailed per-probe summary of the filtering decisions is provided in
         \textbf{Distributional and variance-structure comparison of $\beta$ and $M$ values in Normal and Adjacent breast tissue.}  
         Top row: $\beta$- and $M$-value histograms, showing the characteristic U-shape in $\beta$-space and the approximate symmetry induced by the logit transformation.  
         Bottom row: mean–SD relationships illustrating how the strong mean-dependent variance in $\beta$-space is markedly stabilised in $M$-space.  
-        All panels computed on the filtered set of \good{399{,}744 CpGs}.
-    }
+        }
     \label{fig:gse225845_beta_m_combined}
-\end{figure*}
+\end{figure}
 
+Beginning from an initial set of \good{750{,}426 CpGs}, the intersection with the external probe-filter lists 
+showed substantial overlap across multiple sources.
+
+\textbf{Exclusion of technical probe sets.}
+The curated technical resources flagged a substantial fraction of probes as potentially unreliable (Figure~\ref{fig:gse69914_tech_barplot}): \good{101{,}014 CpGs} were flagged by Naeem, \good{11{,}759} by Pidsley, \good{114{,}407} by the Zhou fields, \good{0} by Chen, and \good{1{,}585} by McCartney. 
+The union of all technical lists resulted in the removal of \good{204{,}899 unique CpGs}, 
+leaving \good{545{,}527 CpGs} for subsequent steps.
+
+\textbf{Annotation-based filtering (Illumina manifest)}.
+Using the EPIC v1.0 manifest, all probes lacking valid genomic coordinates or 
+targeting non-CpG contexts were removed.  
+This step eliminated \good{773 non-CpG loci}, reducing the working set to \good{544{,}754 CpGs}.
+
+\textbf{Removal of sex-chromosome probes (X/Y)}.
+Probes mapped to chromosomes~X and~Y were excluded.  
+A total of \good{14{,}071 CpGs} were removed, producing a filtered autosomal set of 
+\good{530{,}683 CpGs}.
+
+Across all steps, \good{219{,}743 unique CpGs} were removed from the initial \good{750{,}426}, 
+yielding a final feature set of \good{530{,}683 CpGs}.  
+A detailed per-probe summary of the filtering decisions is provided in  
+\href{https://github.com/elisabettaroviera/THESIS/blob/main/05%20-%20CpG%20list/Removed%20CpGs%20per%20Dataset/removed_cpgs_all_filters_summary_gse225845.csv
+}
+{\texttt{removed\_cpgs\_all\_filters\_summary\\\_gse225845.csv}}.
+
+\begin{table}[t]
+\centering
+\caption{CpG filtering summary for the GSE225845 dataset.}
+\label{tab:gse225845_cpg_filtering}
+\begin{tabular}{c c c c c c c c c}
+\hline
+Initial CpGs &
+Naeem &
+Pidsley &
+Zhou &
+ChenX &
+McCartney &
+Non-CpG &
+X/Y &
+Final CpGs \\
+\hline
+750{,}426 &
+101{,}014 &
+11{,}759 &
+114{,}407 &
+0 &
+1{,}585 &
+773 &
+14{,}071 &
+530{,}683 \\
+\hline
+\end{tabular}
+\end{table}
+
+
+\paragraph{Step~3 -- $\beta$ to $M$ Conversion}
+\label{par:gse225845_step4}
 
 All $\beta$-values were transformed into $M$-values using the standard logit relation
 yielding an unbounded and approximately homoscedastic scale suitable for linear modelling
@@ -553,10 +620,10 @@ The transformed dataset, denoted \texttt{M\_clean}, preserves the same sample st
 \textbf{Distributional effects of the transformation.}
 The empirical distributions of Normal and Adjacent samples exhibit the characteristic U-shape in $\beta$-space and the expected approximately symmetric profiles after conversion.  
 The mean–SD relationship demonstrates the well-known variance inflation at intermediate $\beta$ levels, which becomes substantially stabilised in $M$-space
-(Fig.~\ref{fig:gse225845_beta_m_combined}).  
+(Figure~\ref{fig:gse225845_beta_m_combined}).  
 These patterns confirm that the $M$-value representation provides a more appropriate scale for statistical inference.
 
-The filtered $\beta$-matrix (\good{399{,}744 CpGs}, \good{477 samples}) was successfully converted into
+The filtered $\beta$-matrix (\good{530{,}683 CpGs}, \good{477 samples}) was successfully converted into
 the corresponding $M$-value representation and stored as a Parquet object.  
 
 
@@ -569,7 +636,7 @@ the corresponding $M$-value representation and stored as a Parquet object.
 \label{par:gse287331_step0}
 
 The dataset was imported from its Parquet representation, yielding an initial
-$\beta$-value matrix of \good{446 samples} and \good{866{,}553 CpGs}.
+$\beta$-value matrix of \good{446 samples} and \good{866{,}552 CpGs}.
 The accompanying phenotype table reported the same number of entries and contained
 all required metadata fields.  
 Before continuing with probe-level preprocessing, the dataset underwent a dedicated
@@ -630,10 +697,10 @@ All entries were fully observed (\good{0 residual NaN}).
 
  Using the official EPIC v1.0 manifest,  
 \good{115{,}705 Type~I} and \good{585{,}514 Type~II} probes were identified. The $\beta$-value distributions of the two chemistries showed a marked mismatch
-(Fig.~\ref{fig:gse287331_type_bias_density}), with Type~II probes displaying a strong
+(Figure~\ref{fig:gse287331_type_bias_density}), with Type~II probes displaying a strong
 right-shifted profile. The quantile--quantile comparison confirmed a substantial systematic
 offset, with a median absolute deviation of \good{0.380}
-(Fig.~\ref{fig:gse287331_type_bias_qq}), indicating the absence of any Infinium
+(Figure~\ref{fig:gse287331_type_bias_qq}), indicating the absence of any Infinium
 probe-design bias correction in the originally released data.
 
 Given this discrepancy, a per-sample BMIQ normalization step was applied using the
@@ -698,10 +765,40 @@ A total of \good{12{,}579 CpGs} were discarded, resulting in an autosomal
 working set of \good{486{,}725 CpGs}.
 
 Across all filters, \good{216{,}193 unique CpGs} were removed from the initial
-\good{702{,}916}, leaving a final autosomal set of \good{486{,}725 CpGs}.
+\good{866{,}552}, leaving a final autosomal set of \good{486{,}725 CpGs}.
 A probe-level removal summary is provided in 
 \href{https://github.com/elisabettaroviera/THESIS/blob/main/05%20-%20CpG%20list/Removed%20CpGs%20per%20Dataset/removed_cpgs_all_filters_summary_gse287331.csv}%
 {\texttt{removed\_cpgs\_all\_filters\_summary\_gse287331.csv}}.
+
+\begin{table}[t]
+\centering
+\caption{CpG filtering summary for the GSE287331 dataset.}
+\label{tab:gse287331_cpg_filtering}
+\begin{tabular}{c c c c c c c c c}
+\hline
+Initial CpGs &
+Naeem &
+Pidsley &
+Zhou &
+Chen &
+McCartney &
+Non-CpG &
+X/Y &
+Final CpGs \\
+\hline
+866{,}552 &
+124{,}511 &
+8{,}992 &
+102{,}802 &
+1{,}730 &
+3{,}672 &
+500 &
+12{,}579 &
+486{,}725 \\
+\hline
+\end{tabular}
+\end{table}
+
 
 \paragraph{Step~3 -- $\beta$ to $M$ Conversion}
 \label{par:gse287331_step4}
@@ -758,7 +855,7 @@ A probe-level removal summary is provided in
 
 Given the strong mean--variance dependence intrinsic to $\beta$-values, the working
 matrix obtained after technical and invariance filtering  
-(\good{284{,}747 CpGs} across \good{311 samples}) 
+(\good{486{,}725 CpGs} across \good{311 samples}) 
 was transformed into $M$-values.
 This transformation yields an approximately homoscedastic scale and is the standard
 input for linear models, empirical Bayes moderation, and batch-effect correction.
@@ -769,7 +866,7 @@ The resulting object, \texttt{M\_clean}, preserves the same schema as the
 $\beta$-matrix and was stored as a memory-efficient \texttt{LazyFrame}.
 
 \textbf{Distributional effects of the $\beta \rightarrow M$ transformation.}
-Fig. \ref{fig:gse287331_beta_m_combined} illustrates the
+Figure  \ref{fig:gse287331_beta_m_combined} illustrates the
 impact of the transformation on the empirical data distribution.  
 As expected, the U-shaped $\beta$-profiles for Normal and Adjacent tissues become
 substantially more symmetric after conversion, while the pronounced mean--SD
@@ -783,9 +880,8 @@ $\beta$-values are retained for biological interpretation and visualisation.
 \section{Inter-Dataset Analysis}
 \label{sec:inter_dataset}
 
-After completing the intra-dataset pre-processing for each cohort, a concise inter-dataset analysis is performed to summarise the effects of the pipeline and to motivate the subsequent feature selection step. The objective of this section is not to introduce additional transformations, but rather to consolidate the preprocessing outcomes across datasets and to assess the resulting dimensional structure.
-
-\paragraph{Summary of the pre-processing pipeline}
+After completing the intra-dataset pre-processing for each cohort, a concise inter-dataset analysis is performed to summarise the effects of the pipeline and to motivate the subsequent feature selection step. 
+\paragraph{Pverview of the pre-processing pipeline}
 All three datasets underwent a harmonised pre-processing workflow, including initial integrity checks, literature-based technical filtering, manifest-driven probe validation, removal of sex-chromosome loci, and transformation from $\beta$-values to M-values. While the specific implementation details differ slightly depending on platform characteristics and data quality, the conceptual structure of the pipeline is consistent across datasets.
 
 Table~\ref{tab:preprocessing-summary} reports, for each dataset, the number of samples retained and the dimensionality of the methylation matrix before and after pre-processing. Despite substantial differences in initial platform coverage (450K vs EPIC), technical filtering consistently removes a large fraction of probes, yielding cleaner and more reliable feature spaces.
@@ -796,11 +892,11 @@ Table~\ref{tab:preprocessing-summary} reports, for each dataset, the number of s
 \label{tab:preprocessing-summary}
 \begin{tabular}{lcccccc}
 \hline
-Dataset & Platform & Samples & Normal & Adjacent & CpGs (pre) & CpGs (post) \\
+Dataset & Platform & Normal & Adjacent & CpGs \textit{before} pre-processing & CpGs \textit{after} pre-processing \\
 \hline
-GSE69914  & 450K & 92  & 50  & 42  & 485{,}512 & 252{,}321 \\
-GSE225845 & EPIC & 253 & 113 & 140 & 750{,}426 & 530{,}683 \\
-GSE287331 & EPIC & 242 & 182 & 60  & 703{,}166 & 486{,}725 \\
+GSE69914  & 450K  & 50  & 42  & 485{,}512 & 251{,}483 \\
+GSE225845 & EPIC & 113 & 140 & 750{,}426 & 530{,}683 \\
+GSE287331 & EPIC & 182 & 60  & 866{,}554 & 486{,}725 \\
 \hline
 \end{tabular}
 \end{table}
@@ -837,8 +933,6 @@ At this stage, the limiting factor is no longer technical reliability but statis
 
 The next chapter therefore focuses on feature selection methodologies applied to these pre-processed datasets, building on the stable and harmonised CpG space established here.
 
-
-% (intentionally left empty)
 
 
 \appendix
@@ -913,14 +1007,6 @@ This resource provides a programmatic and reproducible way to perform fine-grain
     \label{fig:Workflow}
 \end{figure}
 
-\subsection{Identification of polymorphic and off-target probe binding sites on the Illumina Infinium MethylationEPIC BeadChip}
-\label{app:mccartney2016}
-McCartney \emph{et al.} \cite{mccartney2016} assessed probe design artifacts and published supplementary tables that include:
-\begin{itemize}[label=-]
-  \item Cross-hybridising CpG-targeting probes;
-  \item Cross-hybridising non-CpG-targeting probes.
-\end{itemize}
-
 \begin{table}[t]
 \small
 \caption{Technical categories covered by each filtering resource.}
@@ -939,6 +1025,14 @@ Non-CpG probes   	& -- & -- & Yes 	& \texttt{MASK\_nonCG} & Table~3 \\
 \end{tabular}
 } 
 \end{table}
+
+\subsection{Identification of polymorphic and off-target probe binding sites on the Illumina Infinium MethylationEPIC BeadChip}
+\label{app:mccartney2016}
+McCartney \emph{et al.} \cite{mccartney2016} assessed probe design artifacts and published supplementary tables that include:
+\begin{itemize}[label=-]
+  \item Cross-hybridising CpG-targeting probes;
+  \item Cross-hybridising non-CpG-targeting probes.
+\end{itemize}
 
 
 \printbibliography
