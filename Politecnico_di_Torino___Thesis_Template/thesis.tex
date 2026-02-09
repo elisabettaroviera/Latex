@@ -16,6 +16,7 @@
     %dvipsnames, % for compatibility with xcolor, it does not work
 ]{toptesi}
 
+
 \input{common/packages}
 
 \input{common/package_config}
@@ -70,7 +71,7 @@
 
 % summary (uncomment until "end summary" if needed)
 %\sommario
-%\input{content/summary}
+\input{content/summary}
 
 %\phantom{0}
 %\cleardoublepage
@@ -83,7 +84,7 @@
 \paginavuota
 \tableofcontents
 
-%\listoftables % ToC for tables
+\listoftables % ToC for tables
 
 \listoffigures % ToC for figures
 
@@ -94,7 +95,7 @@
 % here we are printing only abbreviations
 % printunsrtglossary if using record, otherwise printglossary is ok
 %\paginavuota
-%\printunsrtglossary[style=altlist,title=Glossario,type=\glsxtrabbrvtype]
+\printunsrtglossary[style=altlist,title=Glossary,type=\glsxtrabbrvtype]
 
 % also list of symbols here if needed
 
@@ -109,8 +110,8 @@
 
 % chapters go here
 \input{content/chapters/chapter1}
-%\input{content/chapters/chapter2}
-%\input{content/chapters/chapter3}
+\input{content/chapters/chapter2}
+\input{content/chapters/chapter3}
 %\input{content/chapters/chapter4}
 %\input{content/chapters/chapter5}
 %\input{content/chapters/chapter6}
@@ -118,12 +119,12 @@
 % \paginavuota % it works even without stile=classica
 
 %\appendix
-%\input{content/appendix}
+\input{content/appendix}
 
 % endnotes here if needed
 
 \phantom{0}
 \cleardoublepage
-\printbibliography[heading=bibintoc] % heading required to show it in ToC
+\printbibliography[heading=bibintoc]
 
 \end{document}

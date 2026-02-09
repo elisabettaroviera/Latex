@@ -3,3 +3,26 @@
 \babel@toc {italian}{}\relax 
 \babel@toc {english}{}\relax 
 \addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Group-wise mean $\beta $-value density.}}{8}{figure.caption.7}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces CpG-level instability: heatmap of top outlier CpGs (left) and corresponding $\Delta \beta $ distributions (right).}}{9}{figure.caption.9}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Variance and correlation structure across Normal, Adjacent, and Tumor samples.}}{10}{figure.caption.11}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Low-dimensional embeddings samples.}}{10}{figure.caption.13}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Dynamic-network proxy visualizations for GSE69914.}}{12}{figure.caption.16}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Group-wise mean $\beta $-value density.}}{14}{figure.caption.21}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces CpG-level instability: heatmap of top outlier CpGs (left) and corresponding $\Delta \beta $ distributions (right).}}{14}{figure.caption.23}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Variance and correlation structure across Normal, Adjacent, and Tumor samples.}}{15}{figure.caption.25}%
+\contentsline {figure}{\numberline {3.9}{\ignorespaces Low-dimensional embeddings of GSE225845 samples.}}{15}{figure.caption.27}%
+\contentsline {figure}{\numberline {3.10}{\ignorespaces Dynamic-network proxy visualizations.}}{16}{figure.caption.30}%
+\contentsline {figure}{\numberline {3.11}{\ignorespaces Per-sample mean $\beta $ distributions for the three datasets. \texttt {GSE69914} and \texttt {GSE225845} show a single broad peak, whereas \texttt {GSE287331} displays a right-shifted bimodal pattern. After BMIQ, the two peaks become slightly closer and more similar in height, but the bimodality persists.}}{19}{figure.caption.35}%
+\contentsline {figure}{\numberline {3.12}{\ignorespaces Type~I vs.~Type~II probe design comparison before and after BMIQ. After correction, Type~II probes become more similar to Type~I in the high-$\beta $ region (especially near $\beta \approx 1$), and the overall discrepancy is reduced ($|\Delta | : 0.380 \rightarrow 0.370$), though probe types remain clearly distinct.}}{20}{figure.caption.36}%
+\contentsline {figure}{\numberline {3.13}{\ignorespaces Group-wise mean $\beta $-value density.}}{22}{figure.caption.39}%
+\contentsline {figure}{\numberline {3.14}{\ignorespaces CpG-level instability: heatmap of top outlier CpGs (left) and corresponding $\Delta \beta $ distributions (right).}}{23}{figure.caption.41}%
+\contentsline {figure}{\numberline {3.15}{\ignorespaces Variance and correlation structure across Normal, Adjacent, and Tumor samples.}}{24}{figure.caption.43}%
+\contentsline {figure}{\numberline {3.16}{\ignorespaces Low-dimensional embeddings of GSE287331 samples.}}{25}{figure.caption.45}%
+\contentsline {figure}{\numberline {3.17}{\ignorespaces Dynamic-network proxy visualizations for GSE287331.}}{26}{figure.caption.48}%
+\contentsline {figure}{\numberline {3.18}{\ignorespaces Overlay of $\Delta \beta $ (Adjacent--Normal) density curves across the three datasets, computed on the 326{,}330 CpG sites shared by all cohorts. All distributions are tightly centred around zero, indicating that the Adjacent--Normal shift is globally subtle yet consistent in shape across studies.}}{30}{figure.caption.56}%
+\contentsline {figure}{\numberline {3.19}{\ignorespaces Pairwise $\Delta \beta $ (Adjacent--Normal) concordance across the three methylation datasets. (a)~GSE69914 vs.~GSE287331 shows a mild positive monotonic trend, (b)~GSE69914 vs.~GSE225845 exhibits near-zero correlation, and (c)~GSE287331 vs.~GSE225845 similarly shows weak agreement. Together, these comparisons highlight cohort-specific variability in locus-level methylation drift, despite stable global A--N directionality. }}{31}{figure.caption.58}%
+\contentsline {figure}{\numberline {3.20}{\ignorespaces Two views of the t-SNE embedding computed on the 326k CpGs shared across GSE69914, GSE225845, and GSE287331. (a) Colouring by dataset reveals strong study- and platform-driven clustering, indicating that global methylation structure is dominated by inter-cohort effects. (b) Colouring by tissue state (Normal vs. Adjacent) shows a subtle within-dataset displacement of Adjacent samples, consistent with early localised methylation drift at the tissue margins. }}{32}{figure.caption.60}%
+\addvspace {10\p@ }

@@ -1,0 +1,1646 @@
+\chapter{Data Preparation and Exploratory Analysis}
+\label{sec:data_preparation_exploration}
+
+\section{Chapter Overview and Methodological Objectives}
+
+This chapter establishes the methodological foundation for all subsequent analyses by addressing the construction, organization, and preliminary characterization of the DNA methylation datasets used in this thesis. Following the biological background and problem formulation introduced in Chapters~\ref{sec:introduction} and~\ref{sec:biology_medicine}, the present chapter acts as a bridge between domain-specific knowledge and quantitative modeling, ensuring that downstream analyses are grounded on a technically sound and well-understood data representation.
+
+Genome-wide DNA methylation data are characterized by extremely high dimensionality, heterogeneous signal-to-noise ratios, and the coexistence of subtle biological effects with multiple sources of technical variability. In this context, premature application of statistical models or feature-selection procedures may lead to biased conclusions driven by artefacts rather than genuine biological structure. A careful examination of data quality, distributional properties, and internal consistency is therefore a necessary prerequisite for any reliable inference \cite{Yousefi2013}.
+
+The primary objective of this chapter is to construct a coherent and reproducible representation of the available datasets and to assess their structural and statistical properties prior to any form of preprocessing or modeling. Specifically, this chapter aims to: (i) describe the organization of methylation matrices and associated phenotype information; (ii) characterize the global and local variability of methylation levels within each dataset; (iii) evaluate the degree of separation between Normal, Adjacent, and Tumor tissues using exploratory tools; and (iv) compare datasets at an inter-cohort level to assess consistency, heterogeneity, and potential limitations in signal transferability.
+
+The scope of this chapter is deliberately restricted to exploratory and diagnostic analyses. No feature selection, predictive modeling, or formal statistical inference is performed at this stage. All analyses are intended to be descriptive and comparative, serving to highlight structural properties of the data and to identify potential technical or biological issues that must be addressed before proceeding further.
+
+Methodologically, the chapter is organized around a unified exploratory framework applied consistently across all datasets. Intra-dataset analyses are used to investigate internal structure, variability patterns, and group-level behavior, while inter-dataset comparisons focus on assessing cross-cohort consistency and platform-related differences. Throughout the chapter, visualizations and summary metrics are employed as diagnostic tools rather than as decision-making instruments.
+
+The results of this exploratory phase reveal both shared characteristics and dataset-specific behaviors, as well as clear limitations of working directly with raw or minimally processed methylation data. These observations motivate the need for a structured and rigorous data pre-processing pipeline, which is developed and justified in the following chapter. The present chapter therefore provides the conceptual and technical basis for the preprocessing choices adopted in Chapter~4 and for all subsequent modeling steps.
+
+\section{Dataset Construction, Metadata Integration, and Data Organization}
+
+This section provides the methodological framework for the selection, construction of the dataset, and the organisation process adopted in this study. It contextualises the data sources, representation choices, metadata management, and computational design principles that underpin the detailed implementation described in the following sections.
+
+\subsection{Data Sources and Study Design}
+
+All datasets analyzed in this thesis were obtained from the NCBI Gene Expression Omnibus (GEO)~\cite{GEO_NCBI}, which was selected as a unified data source to minimize heterogeneity in data formats, metadata conventions, and access mechanisms. GEO provides curated series-level accessions, stable sample identifiers, and standardized links to processed methylation matrices and sample-level annotations, making it a natural reference repository for large-scale DNA methylation studies.
+
+The study design adopts a multi-cohort comparative framework focused on genome-wide DNA methylation in breast tissue. Three independent GEO series were selected for analysis: \textbf{GSE69914}~\cite{GSE69914}, based on the Illumina HumanMethylation450 platform, and two more recent EPIC-based cohorts, \textbf{GSE225845}~\cite{GSE225845} and \textbf{GSE287331}~\cite{GSE287331}. Together, these datasets span normal/healthy, adjacent-normal, and tumor tissue states across two generations of Illumina methylation arrays (450K and EPIC), enabling both within-dataset characterization and cross-dataset comparisons.
+
+Dataset selection was driven by strict inclusion criteria aimed at ensuring technical compatibility, biological relevance, and analytical feasibility. In particular, only studies providing processed genome-wide methylation matrices in terms of $\beta$-values were considered, allowing a uniform data representation and avoiding the need for low-level signal reprocessing from raw \texttt{.idat}  intensity files. Raw \texttt{.idat} files store probe-level fluorescence intensities measured in the methylated ($y^{(M)}$) and unmethylated ($y^{(U)}$) channels, from which $\beta$-values are derived as a normalized ratio \cite{Du2010}:
+\[
+\beta := \frac{\max(y^{(M)},0)}{\max(y^{(M)},0)+\max(y^{(U)},0)+\alpha}, \qquad \beta\in[0,1],
+\]
+where $\alpha$ is a small offset (typically 100) used to stabilize the denominator. Additional requirements included the use of Illumina HumanMethylation450 (450K) or MethylationEPIC (EPIC) platforms, the availability of multiple tissue classes within each cohort, and sufficiently large sample sizes to support robust statistical analysis.
+
+\subsection{Methylation Data Representation and Storage Format}
+
+In several datasets, the original authors applied established normalization procedures, including methods specifically designed to correct probe-type design bias such as BMIQ~\cite{Teschendorff2013BMIQ}. Reprocessing raw IDAT files would therefore not add information relevant to the objectives of this thesis, while substantially increasing technical complexity and reducing reproducibility. For these reasons, all analyses were conducted on the processed $\beta$-value matrices as distributed via GEO.
+
+To support scalable analysis and efficient input/output operations, all working methylation matrices were converted to a standardized \texttt{sample~$\times$~CpG} layout and stored in columnar Parquet format using single-precision floating-point encoding.
+
+This choice is motivated by both numerical and computational considerations. Since $\beta$-values are strictly bounded in the interval $[0,1]$~\cite{Du2010}, and biologically meaningful methylation differences typically occur at magnitudes on the order of $10^{-2}$–$10^{-3}$, single-precision floating point (\texttt{float32}, machine $\varepsilon \approx 10^{-7}$) provides more than sufficient numerical accuracy. At the same time, it substantially reduces memory usage and I/O overhead compared to double precision.
+
+This representation is consistent with recent large-scale genomics frameworks that process molecular features, including DNA methylation data, entirely in \texttt{float32} precision for efficiency and scalability~\cite{deAlmeida2025ChatNT}.
+
+\subsection{Phenotype Tables and Label Harmonization}
+
+For each dataset, a dedicated phenotype table was constructed by extracting and parsing GEO sample-level metadata. These tables encode tissue labels, sample identifiers, and relevant clinical or technical covariates when available. Given the heterogeneity of original annotations across studies, tissue classes were mapped to harmonized numeric encodings to ensure consistency across cohorts while preserving dataset-specific attributes in separate fields.
+
+A strict one-to-one correspondence between methylation matrices and phenotype tables was enforced. Samples lacking either methylation measurements or corresponding metadata were excluded to prevent inconsistencies and downstream misalignment. This design guarantees that all analyses operate on synchronized molecular and phenotypic representations and enables reliable stratification by tissue class in both intra- and inter-dataset comparisons.
+
+\subsection{Reproducibility and Computational Workflow}
+
+The overall data organization and computational design follow a multi-dataset analytical paradigm commonly adopted in recent large-scale DNA methylation studies, where cohort-specific analyses are complemented by cross-dataset comparisons to assess robustness and generalizability~\cite{Sokolov2024}.
+
+All dataset construction and organization steps were implemented using deterministic, script-based pipelines with explicit schema definitions and typed data representations. Particular care was taken to avoid unnecessary in-memory operations on high-dimensional methylation matrices, favoring streaming ingestion, chunked processing, and out-of-core transformations when required by dataset size.
+
+The resulting data organization yields a set of standardized, self-contained datasets, each consisting of a genome-wide methylation matrix and an aligned phenotype table stored in efficient, portable formats. This design ensures full reproducibility of the data preparation process and provides a robust foundation for the preprocessing, exploratory analysis, and modeling steps developed in subsequent chapters.
+
+\section{Intra-Dataset Exploration and Visualization}
+\label{sec:intra_dataset}
+
+Exploratory Data Analysis represents a fundamental step in DNA methylation studies, 
+particularly in cancer epigenomics, where alterations in global methylation levels, 
+sample-level variability, and locus-specific instability often precede detectable 
+phenotypic changes. Before applying any preprocessing, filtering, or 
+machine-learning models, each dataset must be evaluated independently in order to assess 
+its internal structure, detect technical anomalies, and identify biologically meaningful 
+patterns.
+
+In the context of breast cancer, epigenetic deregulation manifests through both global and 
+local phenomena: genome-wide hypomethylation, focal hypermethylation of tumor-suppressor 
+regions, and the presence of pre-neoplastic ``field defects'' in histologically normal 
+tissues close to tumors \cite{ehrlich2002, bird2002, teschendorff2016}. 
+The primary biological goal of this thesis—\emph{to identify DNA methylation alterations 
+in normal tissues and evaluate whether they may contribute to the transition toward 
+tumorigenesis}—motivates this detailed intra-dataset investigation.
+This section analyzes each dataset (GSE69914 [\ref{subsec:gse69914}], GSE225845 [\ref{subsec:gse225845}], GSE287331 [\ref{subsec:gse287331}]) separately and 
+systematically, focusing on:
+missingness and quality control, global methylation distributions, sample-level summaries, 
+CpG-level instability, correlation structure, dimensionality reduction, and genome-context 
+coverage.
+
+% ============================================
+% 2.1 GSE69914
+% ============================================
+\subsection{Dataset GSE69914}
+\label{subsec:gse69914}
+
+\paragraph{Dataset overview}
+\label{par:gse69914_overview}
+
+The GSE69914 dataset provides genome-wide DNA methylation profiles generated using the 
+Illumina Infinium HumanMethylation450 BeadChip on bisulfite-converted DNA, covering more than 
+480{,}000 CpG sites. The series, contributed by Teschendorff and Widschwendter and publicly 
+released on June 18, 2015, is available on GEO under accession 
+\href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE69914}{GSE69914}.
+
+In total, the dataset includes \textbf{407 breast tissue samples} spanning the three tissue states central 
+to this thesis:
+\begin{itemize}[label=-]
+    \item 50 Normal samples, representing the physiological methylation baseline;
+    \item 42 Adjacent samples, reflecting early epigenetic alterations in proximity to the tumor;
+    \item 305 Tumor samples, providing the malignant endpoint of the Normal~$\rightarrow$~Adjacent~$\rightarrow$~Tumor axis.
+\end{itemize}
+
+A small subset consists of BRCA1-related samples (7 normal carriers and 3 tumors).
+BRCA1 encodes a key DNA-repair protein, and pathogenic variants substantially increase lifetime breast and ovarian cancer
+risk \cite{brca_factsheet}, adding a hereditary-risk dimension to the cohort.
+Since the primary objective of this thesis is to characterise epigenetic differences along the Normal–Adjacent
+axis that are not driven by strong germline predisposition, BRCA1-mutated samples were excluded from the core exploration
+and preprocessing pipeline, following established evidence that BRCA1-associated tissues constitute a distinct hereditary epigenetic profile \cite{Bartlett2022,Suijkerbuijk2008}.
+Their inclusion would introduce samples with potentially different baseline methylation patterns, confounding the interpretation of field-effect alterations in sporadic breast cancer.
+The final working matrix therefore contains 397 tissue samples and 485{,}512 CpG probes.
+
+
+
+
+% ============================================
+% Missingness
+% ============================================
+\paragraph{Missingness and data quality}
+\label{par:gse69914_missingness}
+
+The GSE69914 methylation matrix contains \emph{no missing entries} of any kind. 
+
+
+
+% ============================================
+% Beta distributions
+% ============================================
+
+\paragraph{Global methylation distributions}
+\label{par:gse69914_global_meth}
+
+To characterise the overall methylation landscape of the dataset, I first examined the 
+distribution of $\beta$-values (fractional methylation in $[0,1]$).  
+The group-wise mean density curve (Fig.~\ref{fig:gse69914_group_mean_density}) displays the 
+characteristic \emph{bimodal} profile of Illumina 450k arrays, with peaks near unmethylated 
+($\beta \approx 0$) and fully methylated ($\beta \approx 1$) CpG sites. This pattern reflects 
+the underlying biology of CpG regulation, where many loci tend to be either transcriptionally 
+active (hypomethylated) or repressed (hypermethylated) \cite{bird2002, maksimovic2012}.
+
+When comparing tissue groups, a clear gradient emerges.  
+Tumor samples show a slightly flatter high-$\beta$ peak and a broader low-$\beta$ tail, 
+consistent with the well-described phenomenon of \textbf{global hypomethylation} and increased 
+heterogeneity in cancer \cite{ehrlich2002}. Adjacent samples lie between Normal and 
+Tumor, suggesting early epigenetic drift and subtle field effects occurring in histologically 
+non-neoplastic tissue \cite{teschendorff2016}.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.5\linewidth]{images/cap3/GSE69914_04_beta_density_group_mean.pdf}
+    \caption{Group-wise mean $\beta$-value density.}
+    \label{fig:gse69914_group_mean_density}
+\end{figure}
+
+
+
+% ============================================
+% Outlier burden
+% ============================================
+
+\paragraph{CpG-level instability and recurrent outliers}
+\label{par:gse69914_outliers}
+
+To characterise locus-specific instability, I examined the 200 CpG sites with the highest
+outlier burden across samples. The heatmap of the top outlier loci (Fig.~\ref{fig:gse69914_outliers_heatmap}) indicates that epigenetic disruption is 
+\emph{not uniform}: specific CpG sites and specific samples display extreme deviations, 
+rather than a diffuse genome-wide shift. Moreover, both directions of alteration are 
+present — focal \textbf{hypermethylation} and focal 
+\textbf{hypomethylation}.  
+In cancer biology, hypermethylation can silence tumor-suppressor regions, whereas 
+hypomethylation can derepress oncogenic pathways and weaken genomic stability, reflecting 
+the classic “too much and too little methylation’’ behaviour of tumor genomes 
+\cite{ehrlich2002}.
+
+Complementary $\Delta\beta$ distributions comparing Tumor and Adjacent tissues against Normal 
+(Fig.~\ref{fig:gse69914_outliers_deltabeta}) show a clear shift toward 
+hypomethylation in Tumor samples and a subtler but detectable drift in Adjacent tissues.  
+This provides evidence that epigenetic alterations emerge early in histologically normal 
+tissue located near the tumor, supporting the field-cancerization model 
+\cite{teschendorff2016}.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE69914_11_heatmap_top_outlier_cpgs_numbered.pdf}
+        \caption{Top outlier CpG loci.}
+        \label{fig:gse69914_outliers_heatmap}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE69914_12_delta_beta_overlaid.pdf}
+        \caption{$\Delta\beta$ distributions (Tumor/Adjacent $-$ Normal).}
+        \label{fig:gse69914_outliers_deltabeta}
+    \end{subfigure}
+    \caption{CpG-level instability: heatmap of top outlier CpGs (left) and 
+    corresponding $\Delta\beta$ distributions (right).}
+    \label{fig:gse69914_outliers_combined}
+\end{figure}
+
+
+% ============================================
+% Variance, correlation, moments
+% ============================================
+\paragraph{Variance and correlation structure}
+\label{par:gse69914_variance_corr}
+To quantify within-group epigenetic variability, I examined the distribution of CpG-wise
+variance across samples. The density curves (Fig.~\ref{fig:gse69914_var_corr_variance}) show that
+Tumor samples have markedly higher variance, reflecting increased epigenetic instability.
+In contrast, Normal and Adjacent samples display almost identical variance
+distributions that are tightly concentrated near zero.  
+This indicates that, at the level of CpG-wise variability, Adjacent tissues do not yet
+exhibit detectable divergence from Normal samples.
+
+A complementary perspective is provided by the sample correlation heatmap 
+(Fig.~\ref{fig:gse69914_var_corr_correlation}), which shows the expected high level of 
+pairwise similarity across all samples. This behaviour is typical of genome-wide DNA 
+methylation data, where a large fraction of CpG sites is stable across individuals, 
+resulting in consistently strong correlations \cite{Teschendorff2013BMIQ}. 
+Importantly, the heatmap also reveals that all samples are highly mutually correlated,
+with no sharp blocks or boundaries separating the three tissue labels. This confirms that 
+global methylation structure is largely conserved across Normal, Adjacent and Tumor tissues,
+and that group differences are too subtle to be detected through 
+sample–sample correlation alone.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE69914_13_intragroup_variance.pdf}
+        \caption{CpG-wise variance distributions.}
+        \label{fig:gse69914_var_corr_variance}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE69914_14_sample_correlation_heatmap.pdf}
+        \caption{Sample correlation heatmap.}
+        \label{fig:gse69914_var_corr_correlation}
+    \end{subfigure}
+    \caption{Variance and correlation structure across Normal, Adjacent, and Tumor samples.}
+    \label{fig:gse69914_var_corr}
+\end{figure}
+
+
+% ============================================
+% DR: PCA, tSNE, UMAP
+% ============================================
+\paragraph{Low-dimensional embeddings}
+\label{par:gse69914_embeddings}
+
+Dimensionality reduction was applied using PCA, t-SNE, and UMAP to visualise global 
+similarities among samples (Fig.~\ref{fig:gse69914_embeddings_combined}).  
+Across all three methods, Normal and Adjacent samples show substantial overlap, 
+with no clear separation between these two groups. Tumor samples appear more dispersed, 
+but only mildly shifted relative to the Normal/Adjacent cluster, and no sharp cluster 
+boundaries emerge in any embedding.
+
+These projections indicate that global methylation patterns alone do not 
+provide strong discriminative structure among the three tissue states. This suggests 
+that group differences are subtle at the whole-methylome level and are better captured 
+through locus-specific analyses, rather than 
+through global unsupervised embeddings.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE69914_16_pca.pdf}
+        \caption{PCA}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE69914_17_tsne.pdf}
+        \caption{t-SNE}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE69914_18_umap.pdf}
+        \caption{UMAP}
+    \end{subfigure}
+    \caption{Low-dimensional embeddings samples.}
+    \label{fig:gse69914_embeddings_combined}
+\end{figure}
+
+
+% ============================================
+% Manifest coverage
+% ============================================
+\paragraph{Genome annotation coverage}
+\label{par:gse69914_manifest}
+
+CpG probes were annotated using the official \textit{Infinium MethylationEPIC v1.0 B5} \cite{illumina_manifest_epic}
+manifest file, the standard Illumina resource containing genomic coordinates, probe type, 
+CpG island context (Island, Shore, Shelf, Open Sea), and gene-level annotations.  
+Using this manifest, the dataset shows the expected non-uniform genomic 
+distribution of CpG contexts: the largest fraction of probes maps to open-sea or 
+non-island regions, followed by CpG islands, then north and south shores, and finally 
+north and south shelves. This ordering mirrors the characteristic architecture of the 
+HM450 arrays reported in the literature~\cite{zhou2017, pidsley2016}.  
+The coverage observed is therefore consistent with the known genomic 
+composition of the Illumina methylation arrays, supporting correct manifest alignment.
+
+
+% ============================================
+% Dynamic network proxies
+% ============================================
+\paragraph{Dynamic-network proxies}
+\label{par:gse69914_dnb_proxies}
+
+Although this analysis does not follow the full mathematical formalism of Dynamic Network 
+Biomarkers (DNBs), the degree-based and network-level representations in 
+Fig.~\ref{fig:gse69914_dnb_combined} provide a qualitative view of how methylation 
+perturbations may organize at the network level.  
+DNB theory, originally formulated for gene-expression and regulatory networks, predicts 
+that near a critical transition a subset of components displays increased internal 
+fluctuations and coordinated behaviour \cite{chen2012dnb, west2018entropy, liu2022lne}.  
+Here I adapt this conceptual framework to CpG-level methylation patterns by examining the 
+structure of CpG–gene degree distributions and the organization of $\Delta\beta$-driven 
+network layouts. This allows me to explore whether tumour-associated instability manifests 
+as locally coordinated methylation shifts at the network level, even without implementing 
+the complete DNB pipeline.
+
+The degree–rank plot (Fig. \ref{fig:gse69914_dnb_degree}) displays a heavy-tailed distribution of CpG counts per
+gene, consistent with the heterogeneous hub–periphery structure typically observed in
+biological systems.  
+In the Tumor~vs~Normal comparison (Fig. \ref{fig:gse69914_dnb_tumor_normal}), a compact nucleus of nodes with
+moderately high degree emerges, accompanied by larger $\Delta\beta$ deviations.  
+This pattern suggests a more perturbed and locally coordinated subset of CpG/gene units in
+tumor tissue, qualitatively consistent with increased network instability.  
+In contrast, the Adjacent~vs~Normal network (Fig. \ref{fig:gse69914_dnb_adjacent_normal}) lacks a comparable hub-like
+structure and shows smaller, more diffuse deviations, indicating that the adjacent tissue
+may exhibit only early or weakly organized perturbations.
+
+Although these observations do not satisfy the full mathematical criteria for identifying
+a DNB module, they align conceptually with the idea that tumor tissue occupies a more
+unstable network regime, whereas adjacent tissue remains closer to the stable
+(pre-transition) configuration.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE69914_20_dynamic_network_degree_proxy.pdf}
+        \caption{Gene-level CpG degree distribution.}
+        \label{fig:gse69914_dnb_degree}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE69914_21_dnb_network_tumor_minus_normal.pdf}
+        \caption{DNB-like network: Tumor vs Normal.}
+        \label{fig:gse69914_dnb_tumor_normal}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE69914_22_dnb_network_adjacent_minus_normal.pdf}
+        \caption{DNB-like network: Adjacent vs Normal.}
+        \label{fig:gse69914_dnb_adjacent_normal}
+    \end{subfigure}
+    \caption{Dynamic-network proxy visualizations for GSE69914.}
+    \label{fig:gse69914_dnb_combined}
+\end{figure}
+
+
+% ============================================
+% Summary
+% ============================================
+\paragraph{Overall interpretation}
+The exploratory analysis of GSE69914 reveals a consistent but overall subtle separation 
+between the three tissue states. Normal and Adjacent samples share highly similar 
+global methylation profiles, variance distributions, correlation structure, and 
+low-dimensional embeddings, indicating that large-scale methylome organisation remains 
+largely conserved in Adjacent tissue. Across these global summaries, the two groups are 
+so intermixed that no clear or marked distinction emerges between Normal and Adjacent 
+samples when using these whole-methylome descriptors. Tumor samples show the expected 
+increase in heterogeneity and a shift toward hypomethylation, but these differences remain 
+modest at the whole-methylome level and do not generate clear separation in unsupervised 
+embeddings.
+
+Locus-specific analyses, however, highlight focused patterns of disruption. Outlier CpGs 
+show both hyper- and hypomethylation events, and $\Delta\beta$ distributions reveal a 
+distinct hypomethylation bias in Tumor samples and a milder drift in Adjacent tissue. 
+Dynamic-network proxies further suggest a more compact and perturbed core in Tumor 
+samples, whereas Adjacent tissue remains more diffuse and weakly perturbed.
+
+Altogether, GSE69914 presents a technically clean dataset with well-structured methylation 
+patterns and biologically interpretable deviations. The results indicate that tumour-related 
+alterations emerge predominantly at focal CpG loci rather than at the global methylome level, 
+and that Adjacent tissue reflects early but subtle perturbations consistent with 
+field-effect phenomena.
+
+
+% ============================================
+% 2.1 GSE225845
+% ============================================
+\subsection{Dataset GSE225845}
+\label{subsec:gse225845}
+
+\paragraph{Dataset overview}
+\label{par:gse225845_overview}
+
+The GSE225845 dataset provides genome-wide DNA methylation profiles generated using the
+Illumina Infinium MethylationEPIC BeadChip (850K) on bisulfite-converted DNA, covering more
+than 850{,}000 CpG sites. The series, part of the NCI-Maryland Breast Cancer Cohort and
+publicly released on October 15, 2023, is available on GEO under accession
+\href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE225845}{GSE225845}.
+
+In its original design, the study profiled \textbf{402 fresh-frozen breast tissues from 289 women},
+including 185 Tumor samples, 113 paired Adjacent normal samples, and 104 Normal tissues from
+reduction mammoplasty. Neighbourhood-level socioeconomic deprivation was quantified via a
+Neighborhood Deprivation Index (NDI) and linked to DNA methylation and gene-expression
+changes in cancer- and immune-related pathways.
+
+For the purposes of this thesis, I focus on the three tissue states central to the
+Normal~$\rightarrow$~Adjacent~$\rightarrow$~Tumor axis using the harmonized working matrix.
+After quality control and label harmonization, this matrix includes \textbf{477 breast tissue samples}:
+\begin{itemize}[label=-]
+    \item 113 Normal samples, representing the physiological methylation baseline;
+    \item 140 Adjacent samples, reflecting early epigenetic alterations in proximity to the tumor;
+    \item 224 Tumor samples, providing the malignant endpoint of the Normal~$\rightarrow$~Adjacent~$\rightarrow$~Tumor axis.
+\end{itemize}
+
+The dataset also includes detailed metadata on demographic and clinical covariates
+(e.g., age at surgery, race, sex, tissue descriptors). The final working methylation matrix used in the exploratory analyses therefore contains
+\textbf{477 tissue samples and 750{,}426 CpG probes}.
+
+
+
+
+
+% ============================================
+% Missingness
+% ============================================
+\paragraph{Missingness and data quality}
+\label{par:gse225845_missingness}
+
+The methylation matrix contains \emph{no missing entries} of any kind. 
+
+
+
+% ============================================
+% Beta distributions
+% ============================================
+\paragraph{Global methylation distributions}
+\label{par:gse225845_global_meth}
+
+The group-wise mean $\beta$-value densities (Fig.~\ref{fig:gse225845_group_mean_density})
+exhibit the characteristic bimodal profile of EPIC arrays, with peaks near unmethylated
+($\beta \approx 0$) and fully methylated ($\beta \approx 1$) CpG sites. Across the three
+tissue groups, the curves are nearly superimposed, indicating highly similar global
+methylation landscapes.
+
+Normal and Adjacent samples show essentially identical profiles, while Tumor samples
+display only minimal deviations—slightly higher density at low $\beta$ values and a very
+subtle decrease in the high-$\beta$ peak. 
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.5\linewidth]{images/cap3/GSE225845_04_beta_density_group_mean.pdf}
+    \caption{Group-wise mean $\beta$-value density.}
+    \label{fig:gse225845_group_mean_density}
+\end{figure}
+
+
+
+
+% ============================================
+% Outlier burden
+% ============================================
+\paragraph{CpG-level instability and recurrent outliers}
+\label{par:gse225845_outliers}
+
+The heatmap
+(Fig.~\ref{fig:gse225845_outliers_heatmap}) shows that instability in this subset is
+highly \emph{directional}: almost all recurrent outlier events correspond to very low
+$\beta$ values, indicating focal \textbf{hypomethylation}. In other words, within the
+top outlier CpGs, the dominant perturbation pattern is a consistent loss of methylation
+across many samples. This reflects instability concentrated on a small set of CpGs rather
+than a diffuse genome-wide effect.
+
+The $\Delta\beta$ distributions comparing Tumor and Adjacent tissues against Normal
+(Fig.~\ref{fig:gse225845_outliers_deltabeta}) are sharply peaked around zero but display
+a clearly heavier tail for $\Delta\beta < 0$ than for $\Delta\beta > 0$. Tumor samples
+show the longest negative tail, consistent with more pronounced hypomethylation, while
+Adjacent tissues exhibit a milder yet still detectable excess of hypomethylated loci.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE225845_11_heatmap_top_outlier_cpgs_numbered.pdf}
+        \caption{Top outlier CpG loci.}
+        \label{fig:gse225845_outliers_heatmap}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE225845_12_delta_beta_overlaid.pdf}
+        \caption{$\Delta\beta$ distributions (Tumor/Adjacent $-$ Normal).}
+        \label{fig:gse225845_outliers_deltabeta}
+    \end{subfigure}
+    \caption{CpG-level instability: heatmap of top outlier CpGs (left) and
+    corresponding $\Delta\beta$ distributions (right).}
+    \label{fig:gse225845_outliers_combined}
+\end{figure}
+
+
+
+% ============================================
+% Variance, correlation, moments
+% ============================================
+\paragraph{Variance and correlation structure}
+\label{par:gse225845_variance_corr}
+
+The CpG-wise variance distributions
+(Fig.~\ref{fig:gse225845_var_corr_variance}) show that the three groups exhibit distinct
+levels of variability. Normal samples display the lowest and most concentrated variances,
+whereas Tumor samples present a clearly longer tail, indicating a subset of CpGs with
+higher instability. Adjacent samples differ from Normal but do not follow a simple
+intermediate pattern between Normal and Tumor; rather, their variability profile is
+partially overlapping with both groups.
+
+The sample–sample correlation heatmap
+(Fig.~\ref{fig:gse225845_var_corr_correlation}) shows that correlations are almost entirely
+positive across the dataset. Most values fall within a narrow positive range, indicating a
+globally homogeneous methylation background with only mild fluctuations between samples.
+No strong blocks of high or low correlation are visible, suggesting that differences arise
+from localized CpG-specific variation rather than large-scale shifts in the global
+methylation structure.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE225845_13_intragroup_variance.pdf}
+        \caption{CpG-wise variance distributions.}
+        \label{fig:gse225845_var_corr_variance}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE225845_14_sample_correlation_heatmap.pdf}
+        \caption{Sample correlation heatmap.}
+        \label{fig:gse225845_var_corr_correlation}
+    \end{subfigure}
+    \caption{Variance and correlation structure across Normal, Adjacent, and Tumor samples.}
+    \label{fig:gse225845_var_corr}
+\end{figure}
+
+
+
+% ============================================
+% DR: PCA, tSNE, UMAP
+% ============================================
+\paragraph{Low-dimensional embeddings}
+\label{par:gse225845_embeddings}
+
+The PCA (Fig.~\ref{fig:pca_gse225845}) plot shows a strong overall overlap among the three groups, with only a mild
+elongation of the Tumor samples along the second principal component. No clear separation
+emerges at this linear scale.
+
+Nonlinear embeddings reveal more structure. In t-SNE space (Fig.~\ref{fig:tsne_gse225845}), Normal and Adjacent samples
+form partially separated regions, although both groups contain scattered outliers. Tumor
+samples are markedly more dispersed and extend over a wider area, reflecting higher global
+heterogeneity; several Tumor samples appear as isolated points far from the main cloud.
+
+The UMAP (Fig.~\ref{fig:umap_gse225845}) embedding displays a similar pattern: Normal and Adjacent samples are relatively
+compact, while Tumor samples occupy a broad and diffuse region with many peripheral
+outliers. Despite these differences in spread, none of the methods produces sharply
+defined or clearly isolated clusters. 
+
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE225845_16_pca.pdf}
+        \caption{PCA}
+        \label{fig:pca_gse225845}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE225845_17_tsne.pdf}
+        \caption{t-SNE}
+        \label{fig:tsne_gse225845}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE225845_18_umap.pdf}
+        \caption{UMAP}
+        \label{fig:umap_gse225845}
+    \end{subfigure}
+    \caption{Low-dimensional embeddings of GSE225845 samples.}
+    \label{fig:gse225845_embeddings_combined}
+\end{figure}
+
+
+
+% ============================================
+% Manifest coverage
+% ============================================
+\paragraph{Genome annotation coverage}
+\label{par:gse225845_manifest}
+As expected for the EPIC platform, the genomic
+contexts are strongly unbalanced. The majority of probes fall into the non-annotated
+(open-sea or non-island) category, which represents the largest single class. CpG islands
+constitute the second most abundant category, followed by north and south shores in
+comparable proportions. North and south shelves account for the smallest fractions.
+
+The annotation profile observed is therefore fully consistent with the expected genomic composition of the EPIC
+array and confirms correct alignment with the manifest.
+
+
+% ============================================
+% Dynamic network proxies
+% ============================================
+\paragraph{Dynamic-network proxies}
+\label{par:gse225845_dnb_proxies}
+
+The degree–rank distribution (Fig.~\ref{fig:gse225845_dnb_degree}) shows a characteristic 
+heavy-tailed shape, with a small number of genes carrying many annotated CpGs and a long 
+tail of low-degree nodes. This pattern is typical of heterogeneous biological systems, 
+where degree distributions are often right-skewed with only a few elements acting as 
+local hubs \cite{Wang2022NetworkBiology}.
+
+In the Tumor~vs~Normal layout (Fig. \ref{fig:gse225845_dnb_tumor_normal}), nodes form a compact and cohesive central cluster, with only
+a limited number of isolated points at the periphery. This indicates that the strongest
+Tumor–Normal differences tend to concentrate on a relatively coherent subset of CpG–gene
+units.
+
+The Adjacent~vs~Normal layout (Fig. \ref{fig:gse225845_dnb_adjacent_normal}) displays a markedly different organisation: a few small
+clusters appear near the centre, but the majority of nodes are scattered across the
+embedding, forming a broad ring-like structure. This suggests weaker and less coordinated
+perturbations, with many CpG–gene units showing small, dispersed deviations rather than a
+shared local pattern.
+
+Overall, these proxy visualisations suggest that Tumor–Normal contrasts produce a more
+compact and locally coherent signal, whereas Adjacent–Normal differences are more diffuse
+and fragmented.
+
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE225845_20_dynamic_network_degree_proxy.pdf}
+        \caption{Gene-level CpG degree distribution.}
+        \label{fig:gse225845_dnb_degree}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE225845_21_dnb_network_tumor_minus_normal.pdf}
+        \caption{DNB-like network: Tumor vs Normal.}
+        \label{fig:gse225845_dnb_tumor_normal}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE225845_22_dnb_network_adjacent_minus_normal.pdf}
+        \caption{DNB-like network: Adjacent vs Normal.}
+        \label{fig:gse225845_dnb_adjacent_normal}
+    \end{subfigure}
+    \caption{Dynamic-network proxy visualizations.}
+    \label{fig:gse225845_dnb_combined}
+\end{figure}
+
+
+
+
+% ============================================
+% Summary
+% ============================================
+\paragraph{Overall interpretation}
+
+The exploratory analysis of GSE225845 reveals that, at a global scale, the three tissue states
+share highly similar methylation profiles. Mean $\beta$-value densities are almost superimposed
+across groups, and both sample--sample correlations and PCA projections show a substantial degree
+of overlap. These results indicate that large-scale methylome structure is broadly conserved across
+Normal, Adjacent, and Tumor tissues, with group differences not manifesting as broad genome-wide
+shifts.
+
+Local analyses, however, reveal clearer distinctions. Among the 200 CpGs with the highest outlier
+burden, instability is strongly directional: the dominant pattern is focal hypomethylation. 
+
+Nonlinear embeddings (t-SNE and UMAP) highlight differences in dispersion rather than discrete
+cluster separation: Normal and Adjacent samples form relatively compact regions with only limited
+displacement, whereas Tumor samples are more widely spread, reflecting increased heterogeneity.
+Network-based proxies similarly show that Tumor--Normal contrasts produce a compact central nucleus
+of perturbed CpG--gene units, while Adjacent--Normal differences appear more fragmented and diffuse.
+
+Despite being the dataset with the largest number of samples among the three cohorts---providing
+substantial statistical power and highly stable estimates of global methylation structure---the
+separation between Normal and Adjacent tissues remains only modestly apparent. The Normal--Adjacent
+contrast is therefore not strongly marked, reinforcing the interpretation that early
+epigenetic drift in this cohort is subtle and primarily focal rather than globally disruptive.
+
+Overall, GSE225845 emerges as a technically clean and globally homogeneous dataset in which
+tissue-state differences are subtle at the whole-methylome level but become more apparent when
+focusing on localized CpG-specific perturbations, dispersion patterns, and small-scale network
+structure.
+
+
+% ============================================
+% 2.1 GSE287331
+% ============================================
+\subsection{Dataset GSE287331}
+\label{subsec:gse287331}
+
+\paragraph{Dataset overview}
+\label{par:gse287331_overview}
+
+The GSE287331 dataset provides genome-wide DNA methylation profiles generated using the 
+Illumina Infinium MethylationEPIC v1.0 BeadChip on bisulfite-converted breast tissue DNA. 
+The series, contributed by Dennis \textit{et al.} \cite{Lord2024GSE287331} and publicly released on June 18, 2025, is 
+available on GEO under accession 
+\href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE287331}{GSE287331}.  
+
+The original study is organised along a ``tumor proximity axis'' (TPxA), spanning healthy 
+donated breast tissue from cancer-unaffected donors (HDB), contralateral unaffected breast 
+(CUB), ipsilateral opposite quadrant (OQ), adjacent normal tissue (AN), and tumor (TU) 
+samples. 
+
+Overall, the dataset comprises \textbf{446 breast tissue samples} distributed across the 
+five tissue categories listed below. 
+
+\begin{itemize}[label=-]
+    \item 182 HDB samples (healthy donated breast), representing cancer-unaffected breast tissue from donors and used as the physiological methylation baseline;
+    \item 60 AN samples (adjacent-normal), corresponding to histologically normal tissue sampled near the tumor and capturing early epigenetic alterations along the tumor-proximity axis;
+    \item 69 TU samples (tumor tissue), representing invasive breast cancer and defining the malignant endpoint of the axis;
+    \item 67 OQ samples (ipsilateral opposite quadrant), benign tissue from the same breast but distant from the tumor, reflecting intermediate proximity-associated alterations;
+    \item 68 CUB samples (contralateral unaffected breast), benign tissue from the opposite breast, representing a distal but still patient-matched non-malignant reference.
+\end{itemize}
+For all subsequent analyses, only the three biologically coherent classes (Normal, Adjacent, Tumor) are retained
+while OQ and CUB samples are excluded, as they represent intermediate benign tissues along the tumor-proximity axis and do not align 
+with the cross-dataset comparison framework adopted in this work.
+
+
+All methylation levels are stored as $\beta$-values in $[0,1]$, 
+yielding a compact working matrix of 311 tissue samples by 702{,}573 CpG probes.
+% ============================================
+% Missingness
+% ============================================
+\paragraph{Missingness filtering and imputation}
+\label{par:gse287331_missingness}
+I quantified the amount and structure of
+missing values in the $\beta$-matrix. Probe-wise missingness is a well-known
+source of unreliability in Illumina methylation arrays, and several studies recommend
+removing CpGs that exhibit low measurement quality or an excessive proportion of missing
+values. For example, Islam \textit{et al.}~\cite{islam2019_pediatric_dnamm} excluded probes
+with missing $\beta$-values in more than $2\%$ of samples in their pediatric tissue
+methylation analysis, while Mansell \textit{et al.}~\cite{mansell2019guidance} applied a
+similar $1\%$ threshold for detection failure in their EPIC-array quality control
+pipeline. 
+
+Guided by this evidence and the large number of CpG sites available,
+I adopted a stringent probe-wise filtering criterion and removed all
+CpGs missing in more than $1\%$ of samples. This choice prioritises high-confidence
+measurements while minimising reliance on imputed values.
+
+After filtering, only a negligible fraction of values remained missing in the working
+matrix (58\,561 NaN, corresponding to $0.0187\%$ of all entries). Given this extremely low
+level of sparsity, median-based imputation is both statistically robust and
+distribution-preserving. Following current recommendations, where missing methylation values
+are replaced by probe-wise medians to avoid introducing group-specific bias, all residual
+NaN were imputed using the median $\beta$-value of each CpG across samples. This approach is consistent with recent harmonization methods such as mLiftOver, 
+where missing methylation values are explicitly replaced using probe-wise median 
+substitution to preserve biologically plausible levels \cite{chen2024_mliftover}.
+
+
+% Giustificazione evidence che non e' stato fatto BMIQ
+\paragraph{Evidence of Missing Infinium Type~I/II Probe Bias Correction}
+
+During the exploratory analysis performed uniformly across all three datasets, the per-sample
+mean $\beta$-value distributions (Fig.~\ref{fig:gse287331_mean_beta_1}, 
+Fig.~\ref{fig:gse287331_mean_beta_2}, 
+Fig.~\ref{fig:gse287331_mean_beta_3_pre})
+revealed a marked inconsistency.  
+Whereas \texttt{GSE69914} and \texttt{GSE225845} displayed a single broad peak of global
+methylation levels, \texttt{GSE287331} showed a much narrower distribution, shifted towards
+higher $\beta$-values and characterized by two distinct modes in the high-$\beta$ range.
+
+This unusual right-shifted bimodality---largely absent in the other datasets---strongly indicated 
+that a key preprocessing step, namely Infinium Type~I/II probe-design bias correction, had not 
+been applied in the processed data released by the authors.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/cap3/GSE69914_08_mean_beta_per_sample.pdf}
+        \caption{GSE69914}
+        \label{fig:gse287331_mean_beta_1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/cap3/GSE225845_08_mean_beta_per_sample.pdf}
+        \caption{GSE225845}
+        \label{fig:gse287331_mean_beta_2}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/cap3/GSE287331_08_mean_beta_per_sample.pdf}
+        \caption{GSE287331 pre BMIQ}
+        \label{fig:gse287331_mean_beta_3_pre}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/cap3/GSE287331_03_mean_beta_per_sample.pdf}
+        \caption{GSE287331 post BMIQ}
+        \label{fig:gse287331_mean_beta_3_post}
+    \end{subfigure}
+    \caption{Per-sample mean $\beta$ distributions for the three datasets. 
+    \texttt{GSE69914} and \texttt{GSE225845} show a single broad peak, whereas 
+    \texttt{GSE287331} displays a right-shifted bimodal pattern. After BMIQ, the two peaks 
+    become slightly closer and more similar in height, but the bimodality persists.}
+    \label{fig:mean_beta_comparison_three}
+\end{figure}
+
+To confirm this hypothesis, I stratified all probes by Infinium design type (Type~I vs.~Type~II) 
+using the official Illumina EPIC v1.0 manifest, obtained from the corresponding Bioconductor 
+annotation package \cite{Illumina450kAnno}. Using this manifest, the $\beta$-value distributions 
+were separated by probe design and inspected through a dedicated diagnostic plot 
+(Fig.~\ref{fig:gse287331_type_bias_check}). According to the expected behaviour described by 
+Teschendorff et~al.~\cite{Teschendorff2013BMIQ}, datasets that have undergone BMIQ
+normalization should display nearly overlapping $\beta$-value distributions for the two probe types.
+
+In contrast, the Q--Q plot comparing Type~I and Type~II probes revealed a markedly elevated 
+median absolute deviation (median $|\Delta| = 0.380$), indicating a strong and systematic 
+quantile-wise shift between the two designs. Such a deviation is fully incompatible with 
+BMIQ-corrected data, which should instead exhibit deviations close to zero across all quantiles.  
+After applying BMIQ, this deviation decreases only marginally ($|\Delta| : 0.380 \rightarrow 0.370$), 
+confirming that the correction improves probe-type alignment but only to a limited extent.
+
+This modest improvement is also clearly visible in the diagnostic density plots 
+(Fig.~\ref{fig:gse287331_typeI_II_post}). After BMIQ, the rightmost portion of the distribution 
+(near $\beta \approx 1$) shows Type~II probes becoming visibly more similar to Type~I, and the 
+strong asymmetry between the two curves is partially reduced. Nevertheless, the overall shapes 
+of the two probe distributions remain distinct, and the characteristic ``double-tail’’ pattern 
+of the uncorrected dataset is still present after normalization. BMIQ therefore warps the 
+distribution in the expected direction, but the magnitude of the adjustment is small and 
+insufficient to reconcile the two probe types to the degree observed in datasets processed with 
+a full bias-correction pipeline.
+
+A similar behaviour can be observed in the per-sample mean $\beta$ distributions: after BMIQ, the 
+two peaks become slightly higher and closer to one another 
+(Fig.~\ref{fig:gse287331_mean_beta_3_post}), indicating that the algorithm partially reduces the 
+gap between the two dominant modes. However, even after correction, the distribution remains 
+visibly and consistently \emph{bimodal}, suggesting that BMIQ mitigates only weakly the underlying 
+discrepancy and that sample-level heterogeneity continues to dominate the global methylation 
+structure.
+
+Taken together, these observations provide clear visual evidence that no probe-design bias 
+correction was applied in the original processing. To further support this conclusion, 
+I examined the official publication~\cite{Lord2024GSE287331}. The paper carefully describes the acquisition, 
+processing, and analytical use of Illumina EPIC $\beta$-values, but it does \emph{not} mention 
+BMIQ, SWAN, noob, or any other method aimed at correcting Infinium probe-type bias.  
+The absence of such a statement---combined with the strong visual mismatch between Type~I and 
+Type~II probe distributions---confirms that no probe-design bias correction was applied before the 
+release of the dataset.
+
+For these reasons, applying a dedicated Infinium Type~I/II bias correction step is necessary 
+before performing any comparative analysis.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/cap3/GSE287331_23_type_bias_density_pre.pdf}
+        \caption{GSE287331 pre BMIQ}
+        \label{fig:gse287331_typeI_II_pre}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/cap3/GSE287331_23_type_bias_density_post.pdf}
+        \caption{GSE287331 post BMIQ}
+        \label{fig:gse287331_typeI_II_post}
+    \end{subfigure}
+    \caption{Type~I vs.~Type~II probe design comparison before and after BMIQ.  
+    After correction, Type~II probes become more similar to Type~I in the high-$\beta$ region
+    (especially near $\beta \approx 1$), and the overall discrepancy is reduced 
+    ($|\Delta| : 0.380 \rightarrow 0.370$), though probe types remain clearly distinct.}
+    \label{fig:gse287331_type_bias_check}
+\end{figure}
+
+\paragraph{BMIQ correction: implementation and methodological considerations}
+\label{par:gse287331_bmiq}
+
+Given the clear evidence of missing Infinium Type~I/II probe-bias correction, 
+I applied the canonical BMIQ algorithm
+\cite{Teschendorff2013BMIQ}, using the implementation provided by the 
+\texttt{wateRmelon} package \cite{Pidsley2013wateRmelon}, to harmonize the 
+distributions of Type~I and Type~II probes for each sample. To ensure full 
+reproducibility and strict memory control on the extremely wide EPIC matrix, I implemented a \emph{sequential, sample-wise BMIQ correction}, 
+avoiding any between-sample pooling or multi-core parallelization. Each sample’s 
+$\beta$ vector was processed independently using a safe wrapper around 
+\texttt{wateRmelon::BMIQ}, which first verified the availability of a sufficient 
+number of non-missing Type~I and Type~II probes and then returned the corrected 
+$\beta$-values. The corrected matrix was updated in place, preserving the schema 
+\texttt{id\_tissue | CpGs... | label} and subsequently written to a single Parquet file. 
+This design guarantees that no cross-sample information influenced the correction and 
+that the warping applied by BMIQ reflects exclusively the distributional 
+characteristics of each individual sample.
+
+While BMIQ is widely used to mitigate probe-design bias, multiple studies have raised
+important methodological caveats regarding normalization procedures that operate on
+the full distribution of methylation values. Yousefi \textit{et al.}~\cite{Yousefi2013Normalization}
+highlighted that quantile-based adjustments and related normalization strategies
+may ``come at the cost of \emph{artificially reduced biological variability},'' 
+a phenomenon that is particularly undesirable when studying biological groups expected 
+to differ globally in their methylation profiles. Similarly, Liu \textit{et al.}
+\cite{Liu2016Processing} reported that, when methylation alterations are extensive in size
+and number, certain normalization methods can ``\emph{remove biological signal},'' 
+effectively shrinking meaningful differences between groups. 
+
+More recently, Welsh \textit{et al.}~\cite{Welsh2023EPICnorm} performed a systematic
+evaluation of normalization methods for EPIC arrays and showed that approaches enforcing
+strong distributional alignment may distort real biological structure. In particular,
+the authors observed that quantile-based normalization ``\emph{forces the empirical 
+marginal distributions of the samples to be the same, removing all variation in this
+statistic},'' and reported that BMIQ, in some settings, yielded ``\emph{distorted and 
+discontinuous}'' distributions. Such findings provide a conceptual explanation for the 
+behaviour observed: although BMIQ was applied strictly 
+per-sample, its within-array warping can attenuate global differences between 
+Normal, Adjacent, and Tumor samples when these differences are manifested as broad 
+shifts in the underlying $\beta$-value distribution.
+
+Together, these considerations emphasise both the necessity and the limitations of
+probe-design bias correction. Applying BMIQ was essential to remove the technical 
+Type~I/II bias absent in the original processing, yet its known 
+tendency to reduce distributional heterogeneity across groups must be carefully taken 
+into account when interpreting group-level contrasts in downstream analyses.
+
+Importantly, the modest degree of probe-type harmonization is accompanied by a noticeable 
+flattening of biological structure: as will be shown in the low-dimensional embedding analysis 
+(Section~\ref{par:gse287331_embeddings}), PCA, UMAP, and t-SNE projections reveal that the 
+Normal, Adjacent, and Tumor groups become \emph{less clearly separable} after BMIQ.  
+For this reason, all downstream analyses are carried out on the \textbf{non-BMIQ version} of the 
+dataset, which preserves sharper cluster boundaries and better reflects the underlying biological 
+signal.
+
+
+
+% ============================================
+% Beta distributions
+% ============================================
+
+\paragraph{Global methylation distributions}
+\label{par:gse287331_global_meth}
+
+The group-wise mean $\beta$-value density curves  
+(Fig.~\ref{fig:gse287331_group_mean_density}) exhibit the typical bimodal
+profile of Illumina methylation arrays, characterised by a pronounced peak
+at high methylation levels ($\beta \approx 1$) and a smaller peak near
+$\beta \approx 0$.  
+This distribution is fully consistent with reference methylation
+workflows for 450K/EPIC platforms, where the majority of CpG sites are
+highly methylated while only a minority remain hypomethylated
+\cite{Maksimovic2017Workflow}.
+
+Across tissue groups, the overall shapes are highly similar, but a subtle
+gradient can be observed. Normal samples show the tallest peak at 
+$\beta \approx 1$, Adjacent samples lie slightly below, and Tumor samples
+display the lowest peak together with a modest widening of the curve.
+This ordering (Normal $>$ Adjacent $>$ Tumor) reflects early signs of
+methylation erosion and increased variability in malignant tissue.
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.5\linewidth]{images/cap3/GSE287331_04_beta_density_group_mean.pdf}
+    \caption{Group-wise mean $\beta$-value density.}
+    \label{fig:gse287331_group_mean_density}
+\end{figure}
+
+
+
+% ============================================
+% Outlier burden
+% ============================================
+\paragraph{CpG-level instability and recurrent outliers}
+\label{par:gse287331_outliers}
+
+The heatmap of the top outlier loci 
+(Fig.~\ref{fig:gse287331_outliers_heatmap}) confirms that epigenetic disruption is 
+\emph{not uniform}: instability concentrates at specific CpG sites and in specific 
+samples, rather than manifesting as a diffuse genome-wide shift.  
+Consistent with canonical cancer-associated epigenetic deregulation, both directions of 
+alteration are present — focal \textbf{hypermethylation} (very high $\beta$) and focal 
+\textbf{hypomethylation} (very low $\beta$) \cite{ehrlich2002}.
+
+Complementary $\Delta\beta$ distributions contrasting Tumor and Adjacent tissues against 
+Normal (Fig.~\ref{fig:gse287331_outliers_deltabeta}) reveal two distinct behaviours.  
+First, the \textbf{Tumor–Normal} curve shows a large number of CpGs with small but 
+systematic deviations, indicating widespread but modest hypomethylation in Tumor 
+samples.  
+Second, the \textbf{Adjacent–Normal} distribution displays \emph{fewer} CpGs deviating, 
+but those deviations are \emph{larger in magnitude}, with a clear enrichment in the 
+\textbf{hypomethylated} tail.  
+This pattern suggests that while Tumor tissue exhibits diffuse, genome-wide erosion of 
+methylation, Adjacent tissue accumulates more pronounced alterations at a smaller set of 
+loci — a hallmark of early epigenetic drift in histologically normal tissue neighbouring 
+the tumour mass.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE287331_11_heatmap_top_outlier_cpgs_numbered.pdf}
+        \caption{Top outlier CpG loci.}
+        \label{fig:gse287331_outliers_heatmap}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE287331_12_delta_beta_overlaid.pdf}
+        \caption{$\Delta\beta$ distributions (Tumor/Adjacent $-$ Normal).}
+        \label{fig:gse287331_outliers_deltabeta}
+    \end{subfigure}
+    \caption{CpG-level instability: heatmap of top outlier CpGs (left) and 
+    corresponding $\Delta\beta$ distributions (right).}
+    \label{fig:gse287331_outliers_combined}
+\end{figure}
+
+
+
+% ============================================
+% Variance, correlation, moments
+% ============================================
+\paragraph{Variance and correlation structure}
+\label{par:gse287331_variance_corr}
+The density curves 
+(Fig.~\ref{fig:gse287331_var_corr_variance}) show that \textbf{Normal and Adjacent}
+samples are almost perfectly superimposed, with both groups exhibiting extremely low and 
+tightly concentrated variance levels.  
+Tumor samples display a \emph{slightly} broader tail, indicating modestly increased 
+genome-wide variability; however, the overall distribution remains sharply peaked near 
+zero.  
+This suggests that, at the level of CpG-wise variance, \textbf{Adjacent tissue is still 
+epigenetically very close to Normal}, whereas Tumor exhibits only a mild elevation in 
+variability—less pronounced than typically observed in other methylation cohorts.
+
+A complementary perspective is provided by the sample correlation heatmap
+(Fig.~\ref{fig:gse287331_var_corr_correlation}).  
+As expected for genome-wide DNA methylation data, correlations are uniformly high across 
+all samples, reflecting the large proportion of CpG sites that remain stable across 
+individuals \cite{Teschendorff2013BMIQ}.  
+Although group labels are not displayed in the heatmap, several local blocks of 
+high correlation are visible, suggesting structured similarity within specific subsets of 
+samples.  
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE287331_13_intragroup_variance.pdf}
+        \caption{CpG-wise variance distributions.}
+        \label{fig:gse287331_var_corr_variance}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE287331_14_sample_correlation_heatmap.pdf}
+        \caption{Sample correlation heatmap.}
+        \label{fig:gse287331_var_corr_correlation}
+    \end{subfigure}
+    \caption{Variance and correlation structure across Normal, Adjacent, and Tumor samples.}
+    \label{fig:gse287331_var_corr}
+\end{figure}
+
+
+
+% ============================================
+% DR: PCA, tSNE, UMAP
+% ============================================
+\paragraph{Low-dimensional embeddings}
+\label{par:gse287331_embeddings}
+
+Dimensionality reduction using PCA, t-SNE, and UMAP was employed to visualise the 
+global organisation of methylation profiles 
+(Fig.~\ref{fig:gse287331_embeddings_combined}).  
+Across all three embeddings, a remarkably consistent pattern emerges:  
+\textbf{Normal and Adjacent samples form two clearly distinct clusters}, with a sharp 
+separation visible in PCA, strengthened in t-SNE, and appearing as a fully detached 
+manifold in UMAP.  
+
+Tumor samples occupy a separate and more diffuse region of the embedding space, 
+reflecting their higher epigenetic heterogeneity. Importantly, Tumor does not overlap 
+with either Normal or Adjacent in any of the projections, further supporting the strong 
+group structure intrinsic to this dataset.
+
+This strong separation is also quantitatively confirmed by silhouette analysis:  
+the average silhouette coefficient \emph{before} BMIQ was 
+$\mathrm{sil}_{\text{pre}} = 0.2876$,  
+but \emph{after} BMIQ correction it declined to 
+$\mathrm{sil}_{\text{post}} = 0.2537$.  
+Thus, BMIQ \emph{reduced}--even if not significantly--the natural clusterability of the data, collapsing genuine 
+biological differences—particularly the clear separation between Normal and Adjacent 
+samples.
+
+For this reason, and in accordance with the principle of preserving authentic biological 
+signal, the BMIQ-normalised version was not adopted.  
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE287331_16_pca.pdf}
+        \caption{PCA}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE287331_17_tsne.pdf}
+        \caption{t-SNE}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE287331_18_umap.pdf}
+        \caption{UMAP}
+    \end{subfigure}
+    \caption{Low-dimensional embeddings of GSE287331 samples.}
+    \label{fig:gse287331_embeddings_combined}
+\end{figure}
+
+
+
+% ============================================
+% Manifest coverage
+% ============================================
+\paragraph{Genome annotation coverage}
+\label{par:gse287331_manifest}
+
+The genomic distribution of annotated CpG contexts follows the characteristic 
+architecture of the EPIC array.  
+The majority of probes fall into \textbf{non-island (Open Sea / NA)} regions, which 
+represent by far the largest class in the array design.  
+This is followed by a substantial number of probes located within \textbf{CpG Islands}, 
+and progressively smaller fractions mapping to \textbf{North Shores} and 
+\textbf{South Shores}.  
+As expected, \textbf{North} and \textbf{South Shelves} constitute the smallest probe 
+categories.
+
+This hierarchical ordering — Open Sea $\gg$ Island $>$ Shore $>$ Shelf — is fully 
+consistent with the known structure of Infinium arrays described in the literature~\cite{zhou2017, pidsley2016}.  
+
+
+% ============================================
+% Dynamic network proxies
+% ============================================
+\paragraph{Dynamic-network proxies}
+\label{par:gse287331_dnb_proxies}
+
+The degree–rank curve 
+(Fig.~\ref{fig:gse287331_dnb_degree}) shows a heavy-tailed distribution of CpG counts 
+per gene, consistent with a hub–periphery architecture typical of biological networks.  
+
+Both $\Delta\beta$-based network layouts — Tumor vs Normal and Adjacent vs Normal 
+(Fig.~\ref{fig:gse287331_dnb_tumor_normal}, 
+Fig.~\ref{fig:gse287331_dnb_adjacent_normal}) — share a similar overall structure:  
+a \textbf{dense, compact central block} of nodes connected by short-range edges, 
+surrounded by a ring of \textbf{peripheral, weakly connected nodes}.  
+This common geometry reflects the underlying degree distribution and the fact that most 
+CpG–gene units contribute minimally to group-level differences.
+
+Despite this shared structure, the \textbf{Tumor vs Normal} comparison exhibits a more 
+pronounced central cluster with larger $\Delta\beta$ magnitudes, suggesting a subset of 
+CpG/gene units undergoing locally coordinated perturbations— a pattern compatible with a 
+more unstable, transition-like network regime.  
+In contrast, the \textbf{Adjacent vs Normal} layout shows a similarly shaped central block 
+but with weaker deviations, indicating that adjacent tissue may experience only mild or 
+incipient coordination of methylation changes.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE287331_20_dynamic_network_degree_proxy.pdf}
+        \caption{Gene-level CpG degree distribution.}
+        \label{fig:gse287331_dnb_degree}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE287331_21_dnb_network_tumor_minus_normal.pdf}
+        \caption{DNB-like network: Tumor vs Normal.}
+        \label{fig:gse287331_dnb_tumor_normal}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE287331_22_dnb_network_adjacent_minus_normal.pdf}
+        \caption{DNB-like network: Adjacent vs Normal.}
+        \label{fig:gse287331_dnb_adjacent_normal}
+    \end{subfigure}
+    \caption{Dynamic-network proxy visualizations for GSE287331.}
+    \label{fig:gse287331_dnb_combined}
+\end{figure}
+
+
+
+% ============================================
+% Summary
+% ============================================
+\paragraph{Overall interpretation}
+
+The GSE287331 dataset provides a clean and well-structured EPIC methylation matrix for 
+studying breast tissue along the tumour-proximity axis. After stringent $1\%$ probe-wise 
+filtering and minimal median-based imputation ($0.0187\%$ NaN), the working matrix 
+(311~samples $\times$ 702{,}573~CpGs) is essentially complete. Manifest annotation confirms 
+the expected EPIC architecture dominated by Open Sea probes, followed by CpG islands, 
+shores, and shelves.
+
+Exploratory diagnostics revealed that the publicly released data lacked Infinium 
+Type~I/II bias correction. BMIQ reduced probe-type discrepancies only slightly and 
+decreased the silhouette score (from $0.2876$ to $0.2537$), indicating a loss of genuine 
+biological separation. For this reason, all analyses in this thesis rely on the 
+non-BMIQ version, which better preserves group structure.
+
+Global methylation distributions display the typical bimodal EPIC profile with a subtle 
+gradient (Normal $>$ Adjacent $>$ Tumor). Variance and correlation structures show strong 
+similarity between Normal and Adjacent tissues and only mild variability increases in 
+Tumor. In contrast, low-dimensional embeddings reveal clear separation of all three 
+groups—especially between Normal and Adjacent—highlighting meaningful multivariate 
+differences despite globally similar first- and second-order moments.
+
+Locus-specific analyses show focused disruptions: Tumor exhibits widespread mild 
+hypomethylation, whereas Adjacent tissue displays fewer but more pronounced deviations. 
+Dynamic-network proxies further indicate a more compact perturbed core in Tumor samples 
+and weaker, early-stage perturbations in Adjacent tissue, consistent with 
+field-cancerization effects.
+
+Overall, GSE287331 is a high-quality dataset with strong and biologically interpretable 
+Normal–Adjacent–Tumor separation, making it well suited for downstream comparative and 
+mechanistic analyses.
+
+
+
+% ============================
+% Inter Dataset Analysis
+% ============================
+\section{Inter Dataset Analysis}
+\label{sec:inter_dataset}
+
+The objective of this section is not to merge the datasets---an approach that would be biologically and technically 
+inappropriate due to differences in array platforms (HM450 vs.\ EPIC), preprocessing pipelines, and the strong 
+intrinsic structure observed in GSE287331---but rather to compare their internal behaviours. 
+This cross-dataset perspective assesses whether the early epigenetic alterations detected in the intra-dataset 
+analyses are \emph{reproducible across independent cohorts}, thereby supporting the central biological premise 
+of this thesis: detecting early methylation drift in histologically normal tissues and evaluating its potential 
+role in tumour initiation.
+
+\subsection{Rationale}
+
+Across all three datasets, the intra-dataset analyses revealed three highly consistent phenomena:
+
+\begin{itemize}[label=-]
+    \item Normal and Adjacent tissues are globally similar, with nearly superimposed $\beta$-value distributions and
+    comparable CpG-wise variance profiles.
+    \item Tumour samples show increased heterogeneity and a clear bias toward hypomethylation, although the magnitude
+    of this shift varies across datasets.
+    \item Adjacent tissues exhibit early methylation drift, detectable through $\Delta\beta$ distributions and outlier 
+    profiles even when global metrics remain highly similar to Normal.
+\end{itemize}
+
+These patterns align with the expected biological progression from Normal to Tumour, in which epigenetic 
+deregulation arises gradually and affects normal-appearing tissue surrounding the tumour.  
+The inter-dataset analysis therefore evaluates the \textit{directional consistency} of these effects, rather than aiming 
+for quantitative comparability.
+
+\subsection{Cross-Dataset Comparative Metric}
+
+\begin{table}[t]
+\centering
+\caption{Cross-dataset comparison of Normal(N)--Adjacent(A) contrasts using global, locus-specific, and instability metrics.}
+\label{tab:inter_summary_NA}
+\scriptsize
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Dataset} &
+\textbf{Samples (N/A)} &
+\textbf{CpGs} &
+\textbf{Mean $|\Delta\beta|$ (A--N)} &
+\textbf{Var(A)/Var(N)} &
+\textbf{Outlier A/N} &
+\textbf{Silhouette (N/A)} \\
+\midrule
+GSE69914 &
+50 / 42 &
+485{,}512 &
+0.0090 &
+0.988 &
+1.353 &
+0.0028 \\
+GSE225845 &
+113 / 140 &
+750{,}426 &
+0.0148 &
+0.972 &
+2.790 &
+0.0423 \\
+GSE287331 &
+182 / 60 &
+702{,}573 &
+0.0306 &
+0.930 &
+13.329 &
+0.3442 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:inter_summary_NA} reports a set of quantitative metrics designed to characterise 
+the epigenetic deviation of Adjacent tissue from the Normal methylome across the three cohorts.  
+Across all datasets, these metrics collectively highlight the presence of early epigenetic drift 
+in histologically non-tumour tissue, consistent with the field-defect framework described by 
+Teschendorff et~al.~\cite{teschendorff2016} and recently reinforced by studies in other 
+tissue contexts.
+
+
+
+\paragraph{Mean absolute methylation difference, $\text{Mean}|\Delta\beta|(\text{A--N})$}  
+For each CpG I computed the absolute mean difference between Adjacent and Normal:
+\[
+|\Delta\beta_i| = \left| \beta^{(A)}_i - \beta^{(N)}_i \right|.
+\]
+The cross-cohort pattern shows progressively larger locus-specific shifts from GSE69914 
+(0.0090) to GSE225845 (0.0148) and GSE287331 (0.0306).  
+This monotonic increase reflects a strengthening early deviation in Adjacent tissues.  
+Similar locus-wise methylation drifts in histologically normal tissue have been reported in 
+independent systems, such as colonic mucosa adjacent to adenomas~\cite{Yates2024_NormalMucosaField}, 
+supporting the interpretation of these alterations as early signs of field cancerization.
+
+\paragraph{Global variance ratio, $\mathrm{Var(A)/Var(N)}$}  
+For each sample $s$, the global methylation variance is computed across all CpG sites:
+\[
+v_s = \mathrm{Var}\!\left(\beta_{s,1}, \beta_{s,2}, \ldots, \beta_{s,m}\right),
+\]
+where $m$ denotes the number of CpGs.  
+Group-wise mean variances are then obtained as
+\[
+\overline{v}^{(N)} = \frac{1}{|N|} \sum_{s \in N} v_s,
+\qquad
+\overline{v}^{(A)} = \frac{1}{|A|} \sum_{s \in A} v_s,
+\]
+and the reported metric is their ratio:
+\[
+\mathrm{Var(A)/Var(N)} = 
+\frac{\overline{v}^{(A)}}{\overline{v}^{(N)}}.
+\]
+
+Across all datasets this ratio remained consistently close to~1 (0.93--0.99), indicating that 
+Adjacent tissue does not exhibit diffuse genome-wide instability.  
+This aligns with recent evidence that early pre-neoplastic alterations tend to be \emph{focal} 
+rather than global, with only specific CpG sites showing abnormal dispersion while overall 
+variance remains preserved~\cite{Yates2024_NormalMucosaField}.  
+Such behaviour is consistent with contemporary models of early tumourigenesis, in which subtle, 
+locally restricted perturbations accumulate prior to large-scale chromatin deregulation 
+and overt neoplastic transformation~\cite{Zhang2024_TumorInitiationEpigenetic}.
+
+
+
+\paragraph{Outlier burden ratio, A/N}  
+For each sample, the outlier burden is defined as the number of CpG sites whose methylation 
+deviates from the Normal reference distribution by more than three times the Normal 
+interquartile range:
+\[
+\text{outlier}_s = 
+\#\left\{\, i \;:\; 
+\left| \beta_{i,s} - \tilde{\beta}^{(N)}_i \right| 
+> 3 \cdot IQR^{(N)}_i \,\right\},
+\]
+where $\tilde{\beta}^{(N)}_i$ and $IQR^{(N)}_i$ denote the median and interquartile range of CpG $i$ 
+across Normal samples.  
+The reported A/N ratio corresponds to the mean outlier burden in Adjacent tissue divided by the 
+mean burden in Normal tissue.  
+This metric shows the strongest cross-dataset gradient: from mild enrichment in GSE69914 
+(A/N $\approx 1.35$), to moderate imbalance in GSE225845 (A/N $\approx 2.79$), to a striking 
+amplification in GSE287331 (A/N $\approx 13.33$).  
+These findings closely mirror evidence that increased local methylation variability in 
+histologically normal tissue is a sensitive marker of early instability~\cite{Yates2024_NormalMucosaField}, 
+and provide quantitative support for the presence of pronounced field effects in GSE287331.
+
+
+
+
+
+\paragraph{Silhouette score (Normal vs.\ Adjacent)}  
+For each sample $s$, let $a(s)$ denote the mean distance from $s$ to all other samples in the 
+same group (cohesion), and let $b(s)$ denote the smallest mean distance from $s$ to samples in 
+any different group (separation).  
+The silhouette coefficient for sample $s$ is defined as
+\[
+\mathrm{sil}(s) =
+\frac{b(s) - a(s)}{\max\{a(s),\, b(s)\}},
+\]
+and the reported score corresponds to the mean silhouette across all Normal and Adjacent 
+samples.  
+Higher values indicate clearer multivariate separation, whereas values near zero reflect 
+substantial overlap.
+
+GSE69914 (0.0028) and GSE225845 (0.0423) show almost complete overlap between Normal and 
+Adjacent, consistent with minimal global displacement in PCA space.  
+In contrast, GSE287331 exhibits partial separation (0.3442), indicating that the epigenetic 
+landscape of Adjacent tissue is substantially shifted relative to Normal.  
+This behaviour aligns with mechanistic models in which epigenetic dysregulation constitutes 
+one of the earliest events in tumour initiation~\cite{Zhang2024_TumorInitiationEpigenetic}, 
+preceding morphological transformation.
+
+Together, these metrics depict a consistent Normal--Adjacent gradient across datasets.  
+Early epigenetic drift is detectable in all cohorts, but its magnitude, focality, and 
+multivariate visibility intensify markedly from GSE69914 to GSE287331.  
+Importantly, the combination of stable global variance with strong outlier enrichment 
+supports a model in which early pre-neoplastic changes arise through \emph{localised} 
+perturbations—a hallmark of field cancerization~\cite{Yates2024_NormalMucosaField, teschendorff2016}.
+
+\subsection{Visual Comparative Analysis}
+\label{subsec:inter_visual}
+
+To complement the quantitative summary reported in 
+Table~\ref{tab:inter_summary_NA}, this section provides a visual 
+characterisation of the Normal--Adjacent (N--A) contrast across the three 
+cohorts.  
+All analyses are carried out on the three-way intersection of 
+326{,}330 CpG sites, ensuring maximal comparability across platforms 
+(HM450 and EPIC) and preprocessing pipelines \cite{zhou2017}.  
+The goal is not to achieve numerical concordance at the single-CpG 
+level---a notoriously difficult task due to platform differences, 
+probe-design effects, and cohort-specific processing 
+\cite{pidsley2016, Fortin2014_funnorm}---but rather to evaluate 
+whether the \emph{shape}, \emph{direction}, and \emph{global behaviour} 
+of the early methylation drift are coherent across studies.
+
+
+\paragraph{Global $\Delta\beta$ distributions (Adjacent--Normal)}
+
+Fig.~\ref{fig:delta_density_three} overlays the $\Delta\beta$ 
+(A--N) density curves for the three cohorts.  
+All distributions are sharply centred around zero, confirming that 
+the N--A methylation drift is globally subtle in each dataset, 
+consistent with the focal and low-amplitude nature of early 
+epigenetic alterations described in pre-neoplastic tissues 
+\cite{teschendorff2016, Timp2013_EpigeneticModel}.  
+Despite differences in dispersion---reflecting platform-dependent noise, 
+probe-type composition, and study-specific variability 
+\cite{maksimovic2012, pidsley2016}---the three curves 
+exhibit an almost identical shape.  
+This indicates that early epigenetic deviations in Adjacent tissue, 
+although small, follow a \emph{qualitatively reproducible} pattern across 
+independent cohorts.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.5\textwidth]{images/cap3/GSE69914_GSE287331_GSE225845_01_delta_beta_AminusN_overlay_three.pdf}
+    \caption{Overlay of $\Delta\beta$ (Adjacent--Normal) density curves 
+    across the three datasets, computed on the 326{,}330 CpG sites shared 
+    by all cohorts.  
+    All distributions are tightly centred around zero, indicating that the 
+    Adjacent--Normal shift is globally subtle yet consistent in shape 
+    across studies.}
+    \label{fig:delta_density_three}
+\end{figure}
+
+
+\paragraph{Pairwise $\Delta\beta$ concordance across datasets}
+
+To assess whether locus-specific A--N shifts replicate across cohorts, 
+pairwise scatterplots were generated for all dataset pairs 
+(Fig.~\ref{fig:scatter_69914_287331},Fig. \ref{fig:scatter_69914_225845}, Fig.\ref{fig:scatter_287331_225845}).  
+Each point corresponds to a CpG in the three-way intersection; axes show 
+the mean $\Delta\beta$ (A--N) computed independently in each dataset.
+
+Across all pairs, Spearman correlations were weak ($\rho = 0.05$--$0.29$), 
+consistent with the well-established difficulty of achieving 
+single-CpG reproducibility across independent methylation studies 
+\cite{Fortin2014_funnorm, Leek2010_BatchEffects, zhou2017}.  
+Nevertheless, the comparison between GSE69914 and GSE287331 
+(Fig.~\ref{fig:scatter_69914_287331}) exhibits mild monotonic agreement, 
+whereas pairs involving GSE225845 display near-zero correlation.  
+These results indicate that while the \emph{global} N--A drift is 
+consistent across cohorts (as shown by the density curves), 
+\emph{fine-scale, CpG-specific} effects are heavily influenced by 
+platform architecture, batch structure, and study-specific noise 
+\cite{pidsley2016, Fortin2014_funnorm}.
+
+\begin{figure}[t]
+    \centering
+
+    % -------- Subfigure (a) --------
+    \begin{subfigure}[t]{0.31\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE69914_GSE287331_GSE225845_03_delta_beta_scatter_GSE69914_vs_GSE287331_Adjacent_minus_Normal.pdf}
+        \caption{GSE69914 vs.~GSE287331, Spearman $\rho \approx 0.29$}
+        \label{fig:scatter_69914_287331}
+    \end{subfigure}
+    \hfill
+    % -------- Subfigure (b) --------
+    \begin{subfigure}[t]{0.31\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE69914_GSE287331_GSE225845_04_delta_beta_scatter_GSE69914_vs_GSE225845_Adjacent_minus_Normal.pdf}
+        \caption{GSE69914 vs.~GSE225845, Spearman $\rho \approx 0.05$}
+        \label{fig:scatter_69914_225845}
+    \end{subfigure}
+    \hfill
+    % -------- Subfigure (c) --------
+    \begin{subfigure}[t]{0.31\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE69914_GSE287331_GSE225845_05_delta_beta_scatter_GSE287331_vs_GSE225845_Adjacent_minus_Normal.pdf}
+        \caption{GSE287331 vs.~GSE225845, Spearman $\rho \approx 0.07$}
+        \label{fig:scatter_287331_225845}
+    \end{subfigure}
+
+    \caption{
+        Pairwise $\Delta\beta$ (Adjacent--Normal) concordance across the 
+        three methylation datasets.  
+        (a)~GSE69914 vs.~GSE287331 shows a mild positive monotonic trend,  
+        (b)~GSE69914 vs.~GSE225845 exhibits near-zero correlation, and  
+        (c)~GSE287331 vs.~GSE225845 similarly shows weak agreement.  
+        Together, these comparisons highlight cohort-specific variability 
+        in locus-level methylation drift, despite stable global A--N directionality.
+    }
+    \label{fig:inter_scatter_three}
+\end{figure}
+
+
+
+\paragraph{t-SNE embeddings on the shared CpG intersection}
+
+To investigate the multivariate structure of the N--A contrast across 
+cohorts, t-SNE embeddings were computed on M-values restricted to the 
+326k shared CpGs.  
+Fig.~\ref{fig:tsne_dataset_NA} and Fig.\ref{fig:tsne_group_NA} display the 
+embeddings coloured by dataset and by group, respectively.
+
+The dataset-coloured embedding exhibits strong clustering by study, 
+in line with the dominant influence of batch and platform effects in 
+high-dimensional methylation data 
+\cite{Leek2010_BatchEffects, Fortin2014_funnorm}.  
+This visually confirms that merging the datasets would be inappropriate, 
+as technical structure would obscure the biological signal.
+
+When coloured by tissue state (Normal vs.\ Adjacent), 
+a subtle yet coherent within-dataset displacement becomes visible, 
+consistent with the early, focal drift described in the epigenetic 
+progenitor model \cite{Timp2013_EpigeneticModel, Hansen2011_Variability}.  
+Adjacent samples tend to occupy slightly shifted regions relative to 
+Normal samples within each dataset cluster, mirroring the quantitative 
+metrics in Table~\ref{tab:inter_summary_NA}.
+
+\begin{figure}[t]
+    \centering
+
+    % -------- Subfigure (a): t-SNE by dataset --------
+    \begin{subfigure}[t]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE69914_GSE287331_GSE225845_07_tsne_by_dataset_NA.pdf}
+        \caption{t-SNE coloured by dataset}
+        \label{fig:tsne_dataset_NA}
+    \end{subfigure}
+    \hfill
+    % -------- Subfigure (b): t-SNE by group --------
+    \begin{subfigure}[t]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/cap3/GSE69914_GSE287331_GSE225845_08_tsne_by_group_NA.pdf}
+        \caption{t-SNE coloured by tissue state (Normal vs.~Adjacent)}
+        \label{fig:tsne_group_NA}
+    \end{subfigure}
+
+    \caption{
+        Two views of the t-SNE embedding computed on the 326k CpGs shared 
+        across GSE69914, GSE225845, and GSE287331. (a) Colouring by dataset reveals strong study- and platform-driven clustering, indicating that global
+methylation structure is dominated by inter-cohort effects. (b) Colouring by tissue state (Normal vs. Adjacent) shows
+a subtle within-dataset displacement of Adjacent samples, consistent with early localised methylation drift at the tissue
+margins. }
+    \label{fig:tsne_two_views}
+\end{figure}
+
+
+Overall, the visual analyses corroborate the quantitative metrics: early 
+epigenetic drift is detectable in all cohorts, but its magnitude and 
+visibility vary substantially, with GSE287331 exhibiting the clearest 
+field-defect signature.  
+The combination of globally subtle yet directionally consistent 
+$\Delta\beta$ patterns, weak CpG-level concordance, and 
+dataset-specific multivariate structure reinforces the view that the 
+Normal$\rightarrow$Adjacent transition reflects genuine early 
+epigenetic deregulation rather than dataset-specific artefacts.
+
+
+\subsection{Interpretation and implications}
+
+Taken together, the cross-dataset metrics reveal that the epigenetic deviations observed in 
+Adjacent tissue are not idiosyncratic artefacts of a single cohort, but represent 
+\emph{coherent and reproducible biological signals}.  
+Although the intensity of the effect varies across datasets, the directionality is remarkably 
+consistent:
+
+\begin{itemize}[label=-]
+    \item Normal and Adjacent tissues remain globally similar at the whole-methylome level;
+    \item Adjacent samples consistently exhibit early drift, detectable through locus-specific
+          shifts, focal outlier enrichment, and mild multivariate displacement;
+    \item Tumour samples show the expected pattern of strong hypomethylation and increased 
+          heterogeneity.
+\end{itemize}
+
+A key implication of this comparison is that the \emph{strength} of the Normal--Adjacent signal 
+differs substantially across cohorts.  
+In GSE69914 and GSE225845 the drift is detectable but modest, whereas GSE287331 displays a 
+pronounced field-defect signature across all metrics: larger locus-specific shifts, extreme 
+outlier enrichment, and measurable separation in multivariate space.  
+This makes GSE287331 the most informative dataset for downstream algorithmic exploration, as it 
+provides the strongest and clearest Normal--Adjacent contrast from which to extract early 
+epigenetic markers.
+
+For this reason, GSE287331 is treated as the \emph{primary discovery dataset} for subsequent 
+analyses, while GSE69914 and GSE225845 are used as \emph{external validation replication cohorts}.  
+Importantly, in this work the term “validation” refers to \emph{biological} replication across 
+independent datasets—rather than machine-learning validation.  
+The discovery step is carried out in GSE287331, and the resulting CpG markers or patterns are 
+then evaluated in the two additional cohorts to test whether the same loci display consistent 
+Normal--Adjacent drift across different platforms, sample compositions, and preprocessing 
+pipelines. 
+
+Because the three cohorts differ in array technology, processing pipelines, and study design, 
+merging them would not be biologically meaningful; instead, the inter-dataset analysis serves as 
+a multi-cohort consistency check, supporting the interpretation that the Normal$\rightarrow$Adjacent 
+drift represents genuine early epigenetic deregulation rather than dataset-specific noise.  
+This framework aligns with contemporary models of tumour initiation, in which subtle, locally 
+restricted perturbations arise in histologically normal tissue prior to overt neoplastic 
+transformation.
+
+
+
+
+\section{Synthesis and Motivation for Data Pre-Processing}
