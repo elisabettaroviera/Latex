@@ -5,5 +5,6 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {3.1}{\ignorespaces Cross-dataset comparison of Normal(N)--Adjacent(A) contrasts using global, locus-specific, and instability metrics.}}{27}{table.caption.50}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Overview of the GSE69914 dataset after initial cohort curation.}}{8}{table.caption.5}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Cross-dataset comparison of Normal(N)--Adjacent(A) contrasts using global, locus-specific, and instability metrics.}}{27}{table.caption.50}%
 \addvspace {10\p@ }
