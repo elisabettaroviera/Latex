@@ -1,7 +1,7 @@
 \chapter{Data Preparation and Exploratory Analysis}
 \label{sec:data_preparation_exploration}
 
-\section{Chapter Overview and Methodological Objectives}
+\section{Methodological Objectives}
 
 This chapter establishes the methodological foundation for all subsequent analyses by addressing the construction, organization, and preliminary characterization of the DNA methylation datasets used in this thesis. Following the biological background and problem formulation introduced in Chapters~\ref{sec:introduction} and~\ref{sec:biology_medicine}, the present chapter acts as a bridge between domain-specific knowledge and quantitative modeling, ensuring that downstream analyses are grounded on a technically sound and well-understood data representation.
 
@@ -33,7 +33,7 @@ Dataset selection was driven by strict inclusion criteria aimed at ensuring tech
 \end{equation}
 where $\alpha$ is a small offset (typically 100) used to stabilize the denominator. Additional requirements included the use of Illumina HumanMethylation450 (450K) or MethylationEPIC (EPIC) platforms, the availability of multiple tissue classes within each cohort, and sufficiently large sample sizes to support robust statistical analysis.
 
-\subsection{Methylation Data Representation and Storage Format}
+\subsection{Methylation Data Representation and Storage}
 
 In several datasets, the original authors applied established normalization procedures, including methods specifically designed to correct probe-type design bias such as BMIQ~\cite{Teschendorff2013BMIQ}. Reprocessing raw IDAT files would therefore not add information relevant to the objectives of this thesis, while substantially increasing technical complexity and reducing reproducibility. For these reasons, all analyses were conducted on the processed $\beta$-value matrices as distributed via GEO.
 
@@ -72,17 +72,6 @@ This section therefore applies a unified exploratory framework to each dataset (
 \subsection{Dataset GSE69914}
 \label{subsec:gse69914}
 
-\paragraph{Dataset overview}
-\label{par:gse69914_overview}
-
-GSE69914 is a breast tissue DNA methylation cohort profiled using the Illumina Infinium HumanMethylation450 BeadChip, providing genome-wide coverage of approximately $4.8\times10^5$ CpG loci. The dataset comprises samples spanning the full Normal--Adjacent--Tumor spectrum that motivates the biological framework of this thesis.
-
-An overview of the sample composition and CpG coverage is reported in Table~\ref{tab:gse69914_overview}, including the distribution across tissue classes and hereditary-risk subgroups.
-
-A limited subset of samples is associated with germline \textit{BRCA1} mutations. \textit{BRCA1}, in particular, encodes a key DNA repair protein, and pathogenic variants are known to substantially increase lifetime breast and ovarian cancer risk \cite{brca_factsheet}. Multiple studies have shown that BRCA-associated breast tissues exhibit distinct baseline epigenetic profiles, reflecting inherited genomic instability rather than sporadic tumorigenesis \cite{Bartlett2022,Suijkerbuijk2008}.
-
-Since the primary objective of this thesis is to characterise early, field defect DNA methylation alterations along the Normal--Adjacent axis in sporadic breast cancer, samples carrying \textit{BRCA1} mutations were excluded from the core exploratory and preprocessing pipeline. Their inclusion would introduce a confounding hereditary epigenetic signal, potentially obscuring subtle methylation shifts in non-mutated normal and adjacent tissues.
-
 \begin{table}[t]
 \centering
 \caption{Overview of the GSE69914 dataset after initial cohort curation.}
@@ -108,6 +97,19 @@ Since the primary objective of this thesis is to characterise early, field defec
 \bottomrule
 \end{tabular}
 \end{table}
+
+\paragraph{Dataset overview}
+\label{par:gse69914_overview}
+
+GSE69914 is a breast tissue DNA methylation cohort profiled using the Illumina Infinium HumanMethylation450 BeadChip, providing genome-wide coverage of approximately $4.8\times10^5$ CpG loci. The dataset comprises samples spanning the full Normal--Adjacent--Tumor spectrum that motivates the biological framework of this thesis.
+
+An overview of the sample composition and CpG coverage is reported in Table~\ref{tab:gse69914_overview}, including the distribution across tissue classes and hereditary-risk subgroups.
+
+A limited subset of samples is associated with germline \textit{BRCA1} mutations. \textit{BRCA1}, in particular, encodes a key DNA repair protein, and pathogenic variants are known to substantially increase lifetime breast and ovarian cancer risk \cite{brca_factsheet}. Multiple studies have shown that BRCA-associated breast tissues exhibit distinct baseline epigenetic profiles, reflecting inherited genomic instability rather than sporadic tumorigenesis \cite{Bartlett2022,Suijkerbuijk2008}.
+
+Since the primary objective of this thesis is to characterise early, field defect DNA methylation alterations along the Normal--Adjacent axis in sporadic breast cancer, samples carrying \textit{BRCA1} mutations were excluded from the core exploratory and preprocessing pipeline. Their inclusion would introduce a confounding hereditary epigenetic signal, potentially obscuring subtle methylation shifts in non-mutated normal and adjacent tissues.
+
+
 
 
 % ============================================
