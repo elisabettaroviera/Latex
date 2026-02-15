@@ -26,3 +26,8 @@
 \contentsline {figure}{\numberline {3.19}{\ignorespaces Pairwise $\Delta \beta $ (Adjacent--Normal) concordance across the three methylation datasets. (a)~GSE69914 vs.~GSE287331 shows a mild positive monotonic trend, (b)~GSE69914 vs.~GSE225845 exhibits near-zero correlation, and (c)~GSE287331 vs.~GSE225845 similarly shows weak agreement. Together, these comparisons highlight cohort-specific variability in locus-level methylation drift, despite stable global A--N directionality. }}{31}{figure.caption.58}%
 \contentsline {figure}{\numberline {3.20}{\ignorespaces Two views of the t-SNE embedding computed on the 326k CpGs shared across GSE69914, GSE225845, and GSE287331. (a) Colouring by dataset reveals strong study- and platform-driven clustering, indicating that global methylation structure is dominated by inter-cohort effects. (b) Colouring by tissue state (Normal vs. Adjacent) shows a subtle within-dataset displacement of Adjacent samples, consistent with early localised methylation drift at the tissue margins. }}{32}{figure.caption.60}%
 \addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
