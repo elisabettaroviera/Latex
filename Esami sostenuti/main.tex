@@ -1,0 +1,144 @@
+\documentclass[10pt]{extarticle}
+
+% Lingua e matematica
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,amsthm}
+
+% Grafica e tabelle
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{siunitx}
+
+% Codice (opzionale)
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.98,0.98,0.98}
+\lstdefinestyle{mystyle}{
+  backgroundcolor=\color{backcolour},
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true, keepspaces=true, numbers=none, tabsize=2
+}
+\lstset{style=mystyle}
+
+% Margini
+\usepackage[margin=0.6in]{geometry}
+\usepackage{ragged2e}
+\usepackage{enumitem}
+%\usepackage[utf8]{inputenc} % per caratteri UTF-8 nei .tex e nel .bib
+\usepackage[backend=biber,style=ieee,sorting=none,maxbibnames=99]{biblatex}
+\ExecuteBibliographyOptions{doi=true,url=true,isbn=false}
+\addbibresource{references.bib}
+\usepackage{csquotes}       % consigliato da biblatex (evita warning e parse strani)
+
+
+
+% Bibliografia (biblatex + biber)
+\usepackage[backend=biber,style=ieee]{biblatex}
+\addbibresource{references.bib}
+
+% TOC: includi anche \paragraph e numerali
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+
+% Hyperref (sempre *dopo* gli altri pacchetti)
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=teal,urlcolor=magenta]{hyperref}
+
+
+\begin{document}
+
+% Custom header without a separate titlepage
+\noindent
+\begin{minipage}{0.3\textwidth}
+    \includegraphics[width=1.3\linewidth]{Figures/polito_logo_2021_blu.jpg}
+\end{minipage}
+\hfill
+\begin{minipage}{0.68\textwidth}
+    \raggedleft
+    {\LARGE \textbf{Politecnico di Torino}}\\[0.2cm]
+    {\large Laurea Magistrale in Ingegneria Matematica
+}\\[0.7cm]
+    {\large \textbf{Transcript degli esami — Laurea Triennale e Magistrale
+}}\\[0.2cm]
+    \begin{tabular}{rl}
+        Elisabetta Roviera \\
+    \end{tabular}
+\end{minipage}
+
+\hrule
+
+\section{Esami Magistrali}
+
+\begin{center}
+\begin{tabular}{p{11cm} r}
+
+\toprule
+\textbf{Esame} & \textbf{Valutazione} \\
+\midrule
+
+Machine Learning and Deep Learning & 30 e lode \\
+Model Order Reduction and Machine Learning & 30 e lode \\
+Modelli statistici / Apprendimento statistico & 30 \\
+Computational Linear Algebra for Large Scale Problems & 30 e lode \\
+Numerical Optimization for Large Scale Problems and Stochastic Optimization & 30 e lode \\
+Processi Stocastici / Dinamiche su Network & 30 e lode \\
+Data Science Lab: Process and Methods & 27 \\
+BioQuants & 27 \\
+Cybersecurity for Embedded Systems & 28 \\
+Crittografia & 30 e lode \\
+Analisi tempo-frequenza e multiscala & 30 \\
+Financial Engineering & 22 \\
+Business Analytics & 20 \\
+
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Esami Triennali}
+
+\begin{center}
+\begin{tabular}{p{11cm} r}
+
+\toprule
+\textbf{Esame} & \textbf{Valutazione} \\
+\midrule
+
+Programmazione a oggetti & 30 e lode \\
+Introduzione alle applicazioni web & 30 e lode \\
+Informatica & 29 \\
+Programmazione e calcolo scientifico & 29 \\
+Ricerca operativa & 27 \\
+Metodi numerici & 23 \\
+Basi di dati & 25 \\
+Algebra lineare e geometria & 25 \\
+Probabilità e statistica & 20 \\
+Analisi matematica I & 24 \\
+Analisi matematica II & 19 \\
+Matematica discreta & 26 \\
+Geometria differenziale e computazionale & 27 \\
+Equazioni della fisica matematica & 30 \\
+Metodi matematici per l'ingegneria & 21 \\
+Fisica I & 24 \\
+Fisica II & 24 \\
+Meccanica razionale & 25 \\
+Chimica & 20 \\
+Analisi funzionale / Equazioni alle derivate parziali & 20 \\
+Istituzioni di Algebra e Geometria & 20 \\
+
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+
+\end{document}
