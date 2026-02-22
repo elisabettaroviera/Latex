@@ -2,3 +2,209 @@
 \label{sec:data_preprocessing}
 
 REPORT 02
+
+% ============================================
+% Missingness
+% ============================================
+\paragraph{Missingness filtering and imputation}
+\label{par:gse287331_missingness}
+I quantified the amount and structure of
+missing values in the $\beta$-matrix. Probe-wise missingness is a well-known
+source of unreliability in Illumina methylation arrays, and several studies recommend
+removing CpGs that exhibit low measurement quality or an excessive proportion of missing
+values. For example, Islam \textit{et al.}~\cite{islam2019_pediatric_dnamm} excluded probes
+with missing $\beta$-values in more than $2\%$ of samples in their pediatric tissue
+methylation analysis, while Mansell \textit{et al.}~\cite{mansell2019guidance} applied a
+similar $1\%$ threshold for detection failure in their EPIC-array quality control
+pipeline. 
+
+Guided by this evidence and the large number of CpG sites available,
+I adopted a stringent probe-wise filtering criterion and removed all
+CpGs missing in more than $1\%$ of samples. This choice prioritises high-confidence
+measurements while minimising reliance on imputed values.
+
+After filtering, only a negligible fraction of values remained missing in the working
+matrix (58\,561 NaN, corresponding to $0.0187\%$ of all entries). Given this extremely low
+level of sparsity, median-based imputation is both statistically robust and
+distribution-preserving. Following current recommendations, where missing methylation values
+are replaced by probe-wise medians to avoid introducing group-specific bias, all residual
+NaN were imputed using the median $\beta$-value of each CpG across samples. This approach is consistent with recent harmonization methods such as mLiftOver, 
+where missing methylation values are explicitly replaced using probe-wise median 
+substitution to preserve biologically plausible levels \cite{chen2024_mliftover}.
+
+
+% Giustificazione evidence che non e' stato fatto BMIQ
+\paragraph{Evidence of Missing Infinium Type~I/II Probe Bias Correction}
+
+During the exploratory analysis performed uniformly across all three datasets, the per-sample
+mean $\beta$-value distributions (Fig.~\ref{fig:gse287331_mean_beta_1}, 
+Fig.~\ref{fig:gse287331_mean_beta_2}, 
+Fig.~\ref{fig:gse287331_mean_beta_3_pre})
+revealed a marked inconsistency.  
+Whereas \texttt{GSE69914} and \texttt{GSE225845} displayed a single broad peak of global
+methylation levels, \texttt{GSE287331} showed a much narrower distribution, shifted towards
+higher $\beta$-values and characterized by two distinct modes in the high-$\beta$ range.
+
+This unusual right-shifted bimodality---largely absent in the other datasets---strongly indicated 
+that a key preprocessing step, namely Infinium Type~I/II probe-design bias correction, had not 
+been applied in the processed data released by the authors.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/cap3/GSE69914_08_mean_beta_per_sample.pdf}
+        \caption{GSE69914}
+        \label{fig:gse287331_mean_beta_1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/cap3/GSE225845_08_mean_beta_per_sample.pdf}
+        \caption{GSE225845}
+        \label{fig:gse287331_mean_beta_2}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/cap3/GSE287331_08_mean_beta_per_sample.pdf}
+        \caption{GSE287331 pre BMIQ}
+        \label{fig:gse287331_mean_beta_3_pre}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/cap3/GSE287331_03_mean_beta_per_sample.pdf}
+        \caption{GSE287331 post BMIQ}
+        \label{fig:gse287331_mean_beta_3_post}
+    \end{subfigure}
+    \caption{Per-sample mean $\beta$ distributions for the three datasets. 
+    \texttt{GSE69914} and \texttt{GSE225845} show a single broad peak, whereas 
+    \texttt{GSE287331} displays a right-shifted bimodal pattern. After BMIQ, the two peaks 
+    become slightly closer and more similar in height, but the bimodality persists.}
+    \label{fig:mean_beta_comparison_three}
+\end{figure}
+
+To confirm this hypothesis, I stratified all probes by Infinium design type (Type~I vs.~Type~II) 
+using the official Illumina EPIC v1.0 manifest, obtained from the corresponding Bioconductor 
+annotation package \cite{Illumina450kAnno}. Using this manifest, the $\beta$-value distributions 
+were separated by probe design and inspected through a dedicated diagnostic plot 
+(Fig.~\ref{fig:gse287331_type_bias_check}). According to the expected behaviour described by 
+Teschendorff et~al.~\cite{Teschendorff2013BMIQ}, datasets that have undergone BMIQ
+normalization should display nearly overlapping $\beta$-value distributions for the two probe types.
+
+In contrast, the Q--Q plot comparing Type~I and Type~II probes revealed a markedly elevated 
+median absolute deviation (median $|\Delta| = 0.380$), indicating a strong and systematic 
+quantile-wise shift between the two designs. Such a deviation is fully incompatible with 
+BMIQ-corrected data, which should instead exhibit deviations close to zero across all quantiles.  
+After applying BMIQ, this deviation decreases only marginally ($|\Delta| : 0.380 \rightarrow 0.370$), 
+confirming that the correction improves probe-type alignment but only to a limited extent.
+
+This modest improvement is also clearly visible in the diagnostic density plots 
+(Fig.~\ref{fig:gse287331_typeI_II_post}). After BMIQ, the rightmost portion of the distribution 
+(near $\beta \approx 1$) shows Type~II probes becoming visibly more similar to Type~I, and the 
+strong asymmetry between the two curves is partially reduced. Nevertheless, the overall shapes 
+of the two probe distributions remain distinct, and the characteristic ``double-tail’’ pattern 
+of the uncorrected dataset is still present after normalization. BMIQ therefore warps the 
+distribution in the expected direction, but the magnitude of the adjustment is small and 
+insufficient to reconcile the two probe types to the degree observed in datasets processed with 
+a full bias-correction pipeline.
+
+A similar behaviour can be observed in the per-sample mean $\beta$ distributions: after BMIQ, the 
+two peaks become slightly higher and closer to one another 
+(Fig.~\ref{fig:gse287331_mean_beta_3_post}), indicating that the algorithm partially reduces the 
+gap between the two dominant modes. However, even after correction, the distribution remains 
+visibly and consistently \emph{bimodal}, suggesting that BMIQ mitigates only weakly the underlying 
+discrepancy and that sample-level heterogeneity continues to dominate the global methylation 
+structure.
+
+Taken together, these observations provide clear visual evidence that no probe-design bias 
+correction was applied in the original processing. To further support this conclusion, 
+I examined the official publication~\cite{Lord2024GSE287331}. The paper carefully describes the acquisition, 
+processing, and analytical use of Illumina EPIC $\beta$-values, but it does \emph{not} mention 
+BMIQ, SWAN, noob, or any other method aimed at correcting Infinium probe-type bias.  
+The absence of such a statement---combined with the strong visual mismatch between Type~I and 
+Type~II probe distributions---confirms that no probe-design bias correction was applied before the 
+release of the dataset.
+
+For these reasons, applying a dedicated Infinium Type~I/II bias correction step is necessary 
+before performing any comparative analysis.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/cap3/GSE287331_23_type_bias_density_pre.pdf}
+        \caption{GSE287331 pre BMIQ}
+        \label{fig:gse287331_typeI_II_pre}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/cap3/GSE287331_23_type_bias_density_post.pdf}
+        \caption{GSE287331 post BMIQ}
+        \label{fig:gse287331_typeI_II_post}
+    \end{subfigure}
+    \caption{Type~I vs.~Type~II probe design comparison before and after BMIQ.  
+    After correction, Type~II probes become more similar to Type~I in the high-$\beta$ region
+    (especially near $\beta \approx 1$), and the overall discrepancy is reduced 
+    ($|\Delta| : 0.380 \rightarrow 0.370$), though probe types remain clearly distinct.}
+    \label{fig:gse287331_type_bias_check}
+\end{figure}
+
+\paragraph{BMIQ correction: implementation and methodological considerations}
+\label{par:gse287331_bmiq}
+
+Given the clear evidence of missing Infinium Type~I/II probe-bias correction, 
+I applied the canonical BMIQ algorithm
+\cite{Teschendorff2013BMIQ}, using the implementation provided by the 
+\texttt{wateRmelon} package \cite{Pidsley2013wateRmelon}, to harmonize the 
+distributions of Type~I and Type~II probes for each sample. To ensure full 
+reproducibility and strict memory control on the extremely wide EPIC matrix, I implemented a \emph{sequential, sample-wise BMIQ correction}, 
+avoiding any between-sample pooling or multi-core parallelization. Each sample’s 
+$\beta$ vector was processed independently using a safe wrapper around 
+\texttt{wateRmelon::BMIQ}, which first verified the availability of a sufficient 
+number of non-missing Type~I and Type~II probes and then returned the corrected 
+$\beta$-values. The corrected matrix was updated in place, preserving the schema 
+\texttt{id\_tissue | CpGs... | label} and subsequently written to a single Parquet file. 
+This design guarantees that no cross-sample information influenced the correction and 
+that the warping applied by BMIQ reflects exclusively the distributional 
+characteristics of each individual sample.
+
+While BMIQ is widely used to mitigate probe-design bias, multiple studies have raised
+important methodological caveats regarding normalization procedures that operate on
+the full distribution of methylation values. Yousefi \textit{et al.}~\cite{Yousefi2013Normalization}
+highlighted that quantile-based adjustments and related normalization strategies
+may ``come at the cost of \emph{artificially reduced biological variability},'' 
+a phenomenon that is particularly undesirable when studying biological groups expected 
+to differ globally in their methylation profiles. Similarly, Liu \textit{et al.}
+\cite{Liu2016Processing} reported that, when methylation alterations are extensive in size
+and number, certain normalization methods can ``\emph{remove biological signal},'' 
+effectively shrinking meaningful differences between groups. 
+
+More recently, Welsh \textit{et al.}~\cite{Welsh2023EPICnorm} performed a systematic
+evaluation of normalization methods for EPIC arrays and showed that approaches enforcing
+strong distributional alignment may distort real biological structure. In particular,
+the authors observed that quantile-based normalization ``\emph{forces the empirical 
+marginal distributions of the samples to be the same, removing all variation in this
+statistic},'' and reported that BMIQ, in some settings, yielded ``\emph{distorted and 
+discontinuous}'' distributions. Such findings provide a conceptual explanation for the 
+behaviour observed: although BMIQ was applied strictly 
+per-sample, its within-array warping can attenuate global differences between 
+Normal, Adjacent, and Tumor samples when these differences are manifested as broad 
+shifts in the underlying $\beta$-value distribution.
+
+Together, these considerations emphasise both the necessity and the limitations of
+probe-design bias correction. Applying BMIQ was essential to remove the technical 
+Type~I/II bias absent in the original processing, yet its known 
+tendency to reduce distributional heterogeneity across groups must be carefully taken 
+into account when interpreting group-level contrasts in downstream analyses.
+
+Importantly, the modest degree of probe-type harmonization is accompanied by a noticeable 
+flattening of biological structure: as will be shown in the low-dimensional embedding analysis 
+(Section~\ref{par:gse287331_embeddings}), PCA, UMAP, and t-SNE projections reveal that the 
+Normal, Adjacent, and Tumor groups become \emph{less clearly separable} after BMIQ.  
+For this reason, all downstream analyses are carried out on the \textbf{non-BMIQ version} of the 
+dataset, which preserves sharper cluster boundaries and better reflects the underlying biological 
+signal.
+

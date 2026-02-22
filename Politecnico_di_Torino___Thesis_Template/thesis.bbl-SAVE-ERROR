@@ -488,7 +488,7 @@
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Oncogene}
-      \field{number}{35}
+      \field{month}{8}
       \field{title}{{DNA} methylation in cancer: Too much, but also too little}
       \field{volume}{21}
       \field{year}{2002}
@@ -519,6 +519,7 @@
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Genes \& Development}
+      \field{month}{1}
       \field{number}{1}
       \field{title}{{DNA} methylation patterns and epigenetic memory}
       \field{volume}{16}
@@ -585,6 +586,7 @@
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Nature Communications}
+      \field{month}{1}
       \field{title}{{DNA} methylation outliers in normal breast tissue identify field defects that are enriched in cancer}
       \field{volume}{7}
       \field{year}{2016}
@@ -613,6 +615,7 @@
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://www.cancer.gov/about-cancer/causes-prevention/genetics/brca-fact-sheet}}
+      \field{month}{10}
       \field{note}{Accessed October 2025}
       \field{title}{BRCA Gene Changes: Cancer Risk and Genetic Testing}
       \field{year}{2024}
@@ -715,7 +718,7 @@
            given={R.\bibnamedelimi A.},
            giveni={R\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
         {{hash=9d8414a2c3ac35f9a4c03ee951cdcd33}{%
-           family={Rådestad},
+           family={R{å}destad},
            familyi={R\bibinitperiod},
            given={A.\bibnamedelimi F.},
            giveni={A\bibinitperiod\bibinitdelim F\bibinitperiod}}}%
@@ -748,12 +751,11 @@
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Genome Medicine}
+      \field{month}{6}
       \field{number}{1}
       \field{title}{Antiprogestins reduce epigenetic field cancerization in breast tissue of young healthy women}
       \field{volume}{14}
       \field{year}{2022}
-      \field{pages}{63}
-      \range{pages}{1}
       \verb{doi}
       \verb 10.1186/s13073-022-01063-5
       \endverb
@@ -822,12 +824,12 @@
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Annals of Oncology}
-      \field{number}{12}
+      \field{month}{11}
       \field{title}{Methylation is less abundant in {BRCA1}-associated compared with sporadic breast cancer}
       \field{volume}{19}
       \field{year}{2008}
-      \field{pages}{1913\bibrangedash 1919}
-      \range{pages}{7}
+      \field{pages}{1870\bibrangedash 1874}
+      \range{pages}{5}
       \verb{doi}
       \verb 10.1093/annonc/mdn409
       \endverb
