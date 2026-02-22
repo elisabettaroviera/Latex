@@ -1322,10 +1322,23 @@ epigenetic deregulation rather than dataset-specific artefacts.
 \section{Synthesis of Exploratory Findings and Pre-Processing Rationale}
 \label{sec:cap3_conclusions}
 
-Taken together, the cross-dataset analyses indicate that the epigenetic deviations observed in Adjacent tissue are not idiosyncratic artefacts of a single cohort, but represent coherent and reproducible signals whose \emph{direction} is consistent across studies. At the same time, the results clarify that this Normal--Adjacent drift is globally subtle at the whole-methylome level, becoming visible primarily through locus-specific perturbations, focal outlier enrichment, and dataset-dependent multivariate displacements.
+The exploratory analyses presented in this chapter reveal a consistent picture 
+across all three cohorts: the Normal--Adjacent transition does not manifest as a 
+global reorganisation of the methylome, but as a subtle, focal drift that becomes 
+detectable only through locus-specific perturbations and multivariate 
+displacements. This characteristic makes it particularly sensitive to technical 
+sources of variability --- probe-design bias, batch effects, and platform 
+differences --- which operate at a comparable or larger scale than the biological 
+signal of interest.
 
-A key methodological outcome is the separation between global distributional coherence and weak CpG-level concordance across cohorts. When restricted to the shared CpG intersection, the Adjacent--Normal $\Delta\beta$ distributions retain a similar shape and remain sharply centred around zero, whereas pairwise concordance of locus-specific shifts is low. Together with the dominant clustering by dataset identity in shared-CpG embeddings, this confirms that array generation, cohort-specific processing, and batch structure induce strong technical signatures; consequently, merging cohorts at the raw feature level would not be biologically meaningful and would risk confounding downstream analyses.
+This sensitivity has direct methodological consequences. Raw methylation data, 
+as distributed via GEO, cannot be used directly for downstream modelling without 
+first addressing these technical confounders: doing so would risk attributing 
+platform-specific artefacts to genuine epigenetic alterations, or conversely, 
+suppressing the subtle Normal--Adjacent differences under overly aggressive 
+normalisation. The challenge is therefore not simply to clean the data, but to do 
+so in a way that preserves the biological structure identified here.
 
-The comparison further shows that the \emph{strength} of the Normal--Adjacent signal differs substantially across datasets. In GSE69914 and GSE225845 the drift is detectable but modest and mainly expressed as focal instability patterns, whereas GSE287331 exhibits a markedly clearer field-defect signature, including stronger outlier enrichment and more visible separation in multivariate space. This heterogeneity motivates a preprocessing strategy that is both rigorous and conservative, aiming to reduce technical variability and probe-level artefacts without suppressing the subtle biological differences that define the Normal--Adjacent axis.
-
-These observations provide the rationale for the structured data pre-processing pipeline developed in Chapter~4. The next chapter implements reproducible and platform-aware preprocessing steps to stabilise the methylation representation, control technical effects, and prepare the data for downstream statistical analysis and learning-based models focused on early epigenetic alterations.
+Chapter~4 addresses this challenge by developing a structured, platform-aware 
+preprocessing pipeline. Each step is motivated by the specific limitations 
+identified in the present chapter.
