@@ -208,3 +208,14 @@ For this reason, all downstream analyses are carried out on the \textbf{non-BMIQ
 dataset, which preserves sharper cluster boundaries and better reflects the underlying biological 
 signal.
 
+This strong separation is also quantitatively confirmed by silhouette analysis:  
+the average silhouette coefficient \emph{before} BMIQ was 
+$\mathrm{sil}_{\text{pre}} = 0.2876$,  
+but \emph{after} BMIQ correction it declined to 
+$\mathrm{sil}_{\text{post}} = 0.2537$.  
+Thus, BMIQ \emph{reduced}--even if not significantly--the natural clusterability of the data, collapsing genuine 
+biological differences—particularly the clear separation between Normal and Adjacent 
+samples.
+
+For this reason, and in accordance with the principle of preserving authentic biological 
+signal, the BMIQ-normalised version was not adopted.  
