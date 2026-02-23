@@ -31,15 +31,13 @@
 \contentsline {figure}{\numberline {4.4}{\ignorespaces Infinium Type~I/II bias diagnostics in GSE225845.}}{37}{figure.caption.72}%
 \contentsline {figure}{\numberline {4.5}{\ignorespaces Technical filtering summary in GSE225845.}}{38}{figure.caption.74}%
 \contentsline {figure}{\numberline {4.6}{\ignorespaces Distributional comparison of $\beta $ and $M$ in Normal and Adjacent tissues in GSE225845.}}{39}{figure.caption.77}%
-\contentsline {figure}{\numberline {4.7}{\ignorespaces Per-sample mean $\beta $ distributions for the three datasets. \texttt {GSE69914} and \texttt {GSE225845} show a single broad peak, whereas \texttt {GSE287331} displays a right-shifted bimodal pattern. After BMIQ, the two peaks become slightly closer and more similar in height, but the bimodality persists.}}{40}{figure.caption.80}%
-\contentsline {figure}{\numberline {4.8}{\ignorespaces Type~I vs.~Type~II probe design comparison before and after BMIQ. After correction, Type~II probes become more similar to Type~I in the high-$\beta $ region (especially near $\beta \approx 1$), and the overall discrepancy is reduced ($|\Delta | : 0.380 \rightarrow 0.370$), though probe types remain clearly distinct.}}{42}{figure.caption.81}%
-\contentsline {figure}{\numberline {4.9}{\ignorespaces Diagnostic evaluation of Infinium probe–design bias before and after BMIQ. The correction reduces the discrepancy only marginally, and substantial distributional differences remain between probe types. }}{44}{figure.caption.85}%
-\contentsline {figure}{\numberline {4.10}{\ignorespaces Summary of technical filtering for the methylation dataset. \textbf {(a)} Number of CpGs intersecting each curated resource. \textbf {(b)} Redundancy analysis capturing concordance across filtering lists. }}{45}{figure.caption.87}%
-\contentsline {figure}{\numberline {4.11}{\ignorespaces Distributional comparison of $\beta $ and $M$ in Normal and Adjacent tissues in GSE287331.}}{46}{figure.caption.90}%
-\contentsline {figure}{\numberline {4.12}{\ignorespaces Comparison of CpG overlap across datasets before and after pre-processing.}}{48}{figure.caption.94}%
+\contentsline {figure}{\numberline {4.7}{\ignorespaces Per-sample mean $\beta $ distributions for the three datasets.}}{40}{figure.caption.80}%
+\contentsline {figure}{\numberline {4.8}{\ignorespaces Infinium Type~I/II bias diagnostics in GSE287331. Pre-BMIQ densities and Q--Q analysis indicate marked probe-type imbalance; post-BMIQ densities show partial alignment.}}{40}{figure.caption.81}%
+\contentsline {figure}{\numberline {4.9}{\ignorespaces Technical filtering summary in GSE287331.}}{41}{figure.caption.83}%
+\contentsline {figure}{\numberline {4.10}{\ignorespaces Distributional comparison of $\beta $ and $M$ in Normal and Adjacent tissues in GSE287331.}}{43}{figure.caption.86}%
+\contentsline {figure}{\numberline {4.11}{\ignorespaces CpG overlap across datasets before and after preprocessing.}}{44}{figure.caption.89}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {A.1}{\ignorespaces Workflow for determining affected Probes.}}{56}{figure.caption.95}%

@@ -326,7 +326,7 @@ Together, these diagnostics are consistent with effective BMIQ correction, in ag
 \label{tab:gse69914_cpg_filtering}
 \scriptsize
 \begin{tabular}{c c c c c c c c c}
-\hline
+\toprule
 Initial CpGs &
 Naeem &
 Pidsley &
@@ -336,7 +336,7 @@ McCartney &
 Non-CpG &
 X/Y &
 Final CpGs \\
-\hline
+\midrule
 485{,}512 &
 190{,}672 &
 39{,}737 &
@@ -346,7 +346,7 @@ Final CpGs \\
 875 &
 7{,}728 &
 251{,}483 \\
-\hline
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -499,7 +499,7 @@ A detailed per-probe exclusion summary is available in the project repository at
 \label{tab:gse225845_cpg_filtering}
 \scriptsize
 \begin{tabular}{c c c c c c c c c}
-\hline
+\toprule
 Initial CpGs &
 Naeem &
 Pidsley &
@@ -509,7 +509,7 @@ McCartney &
 Non-CpG &
 X/Y &
 Final CpGs \\
-\hline
+\midrule
 750{,}426 &
 101{,}014 &
 11{,}759 &
@@ -519,7 +519,7 @@ Final CpGs \\
 773 &
 14{,}071 &
 530{,}683 \\
-\hline
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -579,327 +579,162 @@ The mean--SD relationships further illustrate the scale effect. In $\beta$-space
 
 
 % ============================================================
+
 \subsection{Dataset GSE287331}
 \label{subsec:gse287331_data_prep}
 % ============================================================
 
-DESCRIZIONE BMIQ IMPLEMENTATION
-For GSE287331, BMIQ correction is implemented strictly on a per-sample basis. 
-The Infinium probe-type annotation is derived from the official EPIC manifest, 
-and the design vector is aligned to the CpG ordering of the $\beta$-matrix 
-prior to correction. Within each sample, Type~I probes define the reference 
-mixture distribution, and Type~II probes are rescaled accordingly; no 
-cross-sample or cross-group information is introduced at any stage. 
-Samples with insufficient numbers of probes per design type are left 
-uncorrected to avoid unstable mixture estimation. This implementation 
-ensures that probe-type bias is addressed without altering between-sample 
-structure or introducing artificial harmonisation across tissue classes.
 
-% ============================================
-% Missingness
-% ============================================
-\paragraph{Missingness filtering and imputation}
+
+\paragraph{Structural Integrity and Cohort Harmonization}
 \label{par:gse287331_missingness}
-I quantified the amount and structure of
-missing values in the $\beta$-matrix. Probe-wise missingness is a well-known
-source of unreliability in Illumina methylation arrays, and several studies recommend
-removing CpGs that exhibit low measurement quality or an excessive proportion of missing
-values. For example, Islam \textit{et al.}~\cite{islam2019_pediatric_dnamm} excluded probes
-with missing $\beta$-values in more than $2\%$ of samples in their pediatric tissue
-methylation analysis, while Mansell \textit{et al.}~\cite{mansell2019guidance} applied a
-similar $1\%$ threshold for detection failure in their EPIC-array quality control
-pipeline. 
-
-Guided by this evidence and the large number of CpG sites available,
-I adopted a stringent probe-wise filtering criterion and removed all
-CpGs missing in more than $1\%$ of samples. This choice prioritises high-confidence
-measurements while minimising reliance on imputed values.
-
-After filtering, only a negligible fraction of values remained missing in the working
-matrix (58\,561 NaN, corresponding to $0.0187\%$ of all entries). Given this extremely low
-level of sparsity, median-based imputation is both statistically robust and
-distribution-preserving. Following current recommendations, where missing methylation values
-are replaced by probe-wise medians to avoid introducing group-specific bias, all residual
-NaN were imputed using the median $\beta$-value of each CpG across samples. This approach is consistent with recent harmonization methods such as mLiftOver, 
-where missing methylation values are explicitly replaced using probe-wise median 
-substitution to preserve biologically plausible levels \cite{chen2024_mliftover}.
-
-
-% Giustificazione evidence che non e' stato fatto BMIQ
-\paragraph{Evidence of Missing Infinium Type~I/II Probe Bias Correction}
-
-During the exploratory analysis performed uniformly across all three datasets, the per-sample
-mean $\beta$-value distributions (Fig.~\ref{fig:gse287331_mean_beta_1}, 
-Fig.~\ref{fig:gse287331_mean_beta_2}, 
-Fig.~\ref{fig:gse287331_mean_beta_3_pre})
-revealed a marked inconsistency.  
-Whereas \texttt{GSE69914} and \texttt{GSE225845} displayed a single broad peak of global
-methylation levels, \texttt{GSE287331} showed a much narrower distribution, shifted towards
-higher $\beta$-values and characterized by two distinct modes in the high-$\beta$ range.
-
-This unusual right-shifted bimodality---largely absent in the other datasets---strongly indicated 
-that a key preprocessing step, namely Infinium Type~I/II probe-design bias correction, had not 
-been applied in the processed data released by the authors.
-
-\begin{figure}[t]
-    \centering
-    \begin{subfigure}{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{images/cap3/GSE69914_08_mean_beta_per_sample.pdf}
-        \caption{GSE69914}
-        \label{fig:gse287331_mean_beta_1}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{images/cap3/GSE225845_08_mean_beta_per_sample.pdf}
-        \caption{GSE225845}
-        \label{fig:gse287331_mean_beta_2}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{images/cap3/GSE287331_08_mean_beta_per_sample.pdf}
-        \caption{GSE287331 pre BMIQ}
-        \label{fig:gse287331_mean_beta_3_pre}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.24\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{images/cap3/GSE287331_03_mean_beta_per_sample.pdf}
-        \caption{GSE287331 post BMIQ}
-        \label{fig:gse287331_mean_beta_3_post}
-    \end{subfigure}
-    \caption{Per-sample mean $\beta$ distributions for the three datasets. 
-    \texttt{GSE69914} and \texttt{GSE225845} show a single broad peak, whereas 
-    \texttt{GSE287331} displays a right-shifted bimodal pattern. After BMIQ, the two peaks 
-    become slightly closer and more similar in height, but the bimodality persists.}
-    \label{fig:mean_beta_comparison_three}
-\end{figure}
-
-To confirm this hypothesis, I stratified all probes by Infinium design type (Type~I vs.~Type~II) 
-using the official Illumina EPIC v1.0 manifest, obtained from the corresponding Bioconductor 
-annotation package \cite{Illumina450kAnno}. Using this manifest, the $\beta$-value distributions 
-were separated by probe design and inspected through a dedicated diagnostic plot 
-(Fig.~\ref{fig:gse287331_type_bias_check}). According to the expected behaviour described by 
-Teschendorff et~al.~\cite{Teschendorff2013BMIQ}, datasets that have undergone BMIQ
-normalization should display nearly overlapping $\beta$-value distributions for the two probe types.
-
-In contrast, the Q--Q plot comparing Type~I and Type~II probes revealed a markedly elevated 
-median absolute deviation (median $|\Delta| = 0.380$), indicating a strong and systematic 
-quantile-wise shift between the two designs. Such a deviation is fully incompatible with 
-BMIQ-corrected data, which should instead exhibit deviations close to zero across all quantiles.  
-After applying BMIQ, this deviation decreases only marginally ($|\Delta| : 0.380 \rightarrow 0.370$), 
-confirming that the correction improves probe-type alignment but only to a limited extent.
-
-This modest improvement is also clearly visible in the diagnostic density plots 
-(Fig.~\ref{fig:gse287331_typeI_II_post}). After BMIQ, the rightmost portion of the distribution 
-(near $\beta \approx 1$) shows Type~II probes becoming visibly more similar to Type~I, and the 
-strong asymmetry between the two curves is partially reduced. Nevertheless, the overall shapes 
-of the two probe distributions remain distinct, and the characteristic ``double-tail’’ pattern 
-of the uncorrected dataset is still present after normalization. BMIQ therefore warps the 
-distribution in the expected direction, but the magnitude of the adjustment is small and 
-insufficient to reconcile the two probe types to the degree observed in datasets processed with 
-a full bias-correction pipeline.
-
-A similar behaviour can be observed in the per-sample mean $\beta$ distributions: after BMIQ, the 
-two peaks become slightly higher and closer to one another 
-(Fig.~\ref{fig:gse287331_mean_beta_3_post}), indicating that the algorithm partially reduces the 
-gap between the two dominant modes. However, even after correction, the distribution remains 
-visibly and consistently \emph{bimodal}, suggesting that BMIQ mitigates only weakly the underlying 
-discrepancy and that sample-level heterogeneity continues to dominate the global methylation 
-structure.
-
-Taken together, these observations provide clear visual evidence that no probe-design bias 
-correction was applied in the original processing. To further support this conclusion, 
-I examined the official publication~\cite{Lord2024GSE287331}. The paper carefully describes the acquisition, 
-processing, and analytical use of Illumina EPIC $\beta$-values, but it does \emph{not} mention 
-BMIQ, SWAN, noob, or any other method aimed at correcting Infinium probe-type bias.  
-The absence of such a statement---combined with the strong visual mismatch between Type~I and 
-Type~II probe distributions---confirms that no probe-design bias correction was applied before the 
-release of the dataset.
-
-For these reasons, applying a dedicated Infinium Type~I/II bias correction step is necessary 
-before performing any comparative analysis.
-
-\begin{figure}[t]
-    \centering
-    \begin{subfigure}{0.49\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{images/cap3/GSE287331_23_type_bias_density_pre.pdf}
-        \caption{GSE287331 pre BMIQ}
-        \label{fig:gse287331_typeI_II_pre}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.49\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{images/cap3/GSE287331_23_type_bias_density_post.pdf}
-        \caption{GSE287331 post BMIQ}
-        \label{fig:gse287331_typeI_II_post}
-    \end{subfigure}
-    \caption{Type~I vs.~Type~II probe design comparison before and after BMIQ.  
-    After correction, Type~II probes become more similar to Type~I in the high-$\beta$ region
-    (especially near $\beta \approx 1$), and the overall discrepancy is reduced 
-    ($|\Delta| : 0.380 \rightarrow 0.370$), though probe types remain clearly distinct.}
-    \label{fig:gse287331_type_bias_check}
-\end{figure}
-
-\paragraph{BMIQ correction: implementation and methodological considerations}
-\label{par:gse287331_bmiq}
-
-Given the clear evidence of missing Infinium Type~I/II probe-bias correction, 
-I applied the canonical BMIQ algorithm
-\cite{Teschendorff2013BMIQ}, using the implementation provided by the 
-\texttt{wateRmelon} package \cite{Pidsley2013wateRmelon}, to harmonize the 
-distributions of Type~I and Type~II probes for each sample. To ensure full 
-reproducibility and strict memory control on the extremely wide EPIC matrix, I implemented a \emph{sequential, sample-wise BMIQ correction}, 
-avoiding any between-sample pooling or multi-core parallelization. Each sample’s 
-$\beta$ vector was processed independently using a safe wrapper around 
-\texttt{wateRmelon::BMIQ}, which first verified the availability of a sufficient 
-number of non-missing Type~I and Type~II probes and then returned the corrected 
-$\beta$-values. The corrected matrix was updated in place, preserving the schema 
-\texttt{id\_tissue | CpGs... | label} and subsequently written to a single Parquet file. 
-This design guarantees that no cross-sample information influenced the correction and 
-that the warping applied by BMIQ reflects exclusively the distributional 
-characteristics of each individual sample.
-
-While BMIQ is widely used to mitigate probe-design bias, multiple studies have raised
-important methodological caveats regarding normalization procedures that operate on
-the full distribution of methylation values. Yousefi \textit{et al.}~\cite{Yousefi2013Normalization}
-highlighted that quantile-based adjustments and related normalization strategies
-may ``come at the cost of \emph{artificially reduced biological variability},'' 
-a phenomenon that is particularly undesirable when studying biological groups expected 
-to differ globally in their methylation profiles. Similarly, Liu \textit{et al.}
-\cite{Liu2016Processing} reported that, when methylation alterations are extensive in size
-and number, certain normalization methods can ``\emph{remove biological signal},'' 
-effectively shrinking meaningful differences between groups. 
-
-More recently, Welsh \textit{et al.}~\cite{Welsh2023EPICnorm} performed a systematic
-evaluation of normalization methods for EPIC arrays and showed that approaches enforcing
-strong distributional alignment may distort real biological structure. In particular,
-the authors observed that quantile-based normalization ``\emph{forces the empirical 
-marginal distributions of the samples to be the same, removing all variation in this
-statistic},'' and reported that BMIQ, in some settings, yielded ``\emph{distorted and 
-discontinuous}'' distributions. Such findings provide a conceptual explanation for the 
-behaviour observed: although BMIQ was applied strictly 
-per-sample, its within-array warping can attenuate global differences between 
-Normal, Adjacent, and Tumor samples when these differences are manifested as broad 
-shifts in the underlying $\beta$-value distribution.
-
-Together, these considerations emphasise both the necessity and the limitations of
-probe-design bias correction. Applying BMIQ was essential to remove the technical 
-Type~I/II bias absent in the original processing, yet its known 
-tendency to reduce distributional heterogeneity across groups must be carefully taken 
-into account when interpreting group-level contrasts in downstream analyses.
-
-Importantly, the modest degree of probe-type harmonization is accompanied by a noticeable 
-flattening of biological structure: as will be shown in the low-dimensional embedding analysis 
-(Section~\ref{par:gse287331_embeddings}), PCA, UMAP, and t-SNE projections reveal that the 
-Normal, Adjacent, and Tumor groups become \emph{less clearly separable} after BMIQ.  
-For this reason, all downstream analyses are carried out on the \textbf{non-BMIQ version} of the 
-dataset, which preserves sharper cluster boundaries and better reflects the underlying biological 
-signal.
-
-This strong separation is also quantitatively confirmed by silhouette analysis:  
-the average silhouette coefficient \emph{before} BMIQ was 
-$\mathrm{sil}_{\text{pre}} = 0.2876$,  
-but \emph{after} BMIQ correction it declined to 
-$\mathrm{sil}_{\text{post}} = 0.2537$.  
-Thus, BMIQ \emph{reduced}--even if not significantly--the natural clusterability of the data, collapsing genuine 
-biological differences—particularly the clear separation between Normal and Adjacent 
-samples.
-
-For this reason, and in accordance with the principle of preserving authentic biological 
-signal, the BMIQ-normalised version was not adopted.  
-
-
-\paragraph{Step~0 -- Initial Pre-processing}
-\label{par:gse287331_step0}
 
 The dataset was imported from its Parquet representation, yielding an initial
-$\beta$-value matrix of 446 samples and 866{,}552 CpGs.
-The accompanying phenotype table reported the same number of entries and contained
-all required metadata fields.  
-Before continuing with probe-level preprocessing, the dataset underwent a dedicated
-missingness-cleaning stage to ensure high-quality input for downstream analysis.
-After harmonising phenotype labels and applying dataset-specific selection rules, only samples belonging to the three core tissue states of interest—Normal, Adjacent, and Tumour—were kept.
-This resulted in a final working cohort of 311 samples, used for all downstream preprocessing and analysis.
+$\beta$-value matrix of 446 samples and 866{,}552 CpGs. The phenotype table
+contained the same number of entries, with all required metadata fields present
+and alignment between phenotype annotation and the $\beta$-value matrix exact.
 
-\textbf{Missingness filtering and imputation.}
-Probe-wise missingness was quantified across the $\beta$-matrix.  
-Consistent with recommendations from Islam \textit{et al.}~\cite{islam2019_pediatric_dnamm}
-and Mansell \textit{et al.}~\cite{mansell2019guidance}, a stringent threshold was applied:
-all CpG sites missing in more than 1\% of samples were removed.
-This filter ensures high-confidence measurements while leveraging the
-large dimensionality of the EPIC platform.
+Unlike GSE69914 and GSE225845, the methylation matrix was not fully observed.
+Probe-wise missingness is a well-known source of unreliability in Illumina
+methylation arrays: Islam \textit{et al.}~\cite{islam2019_pediatric_dnamm}
+excluded probes with missing $\beta$-values in more than $2\%$ of samples,
+while Mansell \textit{et al.}~\cite{mansell2019guidance} applied a stricter
+$1\%$ threshold for detection failure in their EPIC-array quality control
+pipeline. Consistent with these recommendations, all CpG sites missing in more
+than $1\%$ of samples were removed, prioritising high-confidence measurements
+while minimising reliance on imputed values and leveraging the large
+dimensionality of the EPIC platform. After applying this criterion, the
+remaining sparsity was negligible: 58{,}561 NaN values, corresponding to
+$0.0187\%$ of all entries. Given this extremely low level of sparsity,
+median-based imputation is both statistically robust and
+distribution-preserving; residual missing values were therefore imputed using
+the probe-wise median $\beta$-value across samples, a strategy that avoids
+introducing group-specific bias and is consistent with recent harmonisation
+workflows such as mLiftOver, where missing values are explicitly replaced by
+probe-wise median substitution to preserve biologically plausible
+levels~\cite{chen2024_mliftover}.
 
-After applying this criterion, the remaining level of sparsity was extremely low,
-with only 58{,}561 NaN values (0.0187\% of all entries).  
-These residual missing values were imputed using probe-wise median substitution,
-a strategy that avoids introducing group-specific bias and is also adopted in
-recent harmonisation workflows such as mLiftOver~\cite{chen2024_mliftover}.
+After harmonising phenotype labels and applying dataset-specific selection
+rules, only samples belonging to the three core tissue states of
+interest---Normal, Adjacent, and Tumour---were retained. The final working
+matrix consisted of 311 samples and 702{,}916 CpGs, with no residual missing
+values.
 
-The resulting $\beta$-matrix contained no missing values.
-
-\textbf{Data integrity verification.}
-After missingness filtering and imputation, the final working matrix consisted of  
-311 samples and 702{,}916 CpGs.  
-All entries were fully observed (0 residual NaN).
-
-\paragraph{Step~1 -- Infinium Type I/II Bias Diagnostics}
+\paragraph{Probe-Type Bias Diagnostics and Correction}
 \label{subpar:gse287331_typebias}
 
 \begin{figure}[t]
     \centering
-    \begin{subfigure}[t]{0.49\textwidth}
+    \begin{subfigure}[t]{0.24\linewidth}
         \centering
-        \includegraphics[width=\textwidth]{images/cap4/GSE287331_type_bias_density.pdf}
-        \caption{Type~I vs.\ Type~II density (pre BMIQ).}
-        \label{fig:gse287331_type_bias_density}
+        \vspace{0pt}
+        \includegraphics[height=2cm,keepaspectratio]{images/cap3/GSE69914_08_mean_beta_per_sample.pdf}
+        \caption{GSE69914}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[t]{0.49\textwidth}
+    \begin{subfigure}[t]{0.24\linewidth}
         \centering
-        \includegraphics[width=0.68\textwidth]{images/cap4/GSE287331_type_bias_qqplot.pdf}
-    \caption{
-        Q--Q comparison of Type~II vs.\ Type~I probes (pre BMIQ).  
-        The median absolute deviation of 0.380 indicates a strong quantile-wise shift,
-        confirming the absence of probe-type normalization in the original dataset.
-    }
-    \label{fig:gse287331_type_bias_qq}
+        \vspace{0pt}
+        \includegraphics[height=2cm,keepaspectratio]{images/cap3/GSE225845_08_mean_beta_per_sample.pdf}
+        \caption{GSE225845}
     \end{subfigure}
-    \caption{
-        Diagnostic evaluation of Infinium probe–design bias before and after BMIQ.  
-        The correction reduces the discrepancy only marginally, and substantial
-        distributional differences remain between probe types.
-    }
-    \label{fig:gse287331_type_bias_combined}
+    \hfill
+    \begin{subfigure}[t]{0.24\linewidth}
+        \centering
+        \vspace{0pt}
+        \includegraphics[height=2cm,keepaspectratio]{images/cap3/GSE287331_08_mean_beta_per_sample.pdf}
+        \caption{GSE287331 pre BMIQ}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.24\linewidth}
+        \centering
+        \vspace{0pt}
+        \includegraphics[height=2cm,keepaspectratio]{images/cap3/GSE287331_03_mean_beta_per_sample.pdf}
+        \caption{GSE287331 post BMIQ}
+    \end{subfigure}
+    \caption{Per-sample mean $\beta$ distributions for the three datasets.}
 \end{figure}
 
- Using the official EPIC v1.0 manifest,  
-115{,}705 Type~I and 585{,}514 Type~II probes were identified. The $\beta$-value distributions of the two chemistries showed a marked mismatch
-(Figure~\ref{fig:gse287331_type_bias_density}), with Type~II probes displaying a strong
-right-shifted profile. The quantile--quantile comparison confirmed a substantial systematic
-offset, with a median absolute deviation of 0.380
-(Figure~\ref{fig:gse287331_type_bias_qq}), indicating the absence of any Infinium
-probe-design bias correction in the originally released data.
 
-Given this discrepancy, a per-sample BMIQ normalization step was applied using the
-\texttt{wateRmelon} implementation, operating strictly on individual samples to minimise
-cross-sample distortion. Post-correction diagnostics showed a modest reduction in
-probe-type mismatch ($|\Delta| : 0.380 \rightarrow 0.370$) and a slight improvement in the
-alignment of high-$\beta$ regions, but the overall distributional discrepancy remained
-substantial. 
-Due to this limited harmonization and the known tendency of BMIQ to attenuate biological
-differences when global distributional shifts are present, the corrected matrix is not used
-for downstream modelling. All subsequent analyses therefore rely on the non-BMIQ
-version of the dataset, which preserves clearer group-level structure and avoids
-normalization-induced shrinkage (for more details, see 
-\href{https://github.com/elisabettaroviera/THESIS/blob/main/03%20-%20Report/01%20-%20Notebook/01%20-%20Report%20Data%20Exploration%20%26%20Visualization.pdf}%
-{\textit{01 -- Report Data Exploration \& Visualization}}.
-).
+\begin{figure}[t]
+    \centering
 
-\paragraph{Step~2 -- Technical Filtering}
+    % -------- Subfigure (a) --------
+    \begin{subfigure}[t]{0.31\linewidth}
+        \centering
+        \includegraphics[height=2.8cm,keepaspectratio]{images/cap3/GSE287331_23_type_bias_density_pre.pdf}
+        \caption{GSE287331 pre BMIQ}
+        \label{fig:gse287331_typeI_II_pre}
+    \end{subfigure}
+    \hfill
+    % -------- Subfigure (b) --------
+    \begin{subfigure}[t]{0.31\linewidth}
+        \centering
+        \includegraphics[height=2.8cm,keepaspectratio]{images/cap3/GSE287331_23_type_bias_density_post.pdf}
+        \caption{GSE287331 post BMIQ}
+        \label{fig:gse287331_typeI_II_post}
+    \end{subfigure}
+    \hfill
+    % -------- Subfigure (c) --------
+    \begin{subfigure}[t]{0.31\linewidth}
+        \centering
+        \includegraphics[height=2.8cm,keepaspectratio]{images/cap4/GSE287331_type_bias_qqplot.pdf}
+        \caption{Q--Q comparison of Type~II vs.\ Type~I probes (pre BMIQ).}
+        \label{fig:gse287331_type_bias_qq}
+    \end{subfigure}
+
+   \caption{Infinium Type~I/II bias diagnostics in GSE287331. Pre-BMIQ densities and Q--Q analysis indicate marked probe-type imbalance; post-BMIQ densities show partial alignment.}
+    \label{fig:mean_beta_comparison_three}
+\end{figure}
+
+Using the official EPIC v1.0 manifest, 115{,}705 Type~I and 585{,}514 Type~II
+probes were identified. Unlike GSE69914 and GSE225845, for which the original
+authors reported prior application of BMIQ normalisation, no probe-design bias
+correction was documented in the processing pipeline of GSE287331. This absence
+was first suggested by the per-sample mean $\beta$-value distributions
+(Figure~\ref{fig:mean_beta_comparison_three}): whereas GSE69914 and GSE225845
+display a single broad peak, GSE287331 shows a narrower, right-shifted
+distribution characterised by two distinct modes in the high-$\beta$ range---a
+pattern largely absent in the other cohorts and strongly indicative of uncorrected
+Type~I/II probe-design bias.
+
+Stratification of probes by design type confirmed this hypothesis. The
+$\beta$-value distributions of the two chemistries showed a marked mismatch
+(Figure~\ref{fig:gse287331_typeI_II_pre}), with Type~II probes displaying a
+strong right-shifted profile. The quantile--quantile comparison confirmed a
+substantial systematic offset, with a median absolute deviation of $0.380$
+(Figure~\ref{fig:gse287331_type_bias_qq}), fully incompatible with BMIQ-corrected
+data. Inspection of the original publication~\cite{Lord2024GSE287331} further
+confirmed the absence of any mention of BMIQ, SWAN, noob, or equivalent
+probe-type correction methods.
+
+Given this evidence, the canonical BMIQ algorithm~\cite{Teschendorff2013BMIQ}
+was applied using the \texttt{wateRmelon} implementation~\cite{Pidsley2013wateRmelon},
+operating strictly on a per-sample basis: Type~I probes define the reference
+mixture distribution within each sample, and Type~II probes are rescaled
+accordingly, with no cross-sample or cross-group information introduced at any
+stage. Samples with insufficient numbers of probes per design type were left
+uncorrected to avoid unstable mixture estimation.
+
+Post-correction diagnostics showed only a modest reduction in probe-type mismatch
+($|\Delta| : 0.380 \rightarrow 0.370$), with the overall distributional discrepancy
+remaining substantial and the bimodality of per-sample mean $\beta$ distributions
+persisting (Figure~\ref{fig:mean_beta_comparison_three},
+Figure~\ref{fig:gse287331_typeI_II_post}). This limited harmonisation is consistent
+with documented caveats of quantile-based normalisation on EPIC arrays, which can
+artificially reduce biological variability, remove genuine group-level signal, or
+yield distorted distributions when differences are expressed as broad distributional
+shifts~\cite{Welsh2023EPICnorm, Yousefi2013Normalization, Liu2016Processing}.
+
+The impact on biological structure was assessed quantitatively via silhouette
+analysis: the average silhouette coefficient declined from
+$\mathrm{sil}_{\text{pre}} = 0.2876 \text{ to } \mathrm{sil}_{\text{post}} = 0.2537$
+after correction, indicating that BMIQ reduced the natural clusterability of the
+data and collapsed genuine group-level separation---particularly between Normal
+and Adjacent samples. For this reason, all downstream analyses are carried out on
+the non-BMIQ version of the dataset, which preserves sharper cluster boundaries
+and avoids normalisation-induced shrinkage of biological signal.
+\paragraph{Technical Probe Filtering}
 \label{par:gse287331_step2}
 
 \begin{figure}[t]
@@ -917,46 +752,34 @@ normalization-induced shrinkage (for more details, see
         \centering
         \includegraphics[width=\textwidth]{images/cap4/GSE287331_technical_lists_redundancy_histogram.pdf}
         \caption{
-            Redundancy of probes flagged by 1--5 lists.
+             Redundancy across filtering lists.
         }
         \label{fig:gse287331_tech_redundancy}
     \end{subfigure}
-    \caption{
-        Summary of technical filtering for the methylation dataset.  
-        \textbf{(a)} Number of CpGs intersecting each curated resource.  
-        \textbf{(b)} Redundancy analysis capturing concordance across filtering lists.
-    }
+    \caption{Technical filtering summary in GSE287331.}
     \label{fig:gse287331_technical_filtering}
 \end{figure}
 
-Technical probe filtering excluded CpG loci affected by unreliable hybridisation, SNP interference, multi-mapping or annotation inconsistencies.
-Across the established probe-filtering resources, 124{,}511 CpGs were flagged by Naeem, 8{,}992 by the Pidsley blacklist, 102{,}802 by Zhou’s fields, 1{,}730 by Chen’s cross-reactive probe set, and 3{,}672 by McCartney’s cross-hybridisation catalogue.
-The union of these lists removed 203{,}114 unique CpGs, leaving 499{,}804 CpGs prior to annotation-based filtering.
+Intersection with external technical filtering resources resulted in substantial probe removal, as summarised in Table~\ref{tab:gse287331_cpg_filtering}. The largest individual contributions derive from the Naeem and Zhou annotations, while the remaining resources flag smaller but non-negligible subsets (Figure~\ref{fig:gse287331_tech_barplot}).  
+Importantly, in the unfiltered EPIC matrix the Zhou annotation alone would have excluded 192{,}856 CpGs. This number substantially exceeds the net contribution observed at this stage, indicating that a considerable fraction of Zhou-flagged probes had already been removed during the earlier missingness-cleaning step.
+The missingness filter and the Zhou reliability masks therefore exhibit non-trivial overlap. 
+This concordance supports the robustness of the preprocessing strategy: probes excluded due to empirical data sparsity largely coincide with loci independently annotated as technically unreliable, suggesting that early NaN-based exclusion was not arbitrary but aligned with established probe-quality criteria.
 
+The redundancy structure across lists (Figure~\ref{fig:gse287331_tech_redundancy}) further indicates that most excluded CpGs are supported by a single resource, with progressively fewer loci flagged by multiple independent annotations.
+Annotation-based validation using the MethylationEPIC v1.0 manifest~\cite{IlluminaEPIC} further excluded non-CpG probes and loci lacking reliable genomic annotation. 
+Across all filters, the dimensionality reduction is detailed in Table~\ref{tab:gse287331_cpg_filtering}.
 
-\textbf{Annotation-based filtering (Illumina manifest).}
-Using the EPIC v1.0 manifest, probes lacking valid genomic coordinates or targeting
-non-CpG contexts were removed.  
-This eliminated 500 non-CpG probes, reducing the feature set to
-499{,}304 CpGs.
-
-\textbf{Removal of sex-chromosome probes (X/Y).}
-Probes mapped to chromosomes~X and~Y were removed to avoid sex-driven confounding.
-A total of 12{,}579 CpGs were discarded, resulting in an autosomal
-working set of 486{,}725 CpGs.
-
-Across all filters, 216{,}193 unique CpGs were removed from the initial
-866{,}552, leaving a final autosomal set of 486{,}725 CpGs.
-A probe-level removal summary is provided in 
-\href{https://github.com/elisabettaroviera/THESIS/blob/main/05%20-%20CpG%20list/Removed%20CpGs%20per%20Dataset/removed_cpgs_all_filters_summary_gse287331.csv}%
+A probe-level exclusion summary is available in the project repository at  
+\href{https://github.com/elisabettaroviera/THESIS/blob/main/05%20-%20CpG%20list/Removed%20CpGs%20per%20Dataset/removed_cpgs_all_filters_summary_gse287331.csv}
 {\texttt{removed\_cpgs\_all\_filters\_summary\_gse287331.csv}}.
 
 \begin{table}[t]
 \centering
 \caption{CpG filtering summary for the GSE287331 dataset.}
 \label{tab:gse287331_cpg_filtering}
+\scriptsize
 \begin{tabular}{c c c c c c c c c}
-\hline
+\toprule
 Initial CpGs &
 Naeem &
 Pidsley &
@@ -966,7 +789,7 @@ McCartney &
 Non-CpG &
 X/Y &
 Final CpGs \\
-\hline
+\midrule
 866{,}552 &
 124{,}511 &
 8{,}992 &
@@ -976,12 +799,12 @@ Final CpGs \\
 500 &
 12{,}579 &
 486{,}725 \\
-\hline
+\bottomrule
 \end{tabular}
 \end{table}
 
 
-\paragraph{Step~3 -- $\beta$ to $M$ Conversion}
+\paragraph{Statistical Transformation: $\beta$-to-$M$ Values}
 \label{par:gse287331_step4}
 
 \begin{figure}[t]
@@ -1031,86 +854,140 @@ tissues in GSE287331.}
 \end{figure}
 
 
-Given the strong mean--variance dependence intrinsic to $\beta$-values, the working
-matrix obtained after technical and invariance filtering  
-(486{,}725 CpGs across 311 samples) 
-was transformed into $M$-values.
-This transformation yields an approximately homoscedastic scale and is the standard
-input for linear models, empirical Bayes moderation, and batch-effect correction.
+Following technical filtering, the $\beta$-value matrix was transformed into
+$M$-values using the logit relation defined in Equation~\eqref{eq:mvalue},
+in accordance with established recommendations for variance stabilisation
+\cite{Du2010, Triche2013, Fortin2017}.
 
-The transformation was applied to all CpG columns (284{,}745 CpGs, excluding
-\texttt{id\_tissue} and \texttt{label}).  
-The resulting object, \texttt{M\_clean}, preserves the same schema as the
-$\beta$-matrix and was stored as a memory-efficient \texttt{LazyFrame}.
+The empirical distributions (Figure~\ref{fig:gse287331_beta_m_combined})
+retain the characteristic bounded structure of $\beta$-values; however,
+in contrast to GSE69914 and GSE225845, the profiles appear less sharply
+bimodal and more broadly dispersed. Both Normal and Adjacent tissues exhibit
+reduced concentration at the methylation extremes and a wider intermediate
+range, consistent with the greater technical heterogeneity observed in this
+cohort.
 
-\textbf{Distributional effects of the $\beta \rightarrow M$ transformation.}
-Figure  \ref{fig:gse287331_beta_m_combined} illustrates the
-impact of the transformation on the empirical data distribution.  
-As expected, the U-shaped $\beta$-profiles for Normal and Adjacent tissues become
-substantially more symmetric after conversion, while the pronounced mean--SD
-dependence flattens into a markedly more stable variance structure across the full
-range of $M$-values.  
-These properties make $M$-values preferable for statistical modelling, whereas
-$\beta$-values are retained for biological interpretation and visualisation.
+After transformation, the corresponding $M$-value distributions become more
+symmetric, as expected under the logit mapping, yet remain visibly broader
+than in the other datasets. The mean--SD relationships confirm that while
+variance stabilisation is achieved, dispersion remains comparatively elevated
+across the full methylation range. This behaviour is coherent with the
+stronger preprocessing burden documented in earlier steps and reflects the
+intrinsic variability of the released matrix.
 
 
 % ============================================================
 
-
-\section{Cross-Dataset Effects of Preprocessing}
+\section{Inter-Dataset Consistency After Preprocessing}
 \label{sec:inter_preprocessing}
 
-After completing the intra-dataset pre-processing for each cohort, a concise inter-dataset analysis is performed to summarise the effects of the pipeline and to motivate the subsequent feature selection step. 
-\paragraph{Pverview of the pre-processing pipeline}
-All three datasets underwent a harmonised pre-processing workflow, including initial integrity checks, literature-based technical filtering, manifest-driven probe validation, removal of sex-chromosome loci, and transformation from $\beta$-values to M-values. While the specific implementation details differ slightly depending on platform characteristics and data quality, the conceptual structure of the pipeline is consistent across datasets.
+After completing the intra-dataset preprocessing for each cohort, a concise
+inter-dataset analysis is performed to summarise the effects of the pipeline
+and to motivate the subsequent feature selection step.
 
-Table~\ref{tab:preprocessing-summary} reports, for each dataset, the number of samples retained and the dimensionality of the methylation matrix before and after pre-processing. Despite substantial differences in initial platform coverage (450K vs EPIC), technical filtering consistently removes a large fraction of probes, yielding cleaner and more reliable feature spaces.
+\paragraph{Consistency of the Preprocessing Framework}
+All three datasets underwent a harmonised preprocessing workflow, including
+initial integrity checks, literature-based technical filtering, manifest-driven
+probe validation, removal of sex-chromosome loci, and transformation from
+$\beta$-values to M-values. While specific implementation details differ slightly
+depending on platform characteristics and data quality, the conceptual structure
+of the pipeline is consistent across datasets.
 
-\begin{table}[t]
-\centering
-\caption{Summary of sample size and CpG dimensionality before and after pre-processing.}
-\label{tab:preprocessing-summary}
-\begin{tabular}{lcccccc}
-\hline
-Dataset & Platform & Normal & Adjacent & CpGs \textit{before} pre-processing & CpGs \textit{after} pre-processing \\
-\hline
-GSE69914  & 450K  & 50  & 42  & 485{,}512 & 251{,}483 \\
-GSE225845 & EPIC & 113 & 140 & 750{,}426 & 530{,}683 \\
-GSE287331 & EPIC & 182 & 60  & 866{,}554 & 486{,}725 \\
-\hline
-\end{tabular}
-\end{table}
+Table~\ref{tab:preprocessing-summary} reports, for each dataset, the
+dimensionality of the methylation matrix before and after preprocessing. Despite
+substantial differences in initial platform coverage (450K vs.\ EPIC), technical
+filtering consistently removes a large fraction of probes, yielding cleaner and
+more reliable feature spaces.
 
 \paragraph{CpG overlap across datasets}
-To further characterise the relationship between datasets, CpG overlap was evaluated both before and after pre-processing. Figure~\ref{fig:venn-pre} illustrates the overlap of CpG identifiers across the three datasets prior to filtering, reflecting platform design constraints and baseline annotation differences. As expected, the intersection is dominated by probes shared between the two EPIC datasets, with a smaller but substantial core common to all three cohorts.
-
-Figure~\ref{fig:venn-post} reports the corresponding overlap after the complete pre-processing pipeline. Although the total number of CpGs is markedly reduced, a large shared core remains, indicating that technical filtering primarily removes platform- or annotation-specific probes while preserving a common, high-confidence CpG backbone.
+CpG overlap was evaluated both before and after preprocessing to characterise
+the relationship between cohorts. Prior to filtering
+(Figure~\ref{fig:venn-pre}), the intersection is dominated by probes shared
+between the two EPIC datasets, with a smaller but substantial core common to
+all three cohorts, reflecting platform design constraints and baseline
+annotation differences. After the complete preprocessing pipeline
+(Figure~\ref{fig:venn-post}), the total number of CpGs is markedly reduced,
+yet a large shared core is preserved: the three-way intersection comprises
+215{,}919 CpGs, representing a stable autosomal backbone consistently
+retained across platforms after technical filtering.
 
 \begin{figure}[t]
 \centering
 \begin{subfigure}[t]{0.48\textwidth}
     \centering
     \includegraphics[width=\textwidth]{images/cap4/venn_cpg_overlap_pre_preprocessing.pdf}
-    \caption{CpG overlap across datasets before pre-processing.}
+    \caption{CpG overlap before preprocessing.}
     \label{fig:venn-pre}
 \end{subfigure}
 \hfill
 \begin{subfigure}[t]{0.48\textwidth}
     \centering
     \includegraphics[width=\textwidth]{images/cap4/venn_cpg_overlap_post_preprocessing.pdf}
-    \caption{CpG overlap across datasets after pre-processing.}
+    \caption{CpG overlap after preprocessing.}
     \label{fig:venn-post}
 \end{subfigure}
-\caption{Comparison of CpG overlap across datasets before and after pre-processing.}
+\caption{CpG overlap across datasets before and after preprocessing.}
 \label{fig:venn-comparison}
 \end{figure}
 
+\begin{table}[t]
+\centering
+\caption{CpG dimensionality before and after preprocessing.}
+\label{tab:preprocessing-summary}
+\scriptsize
+\begin{tabular}{l c c c}
+\toprule
+Dataset & Platform & CpGs \textit{before} & CpGs \textit{after} \\
+\midrule
+GSE69914  & 450K & 485{,}512 & 251{,}483 \\
+GSE225845 & EPIC & 750{,}426 & 530{,}683 \\
+GSE287331 & EPIC & 866{,}554 & 486{,}725 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\section{Post-Preprocessing Data Structure and Feature Selection Rationale}
-Despite extensive technical filtering, the post-processed datasets remain highly dimensional, with hundreds of thousands of CpGs retained in each cohort. Moreover, the large shared CpG intersection across datasets suggests that technical artefacts have been effectively mitigated, shifting the primary challenge from data quality to signal extraction.
 
-At this stage, the limiting factor is no longer technical reliability but statistical and biological relevance. The remaining feature space is expected to contain a substantial proportion of CpGs that are either weakly informative or irrelevant for distinguishing Normal and Adjacent breast tissue. Consequently, a dedicated feature selection strategy is required to identify a reduced subset of CpGs that captures biologically meaningful variation while improving interpretability, robustness, and downstream modelling performance.
+\section{Post-Preprocessing Feature Space and Dimensionality Challenge}
+\label{sec:postproc_rationale}
 
-The next chapter therefore focuses on feature selection methodologies applied to these pre-processed datasets, building on the stable and harmonised CpG space established here.
+The preprocessing pipeline developed in this chapter has systematically
+addressed the three main classes of technical confounders identified in
+Chapter~\ref{sec:data_preparation_exploration}: probe-design bias,
+unreliable probe sets, and statistical scale distortion. The resulting
+matrices are technically clean, fully observed, and expressed on a
+variance-stabilised $M$-value scale suitable for inferential modelling.
+Across all three cohorts, the three-way CpG intersection comprises
+215{,}919 autosomal loci retained after platform-aware filtering,
+constituting a stable and harmonised feature backbone for cross-dataset
+analyses.
 
+Yet the preprocessing outcome also sharpens the central analytical
+challenge. The post-processed datasets remain extremely high-dimensional
+--- 251{,}483 CpGs in GSE69914, 530{,}683 in GSE225845, and 486{,}725
+in GSE287331 --- and the exploratory analyses of
+Chapter~\ref{sec:data_preparation_exploration} established that the
+Normal--Adjacent signal is focal and low-amplitude, with mean
+$|\Delta\beta|$ ranging from 0.009 to 0.031 across cohorts. In this
+regime, the overwhelming majority of retained CpGs carry no
+discriminative information for the contrast of interest: including them
+in downstream modelling would dilute the signal, inflate variance
+estimates, and compromise both interpretability and generalisation.
 
+The limiting factor is therefore no longer data quality but
+\emph{signal localisation}: identifying the restricted subset of CpG
+loci that capture biologically meaningful Normal--Adjacent variation,
+consistently across cohorts and independently of platform-specific
+noise. This requires a principled feature selection strategy that is
+sensitive to the subtle, focal nature of the epigenetic drift documented
+here, robust to the cohort-level heterogeneity observed in the
+inter-dataset comparisons, and compatible with the homoscedastic
+$M$-value representation adopted for modelling.
+
+Chapter~\ref{sec:feature_selection} addresses this challenge directly,
+developing and evaluating feature selection methodologies applied
+separately within each dataset-specific CpG space. In order to preserve
+the full informational richness of the EPIC platforms, feature selection
+is not restricted to the three-way CpG intersection but is performed on
+the complete post-processed feature set of each cohort, thereby avoiding
+artificial dimensional truncation driven by the lower coverage of the
+450K array.
