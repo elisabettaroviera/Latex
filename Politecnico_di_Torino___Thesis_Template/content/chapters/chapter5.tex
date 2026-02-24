@@ -1,4 +1,300 @@
-\chapter{Feature selection}
-\label{sec:feature_selection}
+\chapter{Robust Feature Selection for Epigenetic Drift Characterisation}
+\label{chap:feature_selection}
 
-REPORT 03
+
+
+%REPORT 03
+
+%Capire come strutturare il capitolo:
+%- Introduzione con motivazioni che riprendono dal cap4
+%- Descrizione tecnica degli step
+%- Intra dataset results -> da rirunnare i plot in maniera più soddisfacente
+%- Inert dataset results -> da generare
+%- Conclusione e motivazione per passare al cap6
+
+%NB Manca tutta la bibliografia
+
+
+\section{Statistical Challenges of High-Dimensional DNA Methylation Data}
+\label{sec:fs_hdlss}
+
+The preprocessing framework developed in Chapter~\ref{sec:postproc_rationale} 
+established a technically harmonised stabilised methylation space. 
+However, preprocessing alone does not address the central statistical challenge 
+of genome-wide DNA methylation data: extreme dimensionality relative to sample 
+size. This challenge is particularly acute in the present study, where the 
+objective is to characterise epigenetic differences along the 
+Normal~$\to$~Adjacent~$\to$~Tumour axis in breast cancer — a setting in which 
+biologically meaningful signal is expected to be subtle, spatially structured, 
+and embedded in a feature space of several hundred thousand CpG loci.
+
+High-throughput methylation arrays, such as the Illumina EPIC platform, 
+interrogate approximately 850\,000 CpG sites per sample~\cite{Pidsley2016}, 
+while the number of available subjects in any given cohort remains 
+comparatively limited. This high-dimensional, low-sample-size (HDLSS) regime 
+is well characterised in the statistical literature as a setting in which 
+standard estimators become geometrically pathological: as dimensionality grows 
+relative to $n$, pairwise distances concentrate, covariance estimation becomes 
+unstable, and classifiers overfit to noise~\cite{Hall2005, Donoho2000}. In 
+genomics specifically, the consequences are well documented — unconstrained 
+feature spaces yield inflated classification accuracy that fails to replicate 
+in independent cohorts~\cite{Ambroise2002, Smialowski2010}.
+
+Feature selection is therefore not a cosmetic reduction step but a structural 
+necessity for any learning procedure applied to molecular profiling data.
+
+%-----------------------------------------------------------------------
+\subsection{Structural Properties Motivating Feature Selection}
+%-----------------------------------------------------------------------
+
+Three properties of DNA methylation data collectively motivate explicit 
+dimensionality control.
+
+\paragraph{High Dimensionality and Overfitting Risk}
+In HDLSS settings, discriminative models may achieve near-perfect separation 
+on training data while capturing noise rather than biological signal. The 
+phenomenon has been formally characterised by~\cite{Hall2005}, who showed 
+that in very high dimensions, data from distinct classes become approximately 
+equidistant unless genuine low-dimensional structure is present. Practically, 
+this means that feature selection must precede, not follow, model fitting — 
+and must itself be performed exclusively on training data to avoid 
+optimistic bias~\cite{Ambroise2002}.
+
+\paragraph{Spatial Correlation and Redundancy}
+CpG loci exhibit strong local correlation driven by genomic proximity, 
+chromatin organisation, and shared regulatory context. This spatial 
+autocorrelation has been well characterised in large-scale mapping studies: 
+contiguous CpGs within co-methylated blocks (``methylation domains'') 
+can span hundreds to thousands of base pairs and behave as single 
+epigenetic units~\cite{Hansen2011, Aryee2014}. Without explicit redundancy 
+control, learning algorithms may over-represent densely correlated genomic 
+regions while underweighting distributed epigenetic signals. This is 
+especially relevant here, as differentially methylated regions (DMRs) 
+along the Normal–Adjacent axis are expected to be spatially clustered 
+rather than randomly distributed~\cite{Luo2018}.
+
+\paragraph{Biological Sparsity}
+Disease-associated methylation alterations are typically sparse and 
+structured. In breast cancer, systematic analyses have demonstrated that 
+tumour-associated hypermethylation preferentially targets specific regulatory 
+programmes — including Polycomb-repressed developmental genes and 
+oestrogen-regulated loci — while genome-wide methylation changes in 
+histologically normal adjacent tissue are more subtle but nonetheless 
+detectable~\cite{Teschendorff2016, Fleischer2017}. This sparsity 
+motivates filtering strategies that prioritise stable, biologically 
+coherent CpG subsets over exhaustive feature retention.
+
+%-----------------------------------------------------------------------
+\subsection{Methodological Challenges in Genomic Feature Selection}
+%-----------------------------------------------------------------------
+
+Feature selection in genomic data presents challenges that go beyond 
+simple variable ranking.
+
+\paragraph{Information Leakage}
+The most consequential pitfall is information leakage: when feature 
+selection is performed on the full dataset prior to cross-validation, 
+the evaluation procedure has implicitly seen the test labels during 
+variable ranking. \cite{Ambroise2002} demonstrated empirically that 
+this leakage can inflate estimated accuracy by 10–40 percentage points 
+in gene expression data; analogous inflation has been documented for 
+methylation-based classifiers~\cite{Smialowski2010}. Strict containment 
+of all selection steps within the training fold is therefore essential 
+and is enforced throughout the present framework.
+
+\paragraph{Significance Versus Stability}
+A second challenge concerns the relationship between statistical 
+significance and effect stability. In large feature spaces, extremely 
+small $p$-values may arise for negligible or unstable effect sizes — a 
+manifestation of the multiple testing problem that is not fully 
+resolved by correction alone~\cite{Gelman2014}. Conversely, 
+biologically relevant features may show moderate but reproducible 
+signal across subsamples. Stability selection~\cite{Meinshausen2010} 
+addresses this by quantifying the reproducibility of feature inclusion 
+across repeated subsampling, providing selection frequency as a 
+complementary criterion to statistical rank.
+
+\paragraph{Predictive Optimisation Versus Interpretability}
+A third challenge is the tension between predictive optimisation and 
+interpretability. Aggressive feature selection driven solely by 
+discriminative performance may yield compact but biologically opaque 
+models, while overly conservative selection may retain sufficient 
+redundancy to obscure the underlying regulatory architecture. In 
+translational contexts, this tension has additional implications: 
+in-silico classification accuracy does not automatically imply 
+clinical utility~\cite{Poste2011}, and the biological coherence of 
+the selected feature set is therefore a criterion in its own right.
+
+%-----------------------------------------------------------------------
+\subsection{Objectives of the Present Framework}
+%-----------------------------------------------------------------------
+\label{sec:fs_stability}
+In light of the statistical and biological considerations discussed above, 
+the feature selection strategy developed in this chapter is designed to 
+satisfy four interconnected objectives.
+
+\begin{itemize}[label=-]
+    \item \textbf{Strict leakage control}: all selection procedures are 
+    confined to training data, preventing inflation of evaluation metrics 
+    through inadvertent information exposure.
+
+    \item \textbf{Stability enforcement}: CpGs are retained only if they 
+    demonstrate reproducible discriminative behaviour across repeated 
+    stratified resampling, ensuring robustness to training-set perturbations.
+
+    \item \textbf{Redundancy reduction}: correlation-based pruning limits 
+    the over-representation of co-methylated genomic blocks and promotes 
+    independent signal components.
+
+    \item \textbf{Genomic diversification}: structural constraints prevent 
+    excessive concentration of selected features within specific chromosomes 
+    or regulatory contexts (formalised in Section~\ref{sec:diversity_pruning}).
+\end{itemize}
+
+The objective is therefore not merely dimensionality reduction, but the 
+identification of a stable, biologically coherent, and generalisable CpG 
+subset capable of characterising the Normal–Adjacent epigenetic transition 
+and supporting cross-dataset validation.
+
+%-----------------------------------------------------------------------
+\section{General Feature Selection Framework}
+\label{sec:fs_framework}
+%-----------------------------------------------------------------------
+
+Building upon the statistical considerations outlined above, this section 
+formally describes the feature selection workflow adopted in the present 
+study. The procedure operates on the post-preprocessing methylation 
+matrices defined in Chapter~\ref{chap:data_preprocessing} and is structured 
+as a sequence of strictly train-only operations. These steps progressively 
+reduce dimensionality while preserving statistical validity, stability, 
+and biological coherence. From variability screening and scale 
+transformation to stability-based ranking and redundancy control, 
+each component addresses a specific structural property of DNA 
+methylation data, culminating in a diversified CpG subset suitable 
+for downstream cross-dataset evaluation.
+%-----------------------------------------------------------------------
+\subsection{Empirical Variability-Based Dimensionality Reduction}
+\label{subsubsec:fs_initial_filter}
+%-----------------------------------------------------------------------
+
+The first stage of the feature selection framework consists of an 
+unsupervised dimensionality reduction step aimed at removing CpGs 
+that exhibit negligible variability within the tissue under study. 
+This strategy is grounded in the empirically driven data reduction 
+method proposed by \cite{Edgar2017}, who demonstrated that a 
+substantial fraction of CpGs interrogated by the Illumina 450K array 
+are effectively non-variable within a given tissue context, 
+contributing to the multiple testing burden — by inflating the number of
+hypotheses tested — without increasing the probability of detecting
+true differential methylation signals.
+
+\paragraph{Data restriction and structural cleaning}
+
+Let$\mathcal{D} = \{(x_i, y_i)\}_{i=1}^{n}$,
+where $x_i \in [0,1]^p$ represents the vector of $\beta$-values 
+for $p$ CpG loci and $y_i \in \{0,1\}$ encodes the binary 
+Normal--Adjacent label, with $y_i = 0$ denoting histologically 
+normal tissue and $y_i = 1$ denoting tumour-adjacent tissue. 
+Samples belonging to other tissue states (e.g.\ Tumour) are 
+excluded from $\mathcal{D}$ prior to feature selection. 
+This restriction ensures that the selected CpGs specifically 
+characterise early epigenetic alterations occurring in 
+histologically normal tissue adjacent to tumour, rather than 
+late-stage tumour-specific methylation changes.
+
+\paragraph{Train--test partition}
+
+The dataset is partitioned into a training set 
+$\mathcal{D}_{\mathrm{train}}$ and a held-out test set 
+$\mathcal{D}_{\mathrm{test}}$ via stratified random sampling:
+\begin{equation}
+    \mathcal{D} = \mathcal{D}_{\mathrm{train}} \cup 
+    \mathcal{D}_{\mathrm{test}}, 
+    \quad 
+    |\mathcal{D}_{\mathrm{train}}| = 0.80\,n, 
+    \quad 
+    |\mathcal{D}_{\mathrm{test}}| = 0.20\,n,
+    \label{eq:split}
+\end{equation}
+with class proportions preserved in both sets. Crucially, 
+all feature selection statistics — including the variability 
+filter defined below — are estimated exclusively on 
+$\mathcal{D}_{\mathrm{train}}$ and the resulting CpG subset 
+is applied unchanged to $\mathcal{D}_{\mathrm{test}}$. This 
+design prevents information leakage and ensures that 
+dimensionality reduction is statistically independent of 
+evaluation~\cite{Ambroise2002}.
+
+\paragraph{Definition of the variability statistic}
+
+For each CpG $j \in \{1,\dots,p\}$, variability is quantified 
+using the robust inter-quantile range statistic proposed 
+by \cite{Edgar2017}:
+\begin{equation}
+    r_{\beta,j}
+    =
+    Q_{0.90}\!\left(\beta_{j} \mid 
+    \mathcal{D}_{\mathrm{train}}\right)
+    -
+    Q_{0.10}\!\left(\beta_{j} \mid 
+    \mathcal{D}_{\mathrm{train}}\right),
+    \label{eq:rbeta}
+\end{equation}
+where $Q_{0.90}$ and $Q_{0.10}$ denote the empirical 90th 
+and 10th percentiles of the $\beta$-value distribution 
+computed across all samples in $\mathcal{D}_{\mathrm{train}}$, 
+pooling both tissue classes. Note that $r_{\beta,j}$ measures 
+population-level dispersion unconditional on class membership: 
+it quantifies whether a CpG is variable across individuals 
+at all, not whether it discriminates between tissue types.
+A CpG is retained if and only if:
+\begin{equation}
+    r_{\beta,j} \geq \tau, 
+    \qquad \tau = 0.05,
+    \label{eq:edgar_threshold}
+\end{equation}
+yielding the retained index set
+\begin{equation}
+    \mathcal{J}_{\mathrm{Edgar}} 
+    = 
+    \left\{ j \in \{1,\dots,p\} : r_{\beta,j} \geq \tau \right\}.
+    \label{eq:edgar_set}
+\end{equation}
+The threshold $\tau = 0.05$ corresponds to the empirical 
+criterion introduced in \cite{Edgar2017}: CpGs exhibiting 
+a population-level methylation range below 5\% were 
+operationally defined as non-variable and excluded. 
+In the original study, this filter removed approximately 
+20--30\% of probes on the 450K array across diverse tissue 
+types~\cite{Edgar2017}.
+
+\paragraph{Interpretation and scope}
+
+Because $r_{\beta,j}$ is computed without reference to class 
+labels, this filtering step is strictly unsupervised: it 
+cannot introduce label-dependent bias and is therefore safe 
+to apply upstream of the stratified cross-validation 
+framework described in Section~\ref{subsec:fs_stability}. 
+Its function is orthogonal to subsequent supervised ranking 
+steps — it defines the candidate space over which 
+discriminative selection will operate, not the final 
+feature set.
+
+CpGs excluded by this criterion ($r_{\beta,j} < 0.05$) 
+typically correspond to loci consistently hypo- or 
+hypermethylated across individuals, frequently enriched 
+in CpG islands and constitutively silenced promoter 
+regions~\cite{Edgar2017, Bock2012}. Retaining such loci 
+inflates the effective dimensionality of the feature space 
+without contributing discriminative variance, exacerbating 
+the HDLSS geometry.
+
+From a statistical perspective, $|\mathcal{J}_{\mathrm{Edgar}}|$ 
+defines the reduced multiple testing space on which all 
+downstream differential methylation analyses and stability 
+selection procedures are conducted. The CpG subset 
+$\mathcal{J}_{\mathrm{Edgar}}$, estimated on 
+$\mathcal{D}_{\mathrm{train}}$, is applied identically to 
+$\mathcal{D}_{\mathrm{test}}$ prior to any evaluation 
+(Equation~\ref{eq:split}), preserving strict 
+train--test separation throughout.
