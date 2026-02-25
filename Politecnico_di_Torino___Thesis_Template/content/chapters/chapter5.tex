@@ -1302,7 +1302,7 @@ fraction of weakly variable loci.
 Applying the predefined threshold $\tau = 0.05$ removed 
 200{,}725 low-variability CpGs, substantially reducing the 
 dimensionality of the feature space prior to supervised ranking. 
-Lower candidate thresholds (0.01, 0.02) are shown for reference 
+Lower candidate thresholds are shown for reference 
 but were not adopted, as they would retain a markedly larger 
 proportion of near-constant probes.
 
@@ -1401,19 +1401,534 @@ The final panel comprises 1{,}992 OpenSea loci, 1{,}692 Island loci,
 indicating a diversified genomic-context composition with a 
 substantial contribution from distal regions.
 
-% ============================================================
-\section{Inter-Dataset Consistency After Feature Selection}
-\label{sec:fs_inter_dataset}
-% ============================================================
+%----------------------------------------------------------------------
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.75\textwidth]
+    {images/cap5/FINAL5000_CpG_overlap_venn3.pdf}
+    
+    \caption{Three-way overlap of the final 5{,}000 CpG signatures
+    independently selected in GSE69914, GSE225845 and GSE287331.
+    }
+    
+    \label{fig:interfs_venn}
+\end{figure}
+%----------------------------------------------------------------------
 
-\subsection{Cross-Cohort Overlap of Selected CpGs}
-\label{subsec:fs_inter_overlap}
 
-\subsection{Transferability of Stability Scores Across Cohorts}
-\label{subsec:fs_inter_transferability}
+%======================================================================
+\section{Inter-Dataset Stability of the Final 5{,}000 CpG Signatures}
+\label{sec:inter_dataset_fs}
+%======================================================================
 
-\subsection{Concordance of Directional Epigenetic Drift}
-\label{subsec:fs_inter_direction}
+The feature selection framework described in Section~\ref{sec:fs_intra_dataset}
+was applied independently to each cohort, yielding three dataset-specific
+panels of $K = 5{,}000$ CpG loci optimised for within-dataset discrimination
+along the Normal--Adjacent axis.
+The present section quantifies the degree to which these panels converge
+on a shared epigenetic drift signal, thereby assessing the cross-cohort
+replicability of the feature selection outcome.
+Consistency is evaluated at three complementary levels:
+(i) identity-level overlap of selected loci (set-level replicability),
+(ii) concordance of estimated effect sizes across cohort intersections
+(effect-level agreement), and
+(iii) transferability of the drift structure as a discriminative ranking
+in held-out datasets.
+This multi-resolution framework mirrors the analytical strategy adopted
+for the pre-selection inter-dataset analysis of Section~\ref{sec:fs_intra_dataset},
+now applied to the output of the full selection pipeline rather than to
+the global methylome.
+
+\begin{table}[t]
+\centering
+\scriptsize
+\caption{%
+  Permutation-based overlap test for the three final $5{,}000$-CpG panels.
+  For each cohort pair, the observed pairwise intersection size is compared
+  against the empirical null distribution obtained by drawing $10{,}000$
+  random selections of equal cardinality from the post-preprocessing
+  platform intersection.
+  Enrichment ratio is defined as the observed count divided by the
+  null mean.
+}
+\label{tab:interfs_overlap}
+\begin{tabular}{l c c c c}
+\toprule
+Pair & Observed & Null Mean & Enrichment & $p$-value \\
+\midrule
+GSE69914--GSE225845 & 148 & 69.0 & $\times 2.14$ & $< 10^{-4}$ \\
+GSE69914--GSE287331 &  84 & 68.3 & $\times 1.23$ & $0.024$     \\
+GSE225845--GSE287331 & 128 & 37.9 & $\times 3.38$ & $< 10^{-4}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%----------------------------------------------------------------------
+\subsection{Set-Level Replicability}
+\label{sec:inter_fs_overlap}
+%----------------------------------------------------------------------
+
+Pairwise intersections between the three final $5{,}000$-CpG panels were
+computed and are visualised in Figure~\ref{fig:interfs_venn}.
+The identity-level overlap is summarised by the Jaccard similarity
+coefficient, which for two selection sets $A$ and $B$ is defined as
+\begin{equation}
+    J(A,B) = \frac{|A \cap B|}{|A \cup B|},
+    \label{eq:jaccard}
+\end{equation}
+where $|A \cap B|$ denotes the cardinality of the shared loci and
+$|A \cup B|$ the size of their union.
+This scale-invariant measure normalises the raw intersection count
+against the total selection universe, rendering it comparable across
+cohort pairs with different platform intersections.
+
+The observed values,
+\[
+J(\text{GSE69914},\text{GSE225845}) = 0.0150, \quad
+J(\text{GSE69914},\text{GSE287331}) = 0.0085, \quad
+J(\text{GSE225845},\text{GSE287331}) = 0.0130,
+\]
+indicate that fewer than $1.5\%$ of selected CpGs are shared between
+any two cohort-specific panels, confirming that identity-level
+replicability is limited across all pairs.
+This outcome is consistent with the broader pattern of weak single-locus
+reproducibility documented in the pre-selection inter-dataset analysis
+of Section~\ref{sec:inter_dataset_eda}, and is expected given the
+substantial platform heterogeneity ($450$K vs.\ EPIC), cohort-specific
+noise structure, and the HDLSS regime in which the selection operates.
+
+\paragraph{Permutation-based assessment of overlap significance.}
+A naive interpretation of the raw intersection size would be
+misleading without accounting for the baseline expected overlap
+under random selection.
+The appropriate null model must reflect the actual constraints of
+the selection procedure: each panel draws exactly $K = 5{,}000$
+CpGs from its own post-preprocessing feature space, and the two
+panels can only share loci that are present in \emph{both} datasets
+after platform-specific filtering.
+The effective sampling universe for each pair is therefore the
+post-preprocessing pairwise intersection $\mathcal{U}_{AB} =
+\mathcal{C}_A \cap \mathcal{C}_B$, where $\mathcal{C}_A$ and
+$\mathcal{C}_B$ denote the full sets of CpGs retained after
+preprocessing in datasets $A$ and $B$, respectively.
+
+Under this null, $10{,}000$ independent replications were generated
+by drawing two sets of $K = 5{,}000$ CpGs uniformly at random from
+$\mathcal{U}_{AB}$, without replacement, and recording their
+intersection size.
+The empirical $p$-value is defined as the proportion of replications
+in which the random overlap equals or exceeds the observed value.
+This construction is conservative relative to null models based on
+the full genome or on the union of platform probes, since the
+restricted universe $\mathcal{U}_{AB}$ raises the baseline expected
+overlap; significance under this test therefore provides a more
+stringent criterion for enrichment.
+Results are reported in Table~\ref{tab:interfs_overlap}.
+
+All three pairwise overlaps exceed the permutation null at nominal
+significance.
+The most pronounced enrichment is observed for the EPIC--EPIC pair
+(GSE225845--GSE287331; enrichment $\times 3.4$), reflecting the
+larger shared platform intersection available to that pair.
+The HM$450$--EPIC pairs yield smaller but still significant
+enrichments, indicating that the selection procedure recovers a
+non-random shared subset even across platform boundaries.
+
+Importantly, statistical significance here quantifies enrichment
+relative to the large-cardinality random baseline, and should not
+be conflated with biological equivalence of the selected panels.
+The restricted sampling universe $\mathcal{U}_{AB}$ is itself of
+order $\mathcal{O}(10^5)$, so even modest absolute overlaps can
+achieve nominal significance when drawn from such a large pool.
+Jaccard indices below $0.02$ demonstrate that fewer than one in
+fifty selected CpGs is reproducibly identified across independent
+cohorts, and that identity-level concordance is insufficient to
+constitute a shared genomic signature.
+Cross-cohort replicability must therefore be evaluated at the level
+of effect structure rather than probe identity, as formalised in
+the following subsections.
+
+\begin{table}[t]
+\centering
+\small
+\caption{%
+  Permutation-based overlap test for the three final $5{,}000$-CpG
+  panels. For each cohort pair, the null distribution was obtained
+  from $10{,}000$ random draws of two sets of $K{=}5{,}000$ CpGs
+  from the post-preprocessing pairwise intersection
+  $\mathcal{U}_{AB}$ (universe size reported).
+  Enrichment ratio is defined as observed overlap divided by null
+  mean; $p$-value is the proportion of null replications with
+  overlap $\geq$ observed.
+}
+\label{tab:interfs_overlap}
+\begin{tabular}{l r r r r r}
+\toprule
+Pair & $|\mathcal{U}_{AB}|$ & Observed & Null Mean
+     & Enrichment & $p$-value \\
+\midrule
+GSE69914--GSE225845  & \texttt{[?]} & 148 & 69.0
+    & $\times 2.14$ & $< 10^{-3}$ \\
+GSE69914--GSE287331  & \texttt{[?]} &  84 & 68.3
+    & $\times 1.23$ & $0.024$     \\
+GSE225845--GSE287331 & \texttt{[?]} & 128 & 37.9
+    & $\times 3.38$ & $< 10^{-3}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%----------------------------------------------------------------------
+\begin{figure}[t]
+    \centering
+    
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {images/cap5/InterFS_concordance_matrix_spearman_rho.pdf}
+        \caption{Spearman correlation $\rho$ of $\Delta\beta$}
+        \label{fig:interfs_rho}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]
+        {images/cap5/InterFS_concordance_matrix_sign_concordance.pdf}
+        \caption{Sign concordance $c$}
+        \label{fig:interfs_sign}
+    \end{subfigure}
+    
+    \caption{Inter-dataset effect concordance of the final 5{,}000 CpG signatures. 
+}
+    
+    \label{fig:interfs_concordance}
+\end{figure}
+%----------------------------------------------------------------------
+
+%----------------------------------------------------------------------
+\subsection{Effect-Direction Concordance}
+\label{sec:inter_fs_effect}
+%----------------------------------------------------------------------
+
+The absence of strong identity-level overlap does not preclude the
+existence of a shared differential methylation structure: independently
+selected panels may still converge on the same underlying drift axis if
+the corresponding effect sizes are concordant across cohorts.
+To evaluate this possibility, signed mean methylation differences
+$\Delta\beta_j = \bar{\beta}^{\text{Adj}}_j - \bar{\beta}^{\text{Norm}}_j$
+were computed for each CpG $j$ in the pairwise intersection of the
+respective $5{,}000$-CpG panels.
+Concordance was assessed through two complementary measures:
+the Spearman rank correlation $\rho$ of signed effect sizes, which
+captures both magnitude and direction, and the directional concordance
+rate
+\begin{equation}
+  c = \widehat{\mathbb{P}}\!\left(\operatorname{sign}(\Delta\beta^{(A)}_j)
+  = \operatorname{sign}(\Delta\beta^{(B)}_j)\right),
+  \label{eq:sign_concordance}
+\end{equation}
+estimated with Wilson confidence intervals, which isolates the
+directional component independently of magnitude.
+The distinction between $\rho$ and $c$ is methodologically important:
+a low signed correlation combined with high directional concordance
+indicates attenuated but direction-preserving effects, whereas negative
+$\rho$ accompanied by $c \ll 0.5$ is diagnostic of systematic polarity
+inversion rather than mere amplitude attenuation.
+Both quantities are visualised jointly in
+Figure~\ref{fig:interfs_concordance}.
+
+\paragraph{GSE69914--GSE225845: shared drift axis.}
+The HM$450$--EPIC pair exhibits strong positive rank correlation
+($\rho = 0.605$) and near-complete directional alignment
+($c = 0.980$, Wilson 95\% CI excluded from $0.5$ by a wide margin).
+Together, these values indicate that the two datasets not only
+agree on the direction of each locus-specific shift but also
+preserve the relative ordering of effect magnitudes.
+This constitutes the clearest evidence of a shared epigenetic
+drift axis across independent cohorts, despite the known
+platform heterogeneity between the HM$450$ and EPIC arrays.
+
+\paragraph{GSE287331: systematic polarity inversion.}
+Pairs involving GSE287331 display a qualitatively distinct pattern.
+The Spearman correlations are weakly negative
+($\rho = -0.042$ with GSE69914; $\rho = -0.420$ with GSE225845),
+and directional concordance falls substantially below $0.5$
+($c = 0.357$ and $c = 0.125$, respectively).
+The value $c = 0.125$ in particular implies that only one in
+eight selected CpGs shares the same Adjacent--Normal polarity
+between GSE225845 and GSE287331, a pattern incompatible with
+stochastic disagreement and indicative of a systematic reversal
+of the dominant drift direction.
+Crucially, this inversion is not attributable to the absence of a
+discriminative signal in GSE287331: the intra-dataset analyses of
+Section~\ref{sec:fs_intra_dataset} demonstrated that this cohort
+yields the strongest and most geometrically coherent Normal--Adjacent
+separation of the three (silhouette $= 0.3442$; outlier A/N ratio
+$= 13.3$).
+Rather, the inversion reflects a structural asymmetry in the
+orientation of the drift manifold, likely arising from a combination
+of platform-specific probe-type composition, the distinct
+tumour-proximity sampling design of GSE287331 (TPxA axis), and
+residual confounding by cohort-specific batch structure.
+
+\paragraph{Interpretation.}
+The two panels of Figure~\ref{fig:interfs_concordance} jointly
+support a differentiated reading of cross-cohort consistency.
+GSE69914 and GSE225845 capture a coherent and directionally
+reproducible differential methylation structure, fulfilling the
+conditions for the \emph{shared drift structure} regime
+defined in Section~\ref{sec:inter_fs_synthesis}.
+GSE287331, by contrast, identifies a distinct and internally robust
+drift axis whose orientation is systematically inverted relative
+to the other two cohorts, placing it in the \emph{directional
+inversion} regime.
+This asymmetry has direct consequences for cross-dataset
+transferability, which is assessed quantitatively in the following subsection.
+
+%----------------------------------------------------------------------
+\subsection{Magnitude-Stratified Concordance}
+\label{sec:inter_fs_magnitude}
+%----------------------------------------------------------------------
+
+The signed and directional analyses of Section~\ref{sec:inter_fs_effect}
+characterise the global behaviour of effect sizes across the pairwise
+intersection of selected panels.
+A complementary question is whether concordance is uniform across the
+effect magnitude spectrum or, rather, whether it is concentrated in loci
+exhibiting the strongest drift signals — a distinction with direct
+implications for the biological interpretability of cross-cohort
+consistency.
+To address this, CpGs in the pairwise intersection were stratified by
+decile of absolute effect magnitude $|\Delta\beta|$, computed
+independently in each dataset.
+For each decile bin, the fraction of loci whose effect direction agreed
+across cohorts was computed, yielding a magnitude-stratified directional
+concordance profile.
+
+For the GSE69914--GSE225845 pair, directional concordance is high and
+stable across all deciles, with no systematic attenuation in lower-magnitude
+strata.
+Crucially, the top decile — comprising CpGs with the largest
+$|\Delta\beta|$ in both datasets — exhibits the highest concordance,
+indicating that the strongest signals are preferentially shared.
+This behaviour supports the interpretation that the cross-cohort
+agreement between these two datasets is not an artefact of
+magnitude-insensitive directional alignment, but reflects a genuinely
+shared structure concentrated at loci with the most pronounced
+Adjacent--Normal differential methylation.
+
+Pairs involving GSE287331 display a markedly different pattern.
+Directional concordance remains depressed across all decile strata,
+with no recovery in the high-magnitude bins.
+This rules out the scenario in which directionality disagreement
+would be confined to low-amplitude, noisy loci — as would be
+expected under pure stochastic disagreement — and instead confirms
+that the inversion of effect orientation is structural and affects
+loci of all effect magnitudes, including those most strongly
+discriminative within GSE287331.
+Taken together with the negative signed correlations reported in
+Section~\ref{sec:inter_fs_effect}, this evidence positions the
+GSE287331 discordance firmly in the \emph{directional inversion}
+regime rather than the \emph{structural heterogeneity} regime
+of Section~\ref{sec:inter_fs_synthesis}: the selected loci
+are not uninformative, but their dominant drift axis is systematically
+rotated relative to that of the other two cohorts.
+
+%----------------------------------------------------------------------
+\subsection{Cross-Dataset Transferability}
+\label{sec:inter_fs_transfer}
+%----------------------------------------------------------------------
+
+Set-level overlap and effect-level concordance characterise the
+structure of the selected panels on their own terms.
+A more stringent criterion for cross-cohort replicability is
+\emph{functional transferability}: whether the differential methylation
+signal inferred in one cohort retains discriminative power when applied
+to an independent dataset, without any retraining or adaptation.
+
+Formally, for each ordered pair of datasets $(A, B)$, a linear scoring
+function $f^{(A)}: \mathbb{R}^{|S_{AB}|} \to \mathbb{R}$ was defined on
+the intersection $S_{AB}$ of the respective $5{,}000$-CpG panels, using
+the cohort-$A$ effect sizes $\Delta\beta^{(A)}$ as fixed coefficients:
+\begin{equation}
+  f^{(A)}(\mathbf{x}^{(B)}_i) = \sum_{j \in S_{AB}}
+  \Delta\beta^{(A)}_j \cdot x^{(B)}_{ij},
+  \label{eq:transfer_score}
+\end{equation}
+where $\mathbf{x}^{(B)}_i$ denotes the methylation profile of sample $i$
+in dataset $B$.
+This zero-shot transfer procedure isolates the intrinsic portability of
+the drift structure itself, independent of classifier fitting.
+Discriminative performance was evaluated via the area under the
+ROC curve (AUC), with values near $0.5$ indicating absence of transfer,
+values substantially above $0.5$ indicating directionally consistent
+transfer, and values substantially below $0.5$ indicating systematic
+inversion — i.e.\ the scoring function trained on cohort $A$ assigns
+\emph{higher} scores to Normal than to Adjacent samples in cohort $B$.
+
+\paragraph{GSE69914 $\leftrightarrow$ GSE225845.}
+Bidirectional transfer between the two HM$450$/EPIC cohorts yields
+AUC values of $0.776$ ($A{=}$GSE69914$\to B{=}$GSE225845) and
+$0.794$ ($A{=}$GSE225845$\to B{=}$GSE69914), both substantially
+above chance.
+These results confirm that the shared drift axis identified through
+concordance analysis translates into genuine discriminative
+transferability: the $\Delta\beta$ vector estimated in one cohort
+provides a meaningful ranking of Normal versus Adjacent samples in
+the other, without any adaptation to the target distribution.
+This constitutes the strongest cross-cohort evidence available in
+this study, demonstrating that the GSE69914--GSE225845 pair captures
+a reproducible and functionally portable epigenetic drift structure.
+
+\paragraph{Transfers involving GSE287331.}
+All four directed transfer pairs involving GSE287331 yield AUC values
+in the range $[0.017,\, 0.226]$, substantially and consistently below
+chance level.
+Sub-random AUC is not a failure of discriminability per se, but rather
+a signature of systematic directional inversion: the scoring function
+derived from one cohort actively misranks samples in the other,
+assigning higher drift scores to the tissue class with lower methylation
+deviation.
+This outcome is the functional counterpart of the near-zero or negative
+sign concordance ($c = 0.125$--$0.357$) and negative Spearman correlations
+($\rho = -0.042$ to $-0.420$) reported in Section~\ref{sec:inter_fs_effect},
+and provides definitive evidence that the polarity inversion observed at
+the descriptive level has concrete consequences for predictive transfer.
+
+\paragraph{Interpretation.}
+The transferability results complete the multi-level concordance portrait
+of the three selected panels.
+The GSE69914--GSE225845 pair satisfies all criteria for the
+\emph{shared drift structure} regime: significant set enrichment,
+high directional concordance, magnitude-stratified agreement concentrated
+at strong-effect loci, and bidirectional AUC well above chance.
+Pairs involving GSE287331 are consistent with the
+\emph{directional inversion} regime: non-trivial set enrichment,
+systematically inverted effect polarity across all magnitude strata,
+and sub-random transfer performance.
+These asymmetries have direct methodological consequences for the
+downstream modelling strategy developed in Chapter~\ref{chap:models}:
+naive cross-cohort transfer from or to GSE287331 is not only
+non-informative but actively misleading, motivating the need for
+orientation-aware or cohort-adaptive learning approaches.
+
+%----------------------------------------------------------------------
+\begin{table}[t]
+\centering
+\scriptsize
+\caption{%
+  Sequential reduction of CpG dimensionality through the feature
+  selection pipeline, applied to the training set of each cohort.
+  Values at each stage reflect the number of CpG loci entering the
+  subsequent step. Steps marked \textsuperscript{$\dagger$} produce
+  a fixed-cardinality output by design.
+  Intermediate values marked \texttt{[?]} are not recoverable from
+  the current pipeline logs and should be filled from run outputs.
+}
+\label{tab:fs_reduction_steps_all}
+\begin{tabular}{l r r r}
+\toprule
+Pipeline stage & GSE69914 & GSE225845 & GSE287331 \\
+\midrule
+Post-preprocessing space           & 251{,}483 & 530{,}683 & 486{,}725 \\
+After Edgar variability filter ($\tau{=}0.05$, $\beta$-space)
+                                   & 151{,}380 & 396{,}644 & 286{,}000 \\
+After $M$-value SD trimming (bottom 2\%)
+                                   & 148{,}352 & 388{,}711 & 280{,}280 \\
+After stability + effect-size filter\textsuperscript{$\dagger$}
+                                   & 15{,}000  & 15{,}000  & 15{,}000  \\
+After correlation pruning ($|r|\geq 0.85$)
+                                   & 6{,}300   & \texttt{[?]} & \texttt{[?]} \\
+After constrained diversification\textsuperscript{$\dagger$}
+                                   & 5{,}000   & 5{,}000   & 5{,}000   \\
+\bottomrule
+\end{tabular}
+\end{table}
+%----------------------------------------------------------------------
+
+
+%----------------------------------------------------------------------
+\subsection{Synthesis of Cross-Cohort Behaviour}
+\label{sec:inter_fs_synthesis}
+%----------------------------------------------------------------------
+
+The multi-level evaluation conducted in Sections~\ref{sec:inter_fs_overlap}–-%
+\ref{sec:inter_fs_transfer} reveals a pronounced and internally consistent
+asymmetry in the cross-cohort behaviour of the three selected CpG panels.
+
+At every analytical level — identity-level enrichment, signed and
+magnitude-stratified effect concordance, and zero-shot discriminative
+transferability — GSE69914 and GSE225845 exhibit mutually reinforcing
+evidence of a shared epigenetic drift structure.
+Their differential methylation profiles align in both polarity and
+relative magnitude ordering, and the corresponding scoring functions
+retain substantial discriminative power when applied to the partner
+cohort without retraining (AUC $= 0.776$ and $0.794$, respectively).
+The conjunction of significant set enrichment (permutation $p < 10^{-4}$),
+near-complete directional concordance ($c = 0.980$), and bidirectional
+transferability establishes this pair as satisfying all criteria for the
+\emph{shared drift structure} regime.
+
+GSE287331 occupies a qualitatively distinct position.
+Despite yielding significant identity-level enrichment relative to the
+permutation null — confirming the non-random nature of the selected
+loci — both effect polarity and transfer performance indicate systematic
+structural incompatibility with the other two cohorts.
+Sign concordance collapses to $c = 0.125$--$0.357$, Spearman
+correlations are negative ($\rho = -0.042$ to $-0.420$),
+and zero-shot AUC values fall consistently in the range
+$[0.017,\, 0.226]$, reflecting active inversion of the scoring
+direction rather than mere absence of shared signal.
+Magnitude-stratified analysis confirms that this inversion is
+structural — not a low-amplitude artefact — and persists across
+all deciles of effect size, including the strongest drift signals.
+These results are consistent with the \emph{directional inversion}
+regime: the panel selected from GSE287331 captures an internally
+robust and biologically discriminative drift axis, but one whose
+dominant orientation is systematically rotated relative to that
+shared by GSE69914 and GSE225845.
+
+Two non-exclusive mechanistic hypotheses may account for this behaviour.
+First, platform-level effects: GSE287331 is the only cohort for which
+BMIQ normalisation was found to suppress genuine group structure
+(Section~\ref{sec:preproc_gse287331}), and its EPIC data carry
+residual Type~I/II probe imbalance that may differentially distort
+the estimated $\Delta\beta$ signs relative to the HM450-based
+GSE69914.
+Second, sampling design: GSE287331 was constructed along a
+fine-grained tumour-proximity axis (TPxA), with Adjacent samples
+operationally defined at a different tissue margin than in the other
+two cohorts.
+This design difference may capture a biologically distinct subtype of
+epigenetic field effect, whose dominant methylation signature is
+genuinely inverted relative to the broader Adjacent--Normal contrast
+characterised in GSE69914 and GSE225845.
+Disentangling these contributions would require platform-harmonised
+reanalysis and is identified as a direction for future work.
+
+A methodological remark on statistical significance is warranted.
+Throughout this section, permutation $p$-values quantify enrichment
+relative to the large-cardinality random baseline and should not be
+conflated with biological equivalence.
+Under the large-universe sampling regime operative here — where
+$5{,}000$ loci are drawn from post-preprocessing intersections of
+$\mathcal{O}(10^5)$ CpGs — even modest absolute overlaps can achieve
+nominal significance.
+Jaccard indices in the range $0.009$--$0.015$ demonstrate that
+identity-level reproducibility remains structurally weak,
+and that cross-cohort concordance must be interpreted primarily
+through effect-structure and transferability evidence.
+
+Collectively, the present analysis demonstrates that the epigenetic
+drift characterising the Normal--Adjacent transition is \emph{partially}
+replicable across independent cohorts, but that its orientation is
+modulated by cohort-specific factors including platform architecture,
+sampling design, and residual batch structure.
+These structural asymmetries have direct implications for downstream
+predictive modelling: naive cross-cohort transfer of linear
+$\Delta\beta$ signatures is feasible between GSE69914 and GSE225845
+but actively misleading when GSE287331 is involved, motivating
+orientation-aware or cohort-adaptive representational strategies
+investigated in Chapter~\ref{chap:models}.
 
 
 % ============================================================

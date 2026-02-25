@@ -15,10 +15,13 @@
 \contentsline {table}{\numberline {4.3}{\ignorespaces CpG filtering summary for the GSE287331 dataset.}}{42}{table.caption.84}%
 \contentsline {table}{\numberline {4.4}{\ignorespaces CpG dimensionality before and after preprocessing.}}{44}{table.caption.90}%
 \addvspace {10\p@ }
+\contentsline {table}{\numberline {5.1}{\ignorespaces Permutation-based overlap test for the three final $5{,}000$-CpG panels. For each cohort pair, the observed pairwise intersection size is compared against the empirical null distribution obtained by drawing $10{,}000$ random selections of equal cardinality from the post-preprocessing platform intersection. Enrichment ratio is defined as the observed count divided by the null mean. }}{68}{table.caption.139}%
+\contentsline {table}{\numberline {5.2}{\ignorespaces Permutation-based overlap test for the three final $5{,}000$-CpG panels. For each cohort pair, the null distribution was obtained from $10{,}000$ random draws of two sets of $K{=}5{,}000$ CpGs from the post-preprocessing pairwise intersection $\mathcal {U}_{AB}$ (universe size reported). Enrichment ratio is defined as observed overlap divided by null mean; $p$-value is the proportion of null replications with overlap $\geq $ observed. }}{70}{table.caption.141}%
+\contentsline {table}{\numberline {5.3}{\ignorespaces Sequential reduction of CpG dimensionality through the feature selection pipeline, applied to the training set of each cohort. Values at each stage reflect the number of CpG loci entering the subsequent step. Steps marked \textsuperscript {$\dagger $} produce a fixed-cardinality output by design. Intermediate values marked \texttt {[?]} are not recoverable from the current pipeline logs and should be filled from run outputs. }}{74}{table.caption.149}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {A.1}{\ignorespaces Technical artefact categories covered by each filtering resource.}}{72}{table.caption.138}%
+\contentsline {table}{\numberline {A.1}{\ignorespaces Technical artefact categories covered by each filtering resource.}}{81}{table.caption.150}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
