@@ -392,7 +392,24 @@ For each split $s = 1,\dots,S$ and each CpG $j$, three quantities are computed e
 \)
 is computed for all CpGs as an effect-size measure.
 
-\item To reduce computational burden in the HDLSS regime, Mann--Whitney $U$ $p$-values are evaluated only for the top 50{,}000 CpGs ranked by $|\Delta M_{j}^{(s)}|$ within the training fold. CpGs outside this prefiltered subset are assigned $p_{j}^{(s)} = 1$, corresponding to the least favourable rank. The Mann--Whitney test is adopted as a rank-based nonparametric procedure to avoid distributional assumptions and ensure robustness to residual deviations from normality in $M$-space~\cite{MannWhitney1947}.
+\item To reduce computational burden in the HDLSS regime, 
+Mann--Whitney $U$ $p$-values are evaluated only for the top 
+$50{,}000$ CpGs ranked by 
+$|\Delta M_{j}^{(s)}|$ within the training fold. 
+CpGs outside this prefiltered subset are assigned 
+$p_{j}^{(s)} = 1$, corresponding to the least favourable rank.
+This two-stage procedure introduces a structural dependency 
+between the prescreening criterion and the subsequent rank 
+aggregation, since excluded CpGs receive a conservative rank 
+by construction rather than by statistical evidence. 
+The approximation is justified by the width of the prefilter: 
+retaining the top $50{,}000$ candidates corresponds to 
+approximately $6\%$ of the full feature space and 
+substantially exceeds the final selection target of 
+$5{,}000$ CpGs, thereby limiting the probability of 
+excluding genuinely discriminative loci from downstream 
+evaluation.
+The Mann--Whitney test is adopted as a rank-based nonparametric procedure to avoid distributional assumptions and ensure robustness to residual deviations from normality in $M$-space~\cite{MannWhitney1947}.
 
 \item The same signed difference is computed independently on the validation fold to assess directional reproducibility across the partition.
 \end{enumerate}
@@ -424,6 +441,7 @@ combination:
 0.5\,\overline{r}_{\Delta M,j}.
 \end{equation}
 
+This rank aggregation follows a Borda-count-like scheme~\cite{Fagin2003}, in which equal-weight combination of complementary ranking criteria has been shown to reduce selection variance relative to either criterion alone~\cite{Dwork2001}
 The resulting statistical score is subsequently min--max normalised 
 to the unit interval:
 \[
@@ -475,8 +493,16 @@ s :
 }.
 \end{equation}
 
-The directional stability score is computed as the proportion of resampling splits in which both training and validation folds exhibit non-zero effect direction and agree in sign.
-Only CpGs with $\mathrm{stab}_{j} \geq 0.75$ are retained, requiring directional agreement in at least 75\% of the splits for which a non-zero effect direction is observed in both folds. This threshold is particularly motivated by the target phenotype: early epigenetic drift in histologically normal Adjacent tissue manifests as systematic but moderate methylation shifts, precisely the regime in which direction reversals most reliably distinguish genuine biological signal from stochastic variation.
+The directional stability score is computed as the proportion 
+of resampling splits in which both training and validation 
+folds exhibit non-zero effect direction and agree in sign. 
+CpGs for which the denominator equals zero — i.e.\ all splits 
+yield $\Delta M_j^{(s)} = 0$ on at least one fold — are 
+assigned $\mathrm{stab}_j = 0$ by convention, rendering them 
+ineligible for selection under the stability constraint.
+Only CpGs with $\mathrm{stab}_{j} \geq 0.75$ are retained, requiring directional agreement in at least 75\% of the splits for which a non-zero effect direction is observed in both folds. 
+The threshold of 0.75 is chosen in analogy with the selection frequency cutoff recommended by~\cite{Meinshausen2010}, where a 75\% 
+inclusion rate across subsampling splits is identified as a conservative criterion for stable feature identification. The same numerical threshold is here applied to directional consistency rather than selection frequency, extending the stability principle from feature inclusion to effect reproducibility — a particularly relevant criterion when the target signal is moderate in magnitude, as expected for early epigenetic drift in histologically normal adjacent tissue.
 
 \paragraph{Adaptive Effect-Size Filtering}
 
@@ -539,12 +565,19 @@ $\mathrm{score}_{\mathrm{stat},j}$, the final integrated score is
 \qquad
 \lambda = 0.20.
 \end{equation}
-The coefficient $\lambda = 0.20$ keeps statistical evidence 
-dominant (80\% contribution) while allowing modest 
-prioritisation of promoter- and island-associated loci — 
-consistent with recommendations in translational omics, 
-where purely data-driven selection may neglect biologically 
-meaningful structure~\cite{Poste2011}. The top 15,000 CpGs 
+Min--max normalisation is applied independently to each 
+component prior to combination, ensuring commensurability 
+of scale. The procedure is sensitive to extreme values; 
+however, given the large number of CpGs 
+($|\mathcal{J}_{\mathrm{var}}| \gg 10^4$), the influence 
+of individual outliers on the normalised distribution is 
+expected to be negligible.
+The coefficient $\lambda = 0.20$ reflects a deliberate design 
+choice rather than an empirically optimised parameter: 
+statistical evidence contributes 80\% of the integrated score, 
+while the remaining 20\% provides modest upweighting for loci 
+with established regulatory function in promoter methylation 
+and transcriptional silencing~\cite{Jones2012}. The top 15,000 CpGs 
 satisfying both the stability and adaptive effect-size 
 constraints define the candidate feature pool passed to the 
 next stage.
@@ -572,13 +605,19 @@ as:
 \times
 \mathrm{fraction}_{\mathrm{stable}},
 \end{equation}
-where $\mathrm{fraction}_{\mathrm{stable}}$ is the 
-proportion of CpGs in the island satisfying both 
+where $\mathrm{fraction}_{\mathrm{stable}}$ denotes the proportion 
+of CpGs within the island satisfying both 
 $\mathrm{stab}_j \geq 0.75$ and 
 $|\Delta M_{j}^{\mathrm{full}}| \geq \tau$, 
 with $\tau$ denoting the adaptive effect-size threshold 
-selected in the previous step (60th percentile or 50th percentile fallback). Only islands with 
-$\mathrm{fraction}_{\mathrm{stable}} \geq 0.60$ and at 
+selected in the previous step (60th percentile or 50th percentile fallback). 
+The multiplicative formulation jointly penalises islands in which 
+either the median discriminative score is weak or the proportion of 
+internally stable CpGs is low: an island driven by isolated 
+high-scoring probes surrounded by unstable loci receives a 
+substantially discounted region score, ensuring that anchored 
+islands exhibit both statistical quality and internal coherence. 
+Only islands with $\mathrm{fraction}_{\mathrm{stable}} \geq 0.60$ and at 
 least two candidate CpGs are retained. From each such 
 island, the top $m = 2$--$3$ CpGs are selected into an 
 anchored pool; the remaining candidates form a 
@@ -726,10 +765,8 @@ information. In HDLSS settings this is particularly
 consequential: redundant features exacerbate the 
 ill-conditioning of the design matrix, inflate effective 
 model complexity, and destabilise decision 
-boundaries~\cite{Donoho2000}. From a numerical standpoint, strong predictor collinearity inflates the 
-condition number of the design matrix and increases estimator variance, 
-particularly in HDLSS settings. Removing redundant predictors reduces 
-effective dimensionality and improves stability of downstream classifiers 
+boundaries~\cite{Donoho2000}. Removing redundant predictors reduces effective dimensionality 
+and improves the numerical conditioning of the design matrix 
 without materially reducing predictive information content.
 
 The result is a structurally compact, non-redundant 
@@ -765,25 +802,45 @@ step formulated as a constrained subset selection problem.
 Let $\mathcal{R} = \{j_1, \dots, j_m\}$ denote the 
 redundancy-pruned CpG pool ordered by increasing 
 integrated score $\mathrm{score}_j$ 
-(Section~\ref{subsec:fs_stability_ranking}). The goal is 
+(Section~\ref{subsec:fs_stability_ranking}).
+CpGs lacking valid manifest annotation for chromosome and genomic position 
+are excluded prior to diversification, as spatial constraints require 
+coordinate information.
+The goal is 
 to select a subset
-
-\[
+\(
 \mathcal{S} \subset \mathcal{R},
-\qquad
+\;
 |\mathcal{S}| = K = 5000,
-\]
-
+\)
 that maximises overall discriminative quality under 
-structural diversity constraints. Formally:
+structural diversity constraints. In practice, the effective target is defined as 
+$K_{\mathrm{eff}} = \min(K, |\mathcal{R}|)$ 
+to accommodate cases in which fewer than $K$ mapped CpGs are available. 
+All constraint budgets are computed with respect to $K_{\mathrm{eff}}$.
 
+Formally:
 \begin{equation}
-\min_{\mathcal{S} \subset \mathcal{R}}
-\sum_{j \in \mathcal{S}} \mathrm{score}_j
-\quad
-\text{subject to chromosomal, contextual, and spatial 
-constraints.}
-\label{eq:diversification_objective}
+\label{eq:div_problem}
+\begin{aligned}
+\min_{\mathcal{S} \subseteq \mathcal{R}} 
+\quad & \sum_{j \in \mathcal{S}} \mathrm{score}_j 
+\\
+\text{s.t.} \quad 
+& |\mathcal{S}| = K_{\mathrm{eff}}, 
+\\
+& |\{ j \in \mathcal{S} : c(j)=\chi \}| 
+  \leq \lfloor \alpha_{\mathrm{chr}} K_{\mathrm{eff}} \rfloor 
+  \quad \forall \chi,
+\\
+& |\{ j \in \mathcal{S} : \gamma(j)=g \}| 
+  \leq \lfloor \alpha_{\mathrm{ctx}} K_{\mathrm{eff}} \rfloor 
+  \quad \forall g,
+\\
+& |\{ j \in \mathcal{S} : w(j)=\omega \}| 
+  \leq \beta 
+  \quad \forall \omega.
+\end{aligned}
 \end{equation}
 
 Each constraint targets a distinct axis of potential 
@@ -804,6 +861,9 @@ the final set:
 \label{eq:chr_constraint}
 \end{equation}
 
+The budget per chromosome is computed as 
+$\lfloor \alpha_{\mathrm{chr}} K_{\mathrm{eff}} \rfloor$, 
+with a minimum of one CpG allowed per chromosome.
 The 8\% cap prevents over-representation of chromosomes 
 that harbour dense signal regions, a configuration known 
 to affect classifier stability when disease-associated loci 
@@ -824,6 +884,9 @@ any single context class is bounded by:
 \label{eq:context_constraint}
 \end{equation}
 
+The context budget is computed as 
+$\lfloor \alpha_{\mathrm{ctx}} K_{\mathrm{eff}} \rfloor$, 
+with at least one CpG permitted per context class.
 Although promoter islands are biologically important, 
 cancer-related methylation changes are not confined to 
 islands and frequently involve shores and open sea 
@@ -837,14 +900,11 @@ To prevent local hyper-concentration, each chromosome is
 partitioned into non-overlapping windows of 
 $W = 500\,\mathrm{kb}$, and the number of selected CpGs 
 per window is hard-capped:
-
-\begin{equation}
-|\{ j \in \mathcal{S} : w(j) = \omega \}|
-\leq 15,
-\label{eq:spatial_constraint}
-\end{equation}
-
-where $w(j)$ is the window index of CpG $j$. Since 
+$|\{ j \in \mathcal{S} : w(j) = \omega \}|
+\leq 15,$
+where $w(j)$ is the window index of CpG $j$. Formally, windows are defined via integer binning 
+$w(j) = \left\lfloor \mathrm{pos}(j) / W \right\rfloor$ 
+within each chromosome. Since 
 methylation domains frequently span tens to hundreds of 
 kilobases~\cite{Hansen2011}, this constraint preserves 
 regional representation while preventing dominance by a 
@@ -853,57 +913,33 @@ pruning alone cannot fully eliminate at the macro-scale.
 
 \paragraph{Greedy Approximation with Progressive Relaxation}
 
-The constrained optimisation problem~\eqref{eq:diversification_objective} 
+The constrained optimisation problem~\eqref{eq:div_problem} 
 is combinatorial and NP-hard in general, as it resembles 
 cardinality-constrained subset selection with multiple 
 linear constraints. Rather than solving a full 
 mixed-integer program, we adopt a deterministic greedy 
 strategy: CpGs are processed in order of increasing 
-$\mathrm{score}_j$, and each candidate is added to 
+$\mathrm{score}_j$, ties are resolved deterministically by stable ordering, and each candidate is added to 
 $\mathcal{S}$ if and only if all active constraints are 
 simultaneously satisfied, until $|\mathcal{S}| = K$.
 
-If the strict constraint regime fails to reach $K$, 
-constraints are progressively relaxed in the following 
-order, reflecting decreasing biological severity:
+If the strict constraint regime fails to reach $K$, constraints are relaxed by staged deactivation (rather than by increasing thresholds), first removing the spatial window constraint, then the genomic context constraint, and finally the chromosome balance constraint.
 
-\begin{enumerate}
-\item Spatial window constraint,
-\item Context constraint,
-\item Chromosome constraint.
-\end{enumerate}
-
+At each stage, the specified constraint is fully deactivated while 
+previously relaxed constraints remain inactive.
 Spatial over-concentration is relaxed first because 
 local genomic crowding is most detrimental to coverage; 
 chromosomal imbalance is relaxed last as it has the 
 weakest direct effect on independent information content. 
-Greedy selection under matroid-like constraints admits 
-well-known approximation guarantees in submodular 
-optimisation settings~\cite{Nemhauser1978}; although our 
-objective is not strictly submodular, the strategy 
-provides a computationally efficient and interpretable 
-approximation with bounded degradation.
-
-\paragraph{Rationale and Output}
-
-Diversification addresses a structural limitation that 
-neither stability filtering nor correlation pruning 
-can resolve: both operate locally on the feature score 
-or pairwise correlation structure, while genomic 
-imbalance is a macro-level property of the selected set 
-as a whole. By enforcing chromosomal, contextual, and 
-spatial balance simultaneously, this step reduces 
-representation bias, limits overfitting to locus-specific 
-hyper-variable regions, and improves cross-cohort 
-generalisability — ensuring that the selected CpGs 
-collectively characterise distributed epigenetic drift 
-rather than concentrated local artefacts.
-
-The resulting set $\mathcal{S}$, of size $K = 5000$, 
-constitutes a structurally balanced, non-redundant, 
-stability-filtered CpG panel and forms the input to 
-the final cardinality-constrained refinement stage 
-described in the next section.
+The constrained greedy strategy does not admit formal 
+approximation guarantees in this setting, as the objective 
+is linear rather than submodular and the constraint structure 
+involves multiple simultaneous bounds. The approach is adopted 
+as a computationally tractable heuristic; its empirical 
+adequacy is assessed indirectly through the constraint 
+activation frequency reported in 
+Section~\ref{sec:fs_intra_dataset}.
+The frequency with which progressive constraint relaxation is activated in practice is reported in Section~\ref{sec:fs_intra_dataset} for each dataset, allowing empirical assessment of whether the final selection approximates the fully constrained solution or degrades toward unconstrained score-based ranking.
 
 % ============================================================
 \section{Dataset-Specific Implementation}
