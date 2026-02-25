@@ -37,12 +37,18 @@
 \contentsline {figure}{\numberline {4.10}{\ignorespaces Distributional comparison of $\beta $ and $M$ in Normal and Adjacent tissues in GSE287331.}}{43}{figure.caption.86}%
 \contentsline {figure}{\numberline {4.11}{\ignorespaces CpG overlap across datasets before and after preprocessing.}}{44}{figure.caption.89}%
 \addvspace {10\p@ }
+\contentsline {figure}{\numberline {5.1}{\ignorespaces Variability-based filtering in $\beta $-space and residual variance trimming in $M$-space in GSE69914.}}{61}{figure.caption.118}%
+\contentsline {figure}{\numberline {5.2}{\ignorespaces Stability enforcement and correlation-based redundancy structure in GSE69914.}}{62}{figure.caption.121}%
+\contentsline {figure}{\numberline {5.3}{\ignorespaces Variability-based filtering in $\beta $-space and residual variance trimming in $M$-space in GSE225845.}}{63}{figure.caption.125}%
+\contentsline {figure}{\numberline {5.4}{\ignorespaces Stability and redundancy diagnostics in GSE225845.}}{64}{figure.caption.128}%
+\contentsline {figure}{\numberline {5.5}{\ignorespaces Variability-based filtering in $\beta $-space and residual variance trimming in $M$-space in GSE287331.}}{65}{figure.caption.131}%
+\contentsline {figure}{\numberline {5.6}{\ignorespaces Stability and redundancy diagnostics in GSE287331.}}{66}{figure.caption.134}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {B.1}{\ignorespaces Global overlap structure of non-variable CpGs across blood, buccal epithelial cells, placenta, and breast tissue. }}{69}{figure.caption.118}%
-\contentsline {figure}{\numberline {B.2}{\ignorespaces Assessment of robustness and trade-off between stability and dimensionality of non-variable CpG sets.}}{70}{figure.caption.119}%
-\contentsline {figure}{\numberline {B.3}{\ignorespaces Characterization of the selected non-variable CpG set in terms of methylation distribution and baseline risk behavior.}}{71}{figure.caption.120}%
+\contentsline {figure}{\numberline {B.1}{\ignorespaces Global overlap structure of non-variable CpGs across blood, buccal epithelial cells, placenta, and breast tissue. }}{76}{figure.caption.139}%
+\contentsline {figure}{\numberline {B.2}{\ignorespaces Assessment of robustness and trade-off between stability and dimensionality of non-variable CpG sets.}}{77}{figure.caption.140}%
+\contentsline {figure}{\numberline {B.3}{\ignorespaces Characterization of the selected non-variable CpG set in terms of methylation distribution and baseline risk behavior.}}{78}{figure.caption.141}%
 \addvspace {10\p@ }

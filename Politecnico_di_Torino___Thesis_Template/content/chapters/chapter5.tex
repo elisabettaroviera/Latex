@@ -151,6 +151,16 @@ satisfy four interconnected objectives.
     or regulatory contexts.
 \end{itemize}
 
+The hyperparameters governing each stage of the pipeline 
+— including variability thresholds, stability cutoffs, 
+correlation bounds, and diversification budgets — were 
+fixed based on domain knowledge and methodological 
+precedent rather than systematic optimisation. 
+A formal sensitivity analysis of these parameters 
+lies outside the scope of the present work and 
+is identified as a direction for future investigation 
+in Chapter~\ref{chap:conclusion_future_work}.
+
 The objective is therefore not merely dimensionality reduction, but the 
 identification of a stable, biologically coherent, and generalisable CpG 
 subset capable of characterising the Normal–Adjacent epigenetic transition 
@@ -276,7 +286,6 @@ Its function is orthogonal to subsequent supervised ranking
 steps — it defines the candidate space over which 
 discriminative selection will operate, not the final 
 feature set.
-
 CpGs excluded by this criterion ($r_{\beta,j} < 0.05$) 
 typically correspond to loci consistently hypo- or 
 hypermethylated across individuals, frequently enriched 
@@ -285,7 +294,6 @@ regions~\cite{Edgar2017, Bock2012}. Retaining such loci
 inflates the effective dimensionality of the feature space 
 without contributing discriminative variance, exacerbating 
 the HDLSS geometry. Low-variance independent filtering is a standard strategy in high-dimensional genomic analyses to reduce noise and improve statistical efficiency without compromising type I error control~\cite{Bourgon2010}.
-
 From a statistical perspective, $|\mathcal{J}_{\mathrm{Edgar}}|$ 
 defines the reduced multiple testing space on which all 
 downstream differential methylation analyses and stability 
@@ -308,7 +316,6 @@ the dual-representation strategy of Section~\ref{subsec:step3}: $\beta$-values
 are retained for biological interpretability, while $M$-values are adopted for
 statistical modelling because their logit transformation substantially stabilises
 the mean--variance relationship~\cite{Du2010}.
-
 Once $\mathcal{J}_{\mathrm{Edgar}}$ has been determined exclusively on
 $\mathcal{D}_{\mathrm{train}}$, the analysis transitions to the $M$-value
 representation defined in Equation~\eqref{eq:mvalue}. The transformation is
@@ -329,7 +336,6 @@ can exhibit low inter-quantile range yet produce near-constant $M$-values once
 mapped to the real line. Retaining such loci inflates the effective dimensionality
 of the covariance structure without contributing discriminative signal, which
 is particularly detrimental in HDLSS settings.
-
 To address this, the pipeline systematically discards the lowest
 $\alpha$-quantile of CpGs ranked by their empirical standard deviation in
 $M$-space on $\mathcal{D}_{\mathrm{train}}$. Letting $s_j$ denote this
@@ -383,7 +389,6 @@ Repeated stratified resampling reduces the variance of
 estimated feature importance and mitigates selection 
 instability arising from dependence on a single 
 partition~\cite{Ambroise2002, Smialowski2010}.
-
 For each split $s = 1,\dots,S$ and each CpG $j$, three quantities are computed exclusively on the training fold:
 \begin{enumerate}
 \item The signed mean difference
@@ -430,7 +435,6 @@ and averaged across splits:
 =
 \frac{1}{S}\sum_{s=1}^{S} r_{|\Delta M|,j}^{(s)}.
 \end{equation}
-
 The combined statistical score is the equal-weight convex 
 combination:
 \begin{equation}
@@ -440,8 +444,7 @@ combination:
 +
 0.5\,\overline{r}_{\Delta M,j}.
 \end{equation}
-
-This rank aggregation follows a Borda-count-like scheme~\cite{Fagin2003}, in which equal-weight combination of complementary ranking criteria has been shown to reduce selection variance relative to either criterion alone~\cite{Dwork2001}
+This rank aggregation follows a Borda-count-like scheme~\cite{Fagin2003}, in which equal-weight combination of complementary ranking criteria has been shown to reduce selection variance relative to either criterion alone~\cite{Dwork2001}.
 The resulting statistical score is subsequently min--max normalised 
 to the unit interval:
 \[
@@ -492,7 +495,6 @@ s :
 \right\}
 }.
 \end{equation}
-
 The directional stability score is computed as the proportion 
 of resampling splits in which both training and validation 
 folds exhibit non-zero effect direction and agree in sign. 
@@ -553,7 +555,6 @@ In order to prioritise biologically annotated loci while
 preserving a lower-is-better scoring convention, the 
 biological contribution is defined as 
 $1 - w_j^{\mathrm{norm}}$.
-
 After min--max normalisation of the statistical score 
 $\mathrm{score}_{\mathrm{stat},j}$, the final integrated score is
 \begin{equation}
@@ -593,7 +594,6 @@ fluctuations rather than coherent epigenetic events,
 which is particularly problematic when the signal of 
 interest — early field-effect drift — is expected to 
 manifest as concerted changes across regulatory domains.
-
 To enforce spatial coherence, candidate CpGs are grouped 
 by annotated CpG island. For each island containing at 
 least two candidate CpGs, a region-level score is defined 
@@ -672,7 +672,6 @@ C
 Z^{\top} Z.
 \label{eq:corr_matrix}
 \end{equation}
-
 Because columns of $Z$ are standardised to zero mean and unit sample variance, 
 Equation~\eqref{eq:corr_matrix} coincides with the empirical Pearson 
 correlation matrix estimated exclusively on $\mathcal{D}_{\mathrm{train}}$.
@@ -694,7 +693,6 @@ whenever their absolute correlation exceeds the threshold:
 \tau_c = 0.85,
 \label{eq:corr_graph}
 \end{equation}
-
 consistent with strong-correlation redundancy thresholds 
 commonly adopted in high-dimensional omics 
 analyses~\cite{Witten2010, Friedman2010}. By convention, each vertex is connected to itself in the adjacency matrix; 
@@ -703,7 +701,6 @@ implementation. Clusters are
 defined as the connected components of $G$: a cluster 
 $\mathcal{C}$ is a maximal vertex subset in which every 
 pair $(j,k)$ is joined by at least one path in $G$.
-
 This graph-theoretic formulation is strictly preferable 
 to pairwise sequential pruning because correlation 
 propagates transitively: two CpGs with $|C_{jk}| < \tau_c$ 
@@ -724,7 +721,6 @@ j^*
 \,\mathrm{score}_j,
 \label{eq:cluster_rep}
 \end{equation}
-
 where $\mathrm{score}_j$ is the integrated biologically 
 weighted stability score of 
 Section~\ref{subsec:fs_stability_ranking}, in which a 
@@ -768,7 +764,6 @@ model complexity, and destabilise decision
 boundaries~\cite{Donoho2000}. Removing redundant predictors reduces effective dimensionality 
 and improves the numerical conditioning of the design matrix 
 without materially reducing predictive information content.
-
 The result is a structurally compact, non-redundant 
 feature set that retains statistical strength, directional 
 stability, biological coherence, and spatial structure — 
@@ -806,8 +801,7 @@ integrated score $\mathrm{score}_j$
 CpGs lacking valid manifest annotation for chromosome and genomic position 
 are excluded prior to diversification, as spatial constraints require 
 coordinate information.
-The goal is 
-to select a subset
+The goal is to select a subset
 \(
 \mathcal{S} \subset \mathcal{R},
 \;
@@ -816,9 +810,21 @@ to select a subset
 that maximises overall discriminative quality under 
 structural diversity constraints. In practice, the effective target is defined as 
 $K_{\mathrm{eff}} = \min(K, |\mathcal{R}|)$ 
-to accommodate cases in which fewer than $K$ mapped CpGs are available. 
-All constraint budgets are computed with respect to $K_{\mathrm{eff}}$.
-
+to accommodate cases in which fewer than $K$ mapped CpGs are available; 
+all constraint budgets are computed with respect to $K_{\mathrm{eff}}$.
+The target cardinality $K = 5000$ represents approximately 
+$1.0\%$ of the probes interrogated by the Illumina 450K array 
+and approximately $0.6\%$ of those interrogated by the EPIC array. 
+It is selected to provide sufficient genomic coverage for 
+cross-cohort evaluation while maintaining a feature-to-sample 
+ratio compatible with stable supervised learning in the 
+available cohorts. The choice is acknowledged as a design 
+parameter rather than an optimised quantity; its sensitivity 
+is identified as a direction for future investigation in 
+Chapter~\ref{chap:conclusion_future_work}. %In practice, the effective target is defined as 
+%$K_{\mathrm{eff}} = \min(K, |\mathcal{R}|)$ 
+%to accommodate cases in which fewer than $K$ mapped CpGs are available. 
+%All constraint budgets are computed with respect to $K_{\mathrm{eff}}$.
 Formally:
 \begin{equation}
 \label{eq:div_problem}
@@ -842,7 +848,6 @@ Formally:
   \quad \forall \omega.
 \end{aligned}
 \end{equation}
-
 Each constraint targets a distinct axis of potential 
 structural imbalance and is described in turn below.
 
@@ -860,7 +865,6 @@ the final set:
 \alpha_{\mathrm{chr}} = 0.08.
 \label{eq:chr_constraint}
 \end{equation}
-
 The budget per chromosome is computed as 
 $\lfloor \alpha_{\mathrm{chr}} K_{\mathrm{eff}} \rfloor$, 
 with a minimum of one CpG allowed per chromosome.
@@ -870,7 +874,6 @@ to affect classifier stability when disease-associated loci
 cluster in specific chromosomal domains~\cite{Witten2010}.
 
 \paragraph{Genomic Context Constraint}
-
 Let $\gamma(j)$ denote the CpG island context of locus 
 $j$ (Island, Shore, Shelf, or OpenSea). The fraction of 
 any single context class is bounded by:
@@ -883,7 +886,6 @@ any single context class is bounded by:
 \alpha_{\mathrm{ctx}} = 0.65.
 \label{eq:context_constraint}
 \end{equation}
-
 The context budget is computed as 
 $\lfloor \alpha_{\mathrm{ctx}} K_{\mathrm{eff}} \rfloor$, 
 with at least one CpG permitted per context class.
@@ -946,15 +948,458 @@ The frequency with which progressive constraint relaxation is activated in pract
 \label{sec:fs_intra_dataset}
 % ============================================================
 
+This section documents the dataset-specific application of the feature selection framework described in Section~\ref{sec:fs_framework}. For each cohort, the outcome of empirical variability screening, $M$-value realignment and residual variance trimming, stability-based discriminative ranking with directional consistency constraints, redundancy reduction via correlation-graph clustering, and constrained genomic diversification is reported in detail. 
+
+The results are presented separately for GSE69914 (Section~\ref{subsec:fs_intra_gse69914}), GSE225845 (Section~\ref{subsec:fs_intra_gse225845}), and GSE287331 (Section~\ref{subsec:fs_intra_gse287331}).
+
 \subsection{Dataset GSE69914}
 \label{subsec:fs_intra_gse69914}
 
+The feature selection framework described in Section~\ref{sec:fs_framework} 
+was applied to the preprocessed GSE69914 cohort, restricted to the 
+Normal and Adjacent tissue classes, yielding a final panel of 
+$K=5000$ CpGs after variability filtering, stability ranking, 
+redundancy pruning, and diversification. The selected loci are 
+available in the project repository at 
+\href{https://github.com/elisabettaroviera/THESIS/blob/main/05%20-%20CpG%20list/Final%205000%20CpGs%20per%20Dataset/final_5000_gse69914.csv}
+{\texttt{final\_5000\_gse69914.csv}}.
+
+% ============================================================
+\paragraph{Empirical Variability-Based Dimensionality Reduction}
+% ============================================================
+
+Variability was quantified via the inter-quantile range 
+$r_{\beta,j} = P90(\beta) - P10(\beta)$ computed on the 
+training set. Figure~\ref{fig:gse69914_variance_controls}(a) 
+shows the empirical distribution of $r_{\beta}$ across CpGs. 
+The distribution is strongly right-skewed, with a substantial 
+mass concentrated below $r_{\beta}=0.05$. 
+Applying the predefined threshold $\tau = 0.05$ removed 
+100{,}103 low-variability loci, defining the reduced candidate 
+space for downstream supervised ranking. Lower candidate 
+thresholds (0.01, 0.02) are shown for reference but were not 
+adopted, as they would retain a substantially larger fraction 
+of near-constant probes.
+
+% ============================================================
+\begin{figure}[t]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/cap5/GSE69914_edgar_variability.pdf}
+    \caption{$r_{\beta} = P90(\beta) - P10(\beta)$ 
+    on the training set. Candidate thresholds 
+    (0.01, 0.02, 0.05) are indicated.}
+    \label{fig:gse69914_rbeta}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/cap5/GSE69914_sdM_variance_filter.pdf}
+    \caption{Distribution of $SD(M)$ on the training set. 
+    The dashed line indicates the bottom 2\% quantile 
+    used for residual variance trimming.}
+    \label{fig:gse69914_sdM}
+\end{subfigure}
+\caption{Variability-based filtering in $\beta$-space and residual variance trimming in $M$-space in GSE69914.}
+\label{fig:gse69914_variance_controls}
+\end{figure}
+% ============================================================
+
+
+% ============================================================
+\paragraph{Re-alignment to $M$-values and Residual Variance Regularisation}
+% ============================================================
+
+The retained CpGs were deterministically transformed to 
+$M$-values, after which a residual low-variance trimming 
+was applied in $M$-space. 
+Figure~\ref{fig:gse69914_sdM} displays the distribution of 
+empirical standard deviations $SD(M)$ on the training set.
+The distribution is unimodal with limited heavy-tail behaviour. 
+Removal of the bottom 2\% of CpGs by dispersion eliminated 
+3{,}028 loci. 
+Although quantitatively modest, this step improves covariance 
+conditioning in the HDLSS regime.
+
+% ============================================================
+\paragraph{Biologically Weighted Stability Selection and Region-Level Consolidation}
+% ============================================================
+
+Repeated stratified resampling was used to estimate stability 
+of signed mean differences. Figure~\ref{fig:gse69914_stability} 
+shows the distribution of the directional stability score 
+$S_{\mathrm{dir}}$.
+The majority of CpGs exhibit high directional reproducibility, 
+with substantial mass above 0.75. The threshold 
+$\mathrm{stab}_j \geq 0.75$ excludes loci whose effect direction 
+reverses across resampling splits, enforcing robustness 
+consistent with the stability-selection principle of 
+\cite{Meinshausen2010}.
+After stability and adaptive effect-size filtering 
+(60th percentile, corresponding to $|\Delta M| \approx 0.15$), 
+the top 15{,}000 CpGs were retained by design, defining the 
+candidate pool passed to correlation-based redundancy pruning.
+
+% ============================================================
+\begin{figure}[t]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/cap5/GSE69914_stability_sign_distribution.pdf}
+    \caption{Distribution of directional stability scores 
+    $S_{\mathrm{dir}}$. The dashed line indicates the cutoff 
+    $\mathrm{stab}_j \geq 0.75$.}
+    \label{fig:gse69914_stability}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/cap5/GSE69914_cluster_size_ccdf_loglog_r0_85.pdf}
+    \caption{Cluster size survival curves for anchored (Pool A) 
+    and non-anchored (Pool B) CpGs under $|r| \geq 0.85$.}
+    \label{fig:gse69914_clusters}
+\end{subfigure}
+\caption{Stability enforcement and correlation-based redundancy structure in GSE69914.}
+\label{fig:gse69914_stability_redundancy}
+\end{figure}
+% ============================================================
+
+% ============================================================
+\paragraph{Correlation-Based Redundancy Pruning and Graph-Theoretic Clustering}
+% ============================================================
+
+After stability and effect-size filtering, correlation-based 
+graph clustering was applied separately to the anchored 
+and non-anchored pools using a threshold of $|r| \ge 0.85$ 
+computed on the training set. 
+Figure~\ref{fig:gse69914_clusters} shows the cluster size 
+survival curves, whose rapid decay indicates that most 
+connected components are of size 1--3, reflecting limited 
+local redundancy. Only a small number of large correlated blocks are 
+observed, corresponding to densely co-methylated regions. 
+Selecting a single representative CpG per component reduced 
+the candidate space to 12{,}313 loci, defining the redundancy-pruned 
+set passed to the diversification stage.
+
+% ============================================================
+\paragraph{Genomic Diversification via Constrained Greedy Selection}
+% ============================================================
+
+The constrained greedy diversification procedure selected 
+$K=5000$ CpGs under chromosome, genomic context, and 
+500kb spatial-window constraints. The strict 
+constraint regime was sufficient to reach $K$ without requiring 
+relaxation (maximum chromosome share 8\%, maximum 15 CpGs 
+per 500kb window).
+The final panel comprises 2{,}151 Island loci, 1{,}342 OpenSea loci, 
+712 N\_Shore loci, 506 S\_Shore loci, and 150 N\_Shelf loci, 
+indicating a diversified genomic-context composition rather than 
+promoter-restricted enrichment. OpenSea loci were not excluded a priori, as distal regulatory 
+regions may capture long-range epigenetic alterations relevant 
+to early field effects.
+
 \subsection{Dataset GSE225845}
 \label{subsec:fs_intra_gse225845}
+The feature selection framework described in Section~\ref{sec:fs_framework} 
+was applied to the preprocessed GSE225845 cohort, restricted to the 
+Normal and Adjacent tissue classes, yielding a final panel of 
+$K=5000$ CpGs after variability filtering, stability ranking, 
+redundancy pruning, and diversification. The selected loci are 
+available in the project repository at 
+\href{https://github.com/elisabettaroviera/THESIS/blob/main/05%20-%20CpG%20list/Final%205000%20CpGs%20per%20Dataset/final_5000_gse225845.csv}
+{\texttt{final\_5000\_gse225845.csv}}.
+
+% ============================================================
+\paragraph{Empirical Variability-Based Dimensionality Reduction}
+% ============================================================
+
+Variability was quantified via the inter-quantile range 
+$r_{\beta,j} = P90(\beta) - P10(\beta)$ computed on the 
+training set. Figure~\ref{fig:gse225845_rbeta} 
+shows the empirical distribution of $r_{\beta}$ across CpGs. 
+Applying the predefined threshold $\tau = 0.05$ removed 
+134{,}039 low-variability loci, defining the reduced candidate 
+space for downstream supervised ranking. Lower candidate 
+thresholds (0.01, 0.02) are shown for reference but were not 
+adopted.
+% ============================================================
+\begin{figure}[t]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/cap5/GSE225845_edgar_variability.pdf}
+    \caption{$r_{\beta} = P90(\beta) - P10(\beta)$ 
+    on the training set. Candidate thresholds 
+    (0.01, 0.02, 0.05) are indicated.}
+    \label{fig:gse225845_rbeta}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/cap5/GSE225845_sdM_variance_filter.pdf}
+    \caption{Distribution of $SD(M)$ on the training set. 
+    The dashed line indicates the bottom 2\% quantile 
+    used for residual variance trimming.}
+    \label{fig:gse225845_sdM}
+\end{subfigure}
+\caption{Variability-based filtering in $\beta$-space and residual variance trimming in $M$-space in GSE225845.}
+\label{fig:gse225845_variance_controls}
+\end{figure}
+% ============================================================
+
+
+% ============================================================
+\paragraph{Re-alignment to $M$-values and Residual Variance Regularisation}
+% ============================================================
+
+The retained CpGs were deterministically transformed to 
+$M$-values, after which a residual low-variance trimming 
+was applied in $M$-space. 
+Figure~\ref{fig:gse225845_sdM} displays the distribution of 
+empirical standard deviations $SD(M)$ on the training set.
+Removal of the bottom 2\% of CpGs by dispersion eliminated  
+7{,}933 loci (cutoff $SD(M)=0.284$), defining the 
+variance-regularised candidate space entering the 
+stability-ranking stage.
+% ============================================================
+\paragraph{Biologically Weighted Stability Selection and Region-Level Consolidation}
+% ============================================================
+
+Repeated stratified resampling was used to estimate stability 
+of signed mean differences. Figure~\ref{fig:gse225845_stability} 
+shows the distribution of the directional stability score 
+$S_{\mathrm{dir}}$.
+The distribution is strongly right-skewed, with a substantial 
+concentration of CpGs exhibiting $S_{\mathrm{dir}}$ close to 1, 
+indicating highly consistent effect directions across resampling splits. 
+The threshold $\mathrm{stab}_j \geq 0.75$ therefore removes only loci 
+with unstable or sign-reversing effects, retaining the majority 
+of directionally robust signals in this cohort.
+After stability and adaptive effect-size filtering 
+(60th percentile), the top 15{,}000 CpGs were retained by design, 
+defining the candidate pool passed to correlation-based 
+redundancy pruning.
+
+% ============================================================
+\begin{figure}[t]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/cap5/GSE225845_stability_sign_distribution.pdf}
+    \caption{Distribution of directional stability scores 
+    $S_{\mathrm{dir}}$. The dashed line indicates the cutoff 
+    $\mathrm{stab}_j \geq 0.75$.}
+    \label{fig:gse225845_stability}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/cap5/GSE225845_cluster_size_ccdf_loglog_r0_85.pdf}
+    \caption{Cluster size survival curves for anchored (Pool A) 
+    and non-anchored (Pool B) CpGs under $|r| \geq 0.85$.}
+    \label{fig:gse225845_clusters}
+\end{subfigure}
+\caption{Stability and redundancy diagnostics in GSE225845.}
+\label{fig:gse225845_stability_redundancy}
+\end{figure}
+% ============================================================
+
+
+% ============================================================
+\paragraph{Correlation-Based Redundancy Pruning and Graph-Theoretic Clustering}
+% ============================================================
+
+After stability and effect-size filtering, correlation-based 
+graph clustering was applied separately to the anchored 
+and non-anchored pools using a threshold of $|r| \ge 0.85$ 
+computed on the training set. 
+Figure~\ref{fig:gse225845_clusters} shows the cluster size 
+survival curves.
+The survival functions decay rapidly for small $k$, indicating 
+that most connected components are of size 1--3. However, 
+a pronounced heavy tail is observed, particularly in the 
+non-anchored pool, with a limited number of large correlated 
+blocks spanning tens to hundreds of CpGs.
+This redundancy pruning step substantially reduced the 
+candidate space from 15{,}000 to 6{,}453 loci, indicating 
+a markedly higher correlation structure in GSE225845 
+compared to GSE69914. The result suggests extended 
+co-methylation domains consistent with the denser EPIC 
+probe coverage.
+Selecting a single representative CpG per connected component 
+defines the redundancy-pruned set passed to the 
+diversification stage.
+
+% ============================================================
+\paragraph{Genomic Diversification via Constrained Greedy Selection}
+% ============================================================
+
+The constrained greedy diversification procedure was applied 
+to the 6{,}453 redundancy-pruned CpGs under chromosome, 
+genomic-context, and 500kb spatial-window constraints. 
+The strict constraint regime was sufficient to reach 
+$K=5000$ without requiring relaxation 
+(maximum chromosome share 8\%, maximum context share 65\%, 
+maximum 15 CpGs per 500kb window).
+The final panel comprises 2{,}115 Island loci, 1{,}746 OpenSea loci, 
+534 N\_Shore loci, 436 S\_Shore loci, and 91 N\_Shelf loci, 
+indicating a diversified genomic-context composition. 
+The chromosome cap was actively binding in the strict stage, 
+ensuring balanced genomic representation without overconcentration 
+in high-density regions.
+The resulting panel therefore satisfies all diversification 
+constraints by construction.
+
+% ============================================================
+\begin{figure}[t]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/cap5/GSE287331_edgar_variability.pdf}
+    \caption{$r_{\beta} = P90(\beta) - P10(\beta)$ 
+    on the training set. Candidate thresholds 
+    (0.01, 0.02, 0.05) are indicated.}
+    \label{fig:gse287331_rbeta}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/cap5/GSE287331_sdM_variance_filter.pdf}
+    \caption{Distribution of $SD(M)$ on the training set. 
+    The dashed line indicates the bottom 2\% quantile 
+    used for residual variance trimming.}
+    \label{fig:gse287331_sdM}
+\end{subfigure}
+\caption{Variability-based filtering in $\beta$-space and residual variance trimming in $M$-space in GSE287331.}
+\label{fig:gse287331_variance_controls}
+\end{figure}
+% ============================================================
+
 
 \subsection{Dataset GSE287331}
 \label{subsec:fs_intra_gse287331}
 
+The feature selection framework described in Section~\ref{sec:fs_framework} 
+was applied to the preprocessed GSE287331 cohort, restricted to the 
+Normal and Adjacent tissue classes, yielding a final panel of 
+$K=5000$ CpGs after variability filtering, stability ranking, 
+redundancy pruning, and diversification. The selected loci are 
+available in the project repository at 
+\href{https://github.com/elisabettaroviera/THESIS/blob/main/05%20-%20CpG%20list/Final%205000%20CpGs%20per%20Dataset/final_5000_gse287331.csv}
+{\texttt{final\_5000\_gse287331.csv}}.
+
+% ============================================================
+\paragraph{Empirical Variability-Based Dimensionality Reduction}
+% ============================================================
+
+Variability was quantified via the inter-quantile range 
+$r_{\beta,j} = P90(\beta) - P10(\beta)$ computed on the 
+training set. Figure~\ref{fig:gse287331_rbeta} 
+shows the empirical distribution of $r_{\beta}$ across CpGs, 
+which is heavily concentrated near zero, indicating a large 
+fraction of weakly variable loci.
+Applying the predefined threshold $\tau = 0.05$ removed 
+200{,}725 low-variability CpGs, substantially reducing the 
+dimensionality of the feature space prior to supervised ranking. 
+Lower candidate thresholds (0.01, 0.02) are shown for reference 
+but were not adopted, as they would retain a markedly larger 
+proportion of near-constant probes.
+
+
+% ============================================================
+\paragraph{Re-alignment to $M$-values and Residual Variance Regularisation}
+% ============================================================
+
+The retained CpGs were deterministically transformed to 
+$M$-values, after which a residual low-variance trimming 
+was applied in $M$-space. 
+Figure~\ref{fig:gse287331_sdM} displays the distribution of 
+empirical standard deviations $SD(M)$ on the training set, 
+which is unimodal with moderate right-tail behaviour.
+Removal of the bottom 2\% of CpGs by dispersion 
+(cutoff $SD(M)=0.271$) eliminated 5{,}720 loci, 
+defining the variance-regularised candidate space entering 
+the stability-ranking stage.
+
+% ============================================================
+\begin{figure}[t]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/cap5/GSE287331_stability_sign_distribution.pdf}
+    \caption{Distribution of directional stability scores 
+    $S_{\mathrm{dir}}$. The dashed line indicates the cutoff 
+    $\mathrm{stab}_j \geq 0.75$.}
+    \label{fig:gse287331_stability}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/cap5/GSE287331_cluster_size_ccdf_loglog_r0_85.pdf}
+    \caption{Cluster size survival curves for anchored (Pool A) 
+    and non-anchored (Pool B) CpGs under $|r| \geq 0.85$.}
+    \label{fig:gse287331_clusters}
+\end{subfigure}
+\caption{Stability and redundancy diagnostics in GSE287331.}
+\label{fig:gse287331_stability_redundancy}
+\end{figure}
+% ============================================================
+
+
+% ============================================================
+\paragraph{Biologically Weighted Stability Selection and Region-Level Consolidation}
+% ============================================================
+
+Repeated stratified resampling was used to estimate stability 
+of signed mean differences. Figure~\ref{fig:gse287331_stability} 
+shows the distribution of the directional stability score 
+$S_{\mathrm{dir}}$, which is sharply concentrated near 1. 
+A pronounced peak at high stability values indicates that 
+the vast majority of CpGs exhibit highly consistent effect 
+directions across resampling splits.
+The threshold $\mathrm{stab}_j \geq 0.75$ therefore removes 
+only a small subset of unstable loci, enforcing directional 
+robustness in line with the stability-selection principle 
+of~\cite{Meinshausen2010} while retaining most candidate signals.
+After stability and adaptive effect-size filtering 
+(60th percentile), the top 15{,}000 CpGs were retained by design, 
+defining the candidate pool passed to correlation-based 
+redundancy pruning.
+
+
+% ============================================================
+\paragraph{Correlation-Based Redundancy Pruning and Graph-Theoretic Clustering}
+% ============================================================
+
+After stability and effect-size filtering, correlation-based 
+graph clustering was applied separately to the anchored 
+and non-anchored pools using a threshold of $|r| \ge 0.85$ 
+computed on the training set. 
+Figure~\ref{fig:gse287331_clusters} shows the cluster size 
+survival curves.
+The survival functions exhibit a rapid decay, indicating that 
+most connected components are of size 1--3 and that large 
+correlated blocks are rare. Compared to GSE225845, the absence 
+of a pronounced heavy tail suggests a more locally structured 
+correlation pattern without extended co-methylation domains.
+Selecting a single representative CpG per connected component 
+reduced the candidate space to 6{,}300 loci, defining the 
+redundancy-pruned set passed to the diversification stage.
+
+% ============================================================
+\paragraph{Genomic Diversification via Constrained Greedy Selection}
+% ============================================================
+
+The constrained greedy diversification procedure was applied 
+to the 6{,}300 redundancy-pruned CpGs under chromosome, 
+genomic-context, and 500kb spatial-window constraints. 
+The strict constraint regime was sufficient to reach 
+$K=5000$ without requiring relaxation.
+The final panel comprises 1{,}992 OpenSea loci, 1{,}692 Island loci, 
+556 N\_Shore loci, 507 S\_Shore loci, and 135 S\_Shelf loci, 
+indicating a diversified genomic-context composition with a 
+substantial contribution from distal regions.
 
 % ============================================================
 \section{Inter-Dataset Consistency After Feature Selection}
