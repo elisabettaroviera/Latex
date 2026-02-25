@@ -87,7 +87,7 @@ coherent CpG subsets over exhaustive feature retention.
 %-----------------------------------------------------------------------
 \subsection{Methodological Challenges in Genomic Feature Selection}
 %-----------------------------------------------------------------------
-
+\label{subsec:fs_stability}
 Feature selection in genomic data presents challenges that go beyond 
 simple variable ranking.
 
@@ -148,7 +148,7 @@ satisfy four interconnected objectives.
 
     \item \textbf{Genomic diversification}: structural constraints prevent 
     excessive concentration of selected features within specific chromosomes 
-    or regulatory contexts (formalised in Section~\ref{sec:diversity_pruning}).
+    or regulatory contexts.
 \end{itemize}
 
 The objective is therefore not merely dimensionality reduction, but the 
@@ -254,12 +254,9 @@ A CpG is retained if and only if:
     \label{eq:edgar_threshold}
 \end{equation}
 yielding the retained index set
-\begin{equation}
-    \mathcal{J}_{\mathrm{Edgar}} 
+$    \mathcal{J}_{\mathrm{Edgar}} 
     = 
-    \left\{ j \in \{1,\dots,p\} : r_{\beta,j} \geq \tau \right\}.
-    \label{eq:edgar_set}
-\end{equation}
+    \left\{ j \in \{1,\dots,p\} : r_{\beta,j} \geq \tau \right\}.$
 The threshold $\tau = 0.05$ corresponds to the empirical 
 criterion introduced in \cite{Edgar2017}: CpGs exhibiting 
 a population-level methylation range below 5\% were 
@@ -287,7 +284,7 @@ in CpG islands and constitutively silenced promoter
 regions~\cite{Edgar2017, Bock2012}. Retaining such loci 
 inflates the effective dimensionality of the feature space 
 without contributing discriminative variance, exacerbating 
-the HDLSS geometry.
+the HDLSS geometry. Low-variance independent filtering is a standard strategy in high-dimensional genomic analyses to reduce noise and improve statistical efficiency without compromising type I error control~\cite{Bourgon2010}.
 
 From a statistical perspective, $|\mathcal{J}_{\mathrm{Edgar}}|$ 
 defines the reduced multiple testing space on which all 
@@ -298,3 +295,653 @@ $\mathcal{D}_{\mathrm{train}}$, is applied identically to
 $\mathcal{D}_{\mathrm{test}}$ prior to any evaluation 
 (Equation~\ref{eq:split}), preserving strict 
 train--test separation throughout.
+
+%-----------------------------------------------------------------------
+\subsection{Re-alignment to $M$-values and Residual Variance Regularisation}
+\label{subsec:fs_m_realign}
+%-----------------------------------------------------------------------
+
+The empirical variability screening of Section~\ref{subsubsec:fs_initial_filter}
+is carried out in $\beta$-space, preserving continuity with the original
+inter-quantile dispersion criterion of \cite{Edgar2017}. This is consistent with
+the dual-representation strategy of Section~\ref{subsec:step3}: $\beta$-values
+are retained for biological interpretability, while $M$-values are adopted for
+statistical modelling because their logit transformation substantially stabilises
+the mean--variance relationship~\cite{Du2010}.
+
+Once $\mathcal{J}_{\mathrm{Edgar}}$ has been determined exclusively on
+$\mathcal{D}_{\mathrm{train}}$, the analysis transitions to the $M$-value
+representation defined in Equation~\eqref{eq:mvalue}. The transformation is
+applied deterministically to the post-Edgar $\beta$ matrices of both training
+and test sets: no model parameters are estimated at this stage. For each retained
+CpG $j \in \mathcal{J}_{\mathrm{Edgar}}$,
+using the same numerical stabilisation constant introduced during preprocessing.
+The CpG subset selected in $\beta$-space is transferred unchanged to $M$-space,
+preserving strict train--test separation throughout.
+
+\paragraph{Residual low-variance trimming (train-only)}
+
+Although the Edgar filter removes CpGs with negligible population-level
+dispersion in $\beta$-space, a residual fraction of near-constant loci may
+survive after logit transformation. This occurs because the logit map is
+nonlinear: loci with $\beta$-values concentrated near the boundaries of $[0,1]$
+can exhibit low inter-quantile range yet produce near-constant $M$-values once
+mapped to the real line. Retaining such loci inflates the effective dimensionality
+of the covariance structure without contributing discriminative signal, which
+is particularly detrimental in HDLSS settings.
+
+To address this, the pipeline systematically discards the lowest
+$\alpha$-quantile of CpGs ranked by their empirical standard deviation in
+$M$-space on $\mathcal{D}_{\mathrm{train}}$. Letting $s_j$ denote this
+standard deviation, the retained index set is
+\begin{equation}
+    \mathcal{J}_{\mathrm{var}}
+    =
+    \left\{
+        j \in \mathcal{J}_{\mathrm{Edgar}} :
+        s_j \geq Q_{\alpha}(s)
+    \right\},
+    \qquad
+    \alpha = 0.02,
+\end{equation}
+corresponding to the removal of the bottom 2\% of CpGs by dispersion.
+The step is unsupervised — class labels play no role — and introduces no
+information leakage. The quantile threshold is estimated solely on
+$\mathcal{D}_{\mathrm{train}}$; the resulting binary mask is then applied
+unchanged to $\mathcal{D}_{\mathrm{test}}$, maintaining complete statistical
+independence of the evaluation set.
+
+The resulting set $\mathcal{J}_{\mathrm{var}}$ constitutes the final candidate
+feature space entering the supervised discriminative ranking stage described
+in Section~\ref{subsec:fs_stability}.
+
+%-----------------------------------------------------------------------
+\subsection{Biologically Weighted Stability Selection and Region-Level Consolidation}
+\label{subsec:fs_stability_ranking}
+%-----------------------------------------------------------------------
+
+After structural dimensionality control 
+(Sections~\ref{subsubsec:fs_initial_filter} 
+and~\ref{subsec:fs_m_realign}), the feature space remains 
+in the order of several hundred thousand CpGs. In HDLSS 
+regimes, univariate ranking alone is insufficient: small 
+perturbations in training composition can induce large 
+instability in feature ordering, particularly when 
+signal-to-noise ratios are 
+moderate~\cite{Hall2005, Donoho2000}. To address this, we 
+adopt a resampling framework that integrates statistical 
+evidence, directional consistency, and biologically informed 
+weighting across four sequential components.
+
+\paragraph{Repeated Stratified Stability Framework}
+
+Let $X \in \mathbb{R}^{n_{\mathrm{train}} \times p}$ denote 
+the post-filtered $M$-value matrix and 
+$y \in \{0,1\}^{n_{\mathrm{train}}}$ the binary 
+Normal--Adjacent label. A Repeated Stratified $K$-Fold (RSKF) procedure is employed with $K=5$ folds and $R=10$ repetitions, yielding $S = 50$ train/validation splits. 
+Repeated stratified resampling reduces the variance of 
+estimated feature importance and mitigates selection 
+instability arising from dependence on a single 
+partition~\cite{Ambroise2002, Smialowski2010}.
+
+For each split $s = 1,\dots,S$ and each CpG $j$, three quantities are computed exclusively on the training fold:
+\begin{enumerate}
+\item The signed mean difference
+\(
+\Delta M_{j}^{(s)} = \bar{M}_{1,j}^{(s)} - \bar{M}_{0,j}^{(s)}
+\)
+is computed for all CpGs as an effect-size measure.
+
+\item To reduce computational burden in the HDLSS regime, Mann--Whitney $U$ $p$-values are evaluated only for the top 50{,}000 CpGs ranked by $|\Delta M_{j}^{(s)}|$ within the training fold. CpGs outside this prefiltered subset are assigned $p_{j}^{(s)} = 1$, corresponding to the least favourable rank. The Mann--Whitney test is adopted as a rank-based nonparametric procedure to avoid distributional assumptions and ensure robustness to residual deviations from normality in $M$-space~\cite{MannWhitney1947}.
+
+\item The same signed difference is computed independently on the validation fold to assess directional reproducibility across the partition.
+\end{enumerate}
+
+Two rank statistics are then derived per split,
+\(
+r_{p,j}^{(s)} \quad \text{(ascending rank of } p_{j}^{(s)}),\)
+\(r_{|\Delta M|,j}^{(s)} \quad 
+\text{(descending rank of } |\Delta M_{j}^{(s)}|),
+\)
+and averaged across splits:
+\begin{equation}
+\overline{r}_{p,j}
+=
+\frac{1}{S}\sum_{s=1}^{S} r_{p,j}^{(s)},
+\qquad
+\overline{r}_{\Delta M,j}
+=
+\frac{1}{S}\sum_{s=1}^{S} r_{|\Delta M|,j}^{(s)}.
+\end{equation}
+
+The combined statistical score is the equal-weight convex 
+combination:
+\begin{equation}
+\mathrm{score}_{\mathrm{stat},j}
+=
+0.5\,\overline{r}_{p,j}
++
+0.5\,\overline{r}_{\Delta M,j}.
+\end{equation}
+
+The resulting statistical score is subsequently min--max normalised 
+to the unit interval:
+\[
+\mathrm{score}_{\mathrm{stat},j}^{\mathrm{norm}}
+=
+\frac{
+\mathrm{score}_{\mathrm{stat},j}
+-
+\min(\mathrm{score}_{\mathrm{stat}})
+}{
+\max(\mathrm{score}_{\mathrm{stat}})
+-
+\min(\mathrm{score}_{\mathrm{stat}})
+}.
+\]
+Relying solely on $p$-values risks prioritising negligible 
+but stable effects under large sample sizes, whereas 
+magnitude-only ranking may overweight noisy large 
+deviations. Combining both criteria mitigates this trade-off and is consistent with resampling-based stability principles in high-dimensional feature selection~\cite{Meinshausen2010}.
+
+\paragraph{Directional Stability Constraint}
+
+A CpG whose estimated effect direction reverses across 
+resampling splits is unlikely to reflect a genuine, 
+reproducible biological signal. We therefore impose a 
+directional reproducibility criterion. For each CpG $j$, 
+let $\mathrm{sign}_{\mathrm{train}}^{(s)}$ and 
+$\mathrm{sign}_{\mathrm{val}}^{(s)}$ denote the signs of 
+$\Delta M_j^{(s)}$ on the training and validation folds 
+of split $s$, respectively. The directional stability 
+score is:
+
+\begin{equation}
+\mathrm{stab}_{j}
+=
+\frac{
+\#\!\left\{
+s :
+\mathrm{sign}_{\mathrm{train}}^{(s)} =
+\mathrm{sign}_{\mathrm{val}}^{(s)} \neq 0
+\right\}
+}{
+\#\!\left\{
+s :
+\mathrm{sign}_{\mathrm{train}}^{(s)} \neq 0
+\ \text{and}\
+\mathrm{sign}_{\mathrm{val}}^{(s)} \neq 0
+\right\}
+}.
+\end{equation}
+
+The directional stability score is computed as the proportion of resampling splits in which both training and validation folds exhibit non-zero effect direction and agree in sign.
+Only CpGs with $\mathrm{stab}_{j} \geq 0.75$ are retained, requiring directional agreement in at least 75\% of the splits for which a non-zero effect direction is observed in both folds. This threshold is particularly motivated by the target phenotype: early epigenetic drift in histologically normal Adjacent tissue manifests as systematic but moderate methylation shifts, precisely the regime in which direction reversals most reliably distinguish genuine biological signal from stochastic variation.
+
+\paragraph{Adaptive Effect-Size Filtering}
+
+A global effect estimate is computed on the full training 
+set,
+\(
+\Delta M_{j}^{\mathrm{full}}
+=
+\bar{M}_{1,j} - \bar{M}_{0,j},
+\)
+and a CpG is retained only if 
+$|\Delta M_{j}^{\mathrm{full}}| \geq Q_{0.60}(|\Delta M^{\mathrm{full}}|)$. 
+Rather than applying a fixed $\Delta M$ cutoff — which 
+would be sensitive to inter-cohort differences in 
+dispersion — this adaptive percentile-based criterion 
+maintains scale invariance across datasets. A fallback to 
+the 50th percentile is applied when the resulting 
+candidate pool would otherwise be insufficient for 
+downstream selection. Together with the directional 
+stability constraint, this filter ensures that only CpGs 
+with both reproducible direction and non-negligible 
+magnitude reach the biological weighting stage.
+The fallback to the 50th percentile is triggered whenever the resulting candidate pool contains fewer than 15,000 CpGs, ensuring sufficient capacity for the downstream consolidation stage.
+
+
+\paragraph{Integration of Biological Priors}
+
+Purely statistical ranking may underweight loci in 
+regulatory regions known to mediate transcriptional 
+control. Promoter-associated CpGs and CpG islands are 
+well-established sites of regulatory methylation changes 
+in cancer and early field 
+effects~\cite{Hansen2011, Fleischer2017}. Each CpG is assigned a discrete biological prior weight 
+$w_j \in \{1.00, 0.70, 0.50, 0.20\}$ according to its island 
+and promoter annotation:
+\begin{equation}
+w_j =
+\begin{cases}
+1.00 & \text{Island + TSS} \\
+0.70 & \text{Island only} \\
+0.50 & \text{Promoter (TSS) only} \\
+0.20 & \text{Other loci}
+\end{cases}
+\end{equation}
+The discrete weights are subsequently min--max normalised 
+to the unit interval, yielding $w_j^{\mathrm{norm}} \in [0,1]$. 
+In order to prioritise biologically annotated loci while 
+preserving a lower-is-better scoring convention, the 
+biological contribution is defined as 
+$1 - w_j^{\mathrm{norm}}$.
+
+After min--max normalisation of the statistical score 
+$\mathrm{score}_{\mathrm{stat},j}$, the final integrated score is
+\begin{equation}
+\mathrm{score}_{j}
+=
+(1 - \lambda)\,\mathrm{score}_{\mathrm{stat},j}^{\mathrm{norm}}
++
+\lambda\,(1 - w_j^{\mathrm{norm}}),
+\qquad
+\lambda = 0.20.
+\end{equation}
+The coefficient $\lambda = 0.20$ keeps statistical evidence 
+dominant (80\% contribution) while allowing modest 
+prioritisation of promoter- and island-associated loci — 
+consistent with recommendations in translational omics, 
+where purely data-driven selection may neglect biologically 
+meaningful structure~\cite{Poste2011}. The top 15,000 CpGs 
+satisfying both the stability and adaptive effect-size 
+constraints define the candidate feature pool passed to the 
+next stage.
+
+\paragraph{Region-Level Anchoring on CpG Islands}
+
+CpGs are not independent genomic entities: spatially 
+proximal loci within co-methylated blocks co-vary as 
+coordinated regulatory 
+units~\cite{Hansen2011}. Selecting isolated top-ranked 
+probes therefore risks capturing stochastic single-probe 
+fluctuations rather than coherent epigenetic events, 
+which is particularly problematic when the signal of 
+interest — early field-effect drift — is expected to 
+manifest as concerted changes across regulatory domains.
+
+To enforce spatial coherence, candidate CpGs are grouped 
+by annotated CpG island. For each island containing at 
+least two candidate CpGs, a region-level score is defined 
+as:
+\begin{equation}
+\mathrm{region\_score}
+=
+\mathrm{median}(\mathrm{score}_j)
+\times
+\mathrm{fraction}_{\mathrm{stable}},
+\end{equation}
+where $\mathrm{fraction}_{\mathrm{stable}}$ is the 
+proportion of CpGs in the island satisfying both 
+$\mathrm{stab}_j \geq 0.75$ and 
+$|\Delta M_{j}^{\mathrm{full}}| \geq \tau$, 
+with $\tau$ denoting the adaptive effect-size threshold 
+selected in the previous step (60th percentile or 50th percentile fallback). Only islands with 
+$\mathrm{fraction}_{\mathrm{stable}} \geq 0.60$ and at 
+least two candidate CpGs are retained. From each such 
+island, the top $m = 2$--$3$ CpGs are selected into an 
+anchored pool; the remaining candidates form a 
+complementary non-anchored set. This hierarchical 
+consolidation reduces susceptibility to single-probe 
+artefacts and aligns feature selection with the biological 
+expectation that early epigenetic drift occurs in clustered 
+regulatory domains rather than as isolated stochastic 
+events.
+
+%-----------------------------------------------------------------------
+\subsection{Correlation-Based Redundancy Pruning and Graph-Theoretic Clustering}
+\label{subsec:fs_corr_pruning}
+%-----------------------------------------------------------------------
+
+Despite stability filtering and region-level anchoring, the 
+candidate feature space retains strong local correlation. DNA 
+methylation levels exhibit pronounced spatial autocorrelation 
+driven by genomic proximity, shared chromatin context, and 
+coordinated regulatory control~\cite{Hansen2011, Aryee2014}: 
+in high-density arrays such as EPIC, neighbouring CpGs within 
+islands and promoter regions frequently co-vary as near-redundant 
+blocks. Retaining multiple highly correlated loci inflates the 
+effective dimensionality of the design matrix without increasing 
+independent information content, inducing multicollinearity, 
+unstable coefficient estimates, and variance inflation in 
+downstream classifiers~\cite{Donoho2000, Hall2005}. Explicit 
+correlation-based redundancy pruning is therefore applied to 
+the candidate pool before passing it to the diversification 
+stage.
+
+\paragraph{Correlation Structure on Training Data}
+
+Let $Z \in \mathbb{R}^{n_{\mathrm{train}} \times q}$ denote 
+the $M$-value matrix restricted to the $q$ candidate CpGs, 
+with each column standardised using training-set mean $\mu_j$ 
+and standard deviation $s_j$:
+\[
+Z_{ij}
+=
+\frac{M_{ij} - \mu_j}{s_j}.
+\]
+where $s_j$ is the sample standard deviation computed with Bessel correction 
+(ddof $=1$) on the training set. A small numerical constant is added in practice 
+to prevent division by zero in degenerate cases.
+The empirical Pearson correlation matrix is then:
+
+\begin{equation}
+C
+=
+\frac{1}{n_{\mathrm{train}} - 1}
+Z^{\top} Z.
+\label{eq:corr_matrix}
+\end{equation}
+
+Because columns of $Z$ are standardised to zero mean and unit sample variance, 
+Equation~\eqref{eq:corr_matrix} coincides with the empirical Pearson 
+correlation matrix estimated exclusively on $\mathcal{D}_{\mathrm{train}}$.
+All quantities are estimated exclusively on 
+$\mathcal{D}_{\mathrm{train}}$ to preserve strict 
+evaluation independence.
+
+\paragraph{Graph Construction and Connected Components}
+
+An undirected graph $G = (V, E)$ is constructed with one 
+vertex per candidate CpG; an edge connects $j$ and $k$ 
+whenever their absolute correlation exceeds the threshold:
+
+\begin{equation}
+(j,k) \in E
+\;\Longleftrightarrow\;
+|C_{jk}| \geq \tau_c,
+\qquad
+\tau_c = 0.85,
+\label{eq:corr_graph}
+\end{equation}
+
+consistent with strong-correlation redundancy thresholds 
+commonly adopted in high-dimensional omics 
+analyses~\cite{Witten2010, Friedman2010}. By convention, each vertex is connected to itself in the adjacency matrix; 
+this does not alter the connected component structure but simplifies 
+implementation. Clusters are 
+defined as the connected components of $G$: a cluster 
+$\mathcal{C}$ is a maximal vertex subset in which every 
+pair $(j,k)$ is joined by at least one path in $G$.
+
+This graph-theoretic formulation is strictly preferable 
+to pairwise sequential pruning because correlation 
+propagates transitively: two CpGs with $|C_{jk}| < \tau_c$ 
+may both be strongly correlated to a third, and would 
+therefore represent the same co-methylated block without 
+being linked directly. Connected components capture this 
+transitive redundancy structure in a single, consistent pass.
+
+\paragraph{Representative Selection per Cluster}
+
+For each connected component $\mathcal{C}_m$, a single 
+representative CpG is retained:
+
+\begin{equation}
+j^*
+=
+\arg\min_{j \in \mathcal{C}_m}
+\,\mathrm{score}_j,
+\label{eq:cluster_rep}
+\end{equation}
+
+where $\mathrm{score}_j$ is the integrated biologically 
+weighted stability score of 
+Section~\ref{subsec:fs_stability_ranking}, in which a 
+lower value denotes stronger statistical and biological 
+evidence. CpGs lacking a valid stability score are assigned an infinite value and are 
+therefore ineligible for selection as cluster representatives. Selecting the minimum thus retains the most 
+discriminative and stable CpG within each correlated 
+block, discarding all redundant co-varying loci. While region-level anchoring leverages genomic annotation to enforce spatial 
+coherence based on CpG island structure, the present clustering step operates 
+purely on empirical covariance structure estimated from the training data.
+
+\paragraph{Separate Clustering of Anchored and Non-Anchored Pools}
+
+To preserve the island-level spatial structure established 
+by region-level anchoring before applying global redundancy 
+reduction, clustering is performed separately on the 
+region-anchored pool $A$ (CpGs selected via island 
+consolidation) and the non-anchored complementary pool 
+$B$. Let $\mathcal{R}_A$ and $\mathcal{R}_B$ denote the 
+representative sets obtained from each pool. Representatives 
+from $A$ are prioritised in the final union, and the 
+redundancy-pruned feature set is:
+\(
+\mathcal{R}
+=
+\mathcal{R}_A
+\cup
+\mathcal{R}_B.
+\)
+
+\paragraph{Statistical and Biological Rationale}
+
+From a bias--variance standpoint, removing highly 
+correlated predictors reduces estimator variance while 
+preserving most of the predictive signal, since strongly 
+correlated CpGs encode largely overlapping epigenetic 
+information. In HDLSS settings this is particularly 
+consequential: redundant features exacerbate the 
+ill-conditioning of the design matrix, inflate effective 
+model complexity, and destabilise decision 
+boundaries~\cite{Donoho2000}. From a numerical standpoint, strong predictor collinearity inflates the 
+condition number of the design matrix and increases estimator variance, 
+particularly in HDLSS settings. Removing redundant predictors reduces 
+effective dimensionality and improves stability of downstream classifiers 
+without materially reducing predictive information content.
+
+The result is a structurally compact, non-redundant 
+feature set that retains statistical strength, directional 
+stability, biological coherence, and spatial structure — 
+forming the input to the genomic diversification stage 
+described in Section~\ref{subsec:fs_diversification}.
+
+%-----------------------------------------------------------------------
+\subsection{Genomic Diversification via Constrained Greedy Selection}
+\label{subsec:fs_diversification}
+%-----------------------------------------------------------------------
+
+After correlation-based redundancy pruning 
+(Section~\ref{subsec:fs_corr_pruning}), the feature set 
+$\mathcal{R}$ remains enriched for highly ranked CpGs but 
+may still exhibit structural imbalance. Genome-wide 
+methylation arrays are inherently non-uniform — CpG density 
+varies substantially across chromosomes, islands, shores, 
+shelves, and open sea regions — so unconstrained greedy 
+ranking by statistical score tends to over-concentrate 
+features in CpG-dense promoter islands, chromosomes with 
+strong signal, and local genomic windows of coordinated 
+drift. Such concentration artificially reduces effective 
+genomic coverage and increases the risk that downstream 
+models capture locus-specific rather than system-level 
+epigenetic patterns, reducing structural generalisability 
+across cohorts. We therefore introduce a diversification 
+step formulated as a constrained subset selection problem.
+
+\paragraph{Problem Formulation}
+
+Let $\mathcal{R} = \{j_1, \dots, j_m\}$ denote the 
+redundancy-pruned CpG pool ordered by increasing 
+integrated score $\mathrm{score}_j$ 
+(Section~\ref{subsec:fs_stability_ranking}). The goal is 
+to select a subset
+
+\[
+\mathcal{S} \subset \mathcal{R},
+\qquad
+|\mathcal{S}| = K = 5000,
+\]
+
+that maximises overall discriminative quality under 
+structural diversity constraints. Formally:
+
+\begin{equation}
+\min_{\mathcal{S} \subset \mathcal{R}}
+\sum_{j \in \mathcal{S}} \mathrm{score}_j
+\quad
+\text{subject to chromosomal, contextual, and spatial 
+constraints.}
+\label{eq:diversification_objective}
+\end{equation}
+
+Each constraint targets a distinct axis of potential 
+structural imbalance and is described in turn below.
+
+\paragraph{Chromosomal Balance Constraint}
+
+Let $c(j)$ denote the chromosome of CpG $j$. No 
+chromosome may contribute more than a fixed fraction of 
+the final set:
+
+\begin{equation}
+|\{ j \in \mathcal{S} : c(j) = \chi \}|
+\leq
+\alpha_{\mathrm{chr}} K,
+\qquad
+\alpha_{\mathrm{chr}} = 0.08.
+\label{eq:chr_constraint}
+\end{equation}
+
+The 8\% cap prevents over-representation of chromosomes 
+that harbour dense signal regions, a configuration known 
+to affect classifier stability when disease-associated loci 
+cluster in specific chromosomal domains~\cite{Witten2010}.
+
+\paragraph{Genomic Context Constraint}
+
+Let $\gamma(j)$ denote the CpG island context of locus 
+$j$ (Island, Shore, Shelf, or OpenSea). The fraction of 
+any single context class is bounded by:
+
+\begin{equation}
+|\{ j \in \mathcal{S} : \gamma(j) = g \}|
+\leq
+\alpha_{\mathrm{ctx}} K,
+\qquad
+\alpha_{\mathrm{ctx}} = 0.65.
+\label{eq:context_constraint}
+\end{equation}
+
+Although promoter islands are biologically important, 
+cancer-related methylation changes are not confined to 
+islands and frequently involve shores and open sea 
+regions~\cite{Hansen2011, Fleischer2017}. The soft cap 
+ensures that non-island regulatory regions retain 
+representation in the final panel.
+
+\paragraph{Spatial Window Constraint}
+
+To prevent local hyper-concentration, each chromosome is 
+partitioned into non-overlapping windows of 
+$W = 500\,\mathrm{kb}$, and the number of selected CpGs 
+per window is hard-capped:
+
+\begin{equation}
+|\{ j \in \mathcal{S} : w(j) = \omega \}|
+\leq 15,
+\label{eq:spatial_constraint}
+\end{equation}
+
+where $w(j)$ is the window index of CpG $j$. Since 
+methylation domains frequently span tens to hundreds of 
+kilobases~\cite{Hansen2011}, this constraint preserves 
+regional representation while preventing dominance by a 
+single hyper-variable block — a risk that correlation 
+pruning alone cannot fully eliminate at the macro-scale.
+
+\paragraph{Greedy Approximation with Progressive Relaxation}
+
+The constrained optimisation problem~\eqref{eq:diversification_objective} 
+is combinatorial and NP-hard in general, as it resembles 
+cardinality-constrained subset selection with multiple 
+linear constraints. Rather than solving a full 
+mixed-integer program, we adopt a deterministic greedy 
+strategy: CpGs are processed in order of increasing 
+$\mathrm{score}_j$, and each candidate is added to 
+$\mathcal{S}$ if and only if all active constraints are 
+simultaneously satisfied, until $|\mathcal{S}| = K$.
+
+If the strict constraint regime fails to reach $K$, 
+constraints are progressively relaxed in the following 
+order, reflecting decreasing biological severity:
+
+\begin{enumerate}
+\item Spatial window constraint,
+\item Context constraint,
+\item Chromosome constraint.
+\end{enumerate}
+
+Spatial over-concentration is relaxed first because 
+local genomic crowding is most detrimental to coverage; 
+chromosomal imbalance is relaxed last as it has the 
+weakest direct effect on independent information content. 
+Greedy selection under matroid-like constraints admits 
+well-known approximation guarantees in submodular 
+optimisation settings~\cite{Nemhauser1978}; although our 
+objective is not strictly submodular, the strategy 
+provides a computationally efficient and interpretable 
+approximation with bounded degradation.
+
+\paragraph{Rationale and Output}
+
+Diversification addresses a structural limitation that 
+neither stability filtering nor correlation pruning 
+can resolve: both operate locally on the feature score 
+or pairwise correlation structure, while genomic 
+imbalance is a macro-level property of the selected set 
+as a whole. By enforcing chromosomal, contextual, and 
+spatial balance simultaneously, this step reduces 
+representation bias, limits overfitting to locus-specific 
+hyper-variable regions, and improves cross-cohort 
+generalisability — ensuring that the selected CpGs 
+collectively characterise distributed epigenetic drift 
+rather than concentrated local artefacts.
+
+The resulting set $\mathcal{S}$, of size $K = 5000$, 
+constitutes a structurally balanced, non-redundant, 
+stability-filtered CpG panel and forms the input to 
+the final cardinality-constrained refinement stage 
+described in the next section.
+
+% ============================================================
+\section{Dataset-Specific Implementation}
+\label{sec:fs_intra_dataset}
+% ============================================================
+
+\subsection{Dataset GSE69914}
+\label{subsec:fs_intra_gse69914}
+
+\subsection{Dataset GSE225845}
+\label{subsec:fs_intra_gse225845}
+
+\subsection{Dataset GSE287331}
+\label{subsec:fs_intra_gse287331}
+
+
+% ============================================================
+\section{Inter-Dataset Consistency After Feature Selection}
+\label{sec:fs_inter_dataset}
+% ============================================================
+
+\subsection{Cross-Cohort Overlap of Selected CpGs}
+\label{subsec:fs_inter_overlap}
+
+\subsection{Transferability of Stability Scores Across Cohorts}
+\label{subsec:fs_inter_transferability}
+
+\subsection{Concordance of Directional Epigenetic Drift}
+\label{subsec:fs_inter_direction}
+
+
+% ============================================================
+\section{Synthesis and Transition to Predictive Modelling}
+\label{sec:fs_conclusion}
+% ============================================================
+
+\subsection{Structural Properties of the Final CpG Panel}
+\label{subsec:fs_structural_summary}
+
+\subsection{Implications for Supervised Learning and Model Design}
+\label{subsec:fs_transition_ml}
