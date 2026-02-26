@@ -1,72 +1,166 @@
-%======================================================================
-\chapter{Predictive Modelling and Cross-Dataset Generalisation}
+%===========================================================
+\chapter{Predictive Modelling, Constrained Selection and Biological Interpretation}
 \label{chap:model_training_evaluation}
-%======================================================================
+%===========================================================
 
-%----------------------------------------------------------------------
-\section{Chapter Overview and Link with Feature Selection}
-\label{sec:cap6_overview}
-%----------------------------------------------------------------------
-\subsection{Motivation and scope}
-\subsection{From stable CpG panels to predictive modelling}
-\subsection{Chapter structure and expected outcomes}
+%-----------------------------------------------------------
+\section{Introduction}
+%-----------------------------------------------------------
 
-%----------------------------------------------------------------------
-\section{General Evaluation Framework}
-\label{sec:cap6_framework}
-%----------------------------------------------------------------------
-\subsection{Prediction task and label definition}
-\subsection{Train--test protocol and leakage control assumptions}
-\subsection{Input representations and feature spaces}
-\subsection{Performance metrics and reporting conventions}
-\subsection{Visual diagnostics: ROC and complementary plots}
+This chapter evaluates the predictive robustness, cross-cohort transferability,
+and biological coherence of the CpG signatures identified in
+Chapter~\ref{chap:feature_selection}.  
+The objective is threefold: (i) assess intra-dataset classification
+performance, (ii) quantify inter-dataset generalisation,
+and (iii) investigate whether a compressed subset of CpGs
+retains both predictive and biological relevance.
 
-%----------------------------------------------------------------------
-\section{Within-Dataset Baseline Modelling on the Final 5k CpG Panel}
-\label{sec:cap6_within_dataset_5k}
-%----------------------------------------------------------------------
-\subsection{Linear SVM on $M$-values: model specification and regularisation}
-\subsection{Test-set performance: AUC, balanced accuracy, precision/recall, MCC}
-\subsection{ROC analysis and qualitative interpretation}
+%-----------------------------------------------------------
+\section{Predictive Framework}
+%-----------------------------------------------------------
 
-%----------------------------------------------------------------------
-\section{Cross-Dataset Evaluation Under Feature-Space Intersection}
-\label{sec:cap6_cross_dataset}
-%----------------------------------------------------------------------
-\subsection{Rationale: platform constraints and intersection-induced shrinkage}
-\subsection{Train refit on intersected CpGs and calibrated scoring}
-\subsection{External testing on independent cohorts: performance summary}
-\subsection{Failure modes and consistency with inter-dataset feature-selection signals}
+%-----------------------------------------------------------
+\subsection{Intra-Dataset Supervised Modelling}
+%-----------------------------------------------------------
 
-%----------------------------------------------------------------------
-\section{From 5k to 50 CpGs: Bi-Objective Knapsack Selection}
-\label{sec:cap6_knapsack}
-%----------------------------------------------------------------------
-\subsection{Motivation: compact panels for interpretability and robustness}
-\subsection{Candidate pool construction from the 5k panel}
-\subsection{MILP formulation: objective terms and normalisation}
-\subsection{Hard constraints: correlation conflicts, chromosome caps, gene caps, anchor budget}
-\subsection{Directional balance constraint and COSMIC breast prior}
-\subsection{Hyperparameter sweeps: $\mu$ trade-off and knee selection}
-\subsection{Sensitivity sweep for $W_{\mathrm{COSMIC}}$}
+This section describes the supervised classification framework
+applied independently within each cohort.
 
-%----------------------------------------------------------------------
-\section{Evaluation of the 50 CpG Panel}
-\label{sec:cap6_eval_50cpg}
-%----------------------------------------------------------------------
-\subsection{Normal vs Adjacent separation: test-set evaluation}
-\subsection{Optional auxiliary contrast: Normal vs Tumor evaluation}
-\subsection{Comparison against the $\mu=0$ solution and stability diagnostics}
+\paragraph{Data partitioning and leakage control}
+Description of train/test split strategy and preprocessing
+performed strictly on training data.
 
-%----------------------------------------------------------------------
-\section{Synthesis and Transition to the Next Chapter}
-\label{sec:cap6_synthesis}
-%----------------------------------------------------------------------
-\subsection{Summary of intra- and cross-dataset findings}
-\subsection{Implications for representation learning and next-step modelling}
+\paragraph{Linear Support Vector Machine}
+Formal definition of the linear SVM classifier,
+regularisation parameter selection,
+and decision function.
 
-Qui ci va
-- Classificatori
-- Problema dello zaino
-- Gene set analysis
-- Problemi finali per giustificare cap7 di CpGPT (spero)
+\paragraph{k-Nearest Neighbours (GSE69914 only)}
+Definition of the kNN classifier,
+distance metric,
+and rationale for inclusion as a local non-parametric baseline.
+
+\paragraph{Performance metrics}
+Definition of AUC, balanced accuracy,
+Matthews correlation coefficient,
+precision, recall and F1-score.
+
+%-----------------------------------------------------------
+\subsection{Cross-Dataset Evaluation Protocol}
+%-----------------------------------------------------------
+
+This section defines the cross-cohort transferability framework.
+
+\paragraph{Feature space alignment}
+Restriction to shared CpG space and column ordering consistency.
+
+\paragraph{Train-on-A / Test-on-B design}
+Formal description of the external validation setting,
+including absence of retraining on the target cohort.
+
+\paragraph{Evaluation criteria}
+Definition of discrimination metrics and interpretation
+under distributional shift.
+
+%-----------------------------------------------------------
+\subsection{Constrained Subset Optimisation: Knapsack Formulation}
+%-----------------------------------------------------------
+
+This section formalises the compression of the 5,000-CpG panel
+into a fixed-cardinality subset.
+
+\paragraph{Objective function}
+Definition of the optimisation criterion combining
+statistical ranking and diversification score.
+
+\paragraph{Cardinality and structural constraints}
+Fixed subset size, chromosome caps,
+genomic context constraints,
+correlation-exclusion rules,
+and sign-balance conditions.
+
+\paragraph{Optimisation strategy}
+Description of greedy or mixed-integer approximation scheme
+and computational considerations.
+
+%-----------------------------------------------------------
+\subsection{Gene Set and Functional Enrichment Analysis}
+%-----------------------------------------------------------
+
+This section evaluates the biological coherence
+of the selected CpG panels.
+
+\paragraph{CpG-to-gene mapping}
+Annotation procedure based on Illumina manifest.
+
+\paragraph{Enrichment testing}
+Definition of over-representation analysis,
+background universe,
+multiple-testing correction.
+
+\paragraph{Reference databases}
+Description of external resources
+(e.g. COSMIC Cancer Gene Census, curated field-cancerization genes).
+
+%-----------------------------------------------------------
+\section{Intra-Dataset Results}
+%-----------------------------------------------------------
+
+%-----------------------------------------------------------
+\subsection{Classification Performance on the 5,000-CpG Panel}
+%-----------------------------------------------------------
+
+Performance metrics obtained independently within each cohort.
+
+%-----------------------------------------------------------
+\subsection{Comparison Between Linear and Local Classifiers}
+%-----------------------------------------------------------
+
+Comparison between SVM and kNN (GSE69914),
+with analysis of linear separability.
+
+%-----------------------------------------------------------
+\subsection{Compression to a 50-CpG Panel}
+%-----------------------------------------------------------
+
+Evaluation of predictive stability after knapsack-based reduction.
+
+%-----------------------------------------------------------
+\subsection{Biological Characterisation of the 50-CpG Signature}
+%-----------------------------------------------------------
+
+Functional enrichment results and gene-level interpretation.
+
+%-----------------------------------------------------------
+\section{Inter-Dataset Results}
+%-----------------------------------------------------------
+
+%-----------------------------------------------------------
+\subsection{Cross-Cohort Transferability of the 5,000-CpG Panel}
+%-----------------------------------------------------------
+
+External validation results across all train/test combinations.
+
+%-----------------------------------------------------------
+\subsection{Directional Concordance and Performance Degradation}
+%-----------------------------------------------------------
+
+Analysis of performance variation in relation to
+inter-dataset $\Delta\beta$ concordance.
+
+%-----------------------------------------------------------
+\subsection{Cross-Dataset Behaviour of the 50-CpG Subset}
+%-----------------------------------------------------------
+
+Evaluation of compressed signature under distributional shift.
+
+%-----------------------------------------------------------
+\section{Synthesis and Implications}
+%-----------------------------------------------------------
+
+This section summarises predictive findings,
+identifies structural limitations of linear
+$\Delta\beta$-based signatures,
+and motivates the transition toward
+representation-learning approaches
+in the subsequent chapter.
