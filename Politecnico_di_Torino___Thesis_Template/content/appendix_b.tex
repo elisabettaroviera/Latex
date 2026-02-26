@@ -63,7 +63,6 @@ given by the intersection:
     \bigcap_{\ell=1}^{k} \mathcal{N}_\ell(\tau).
     \label{eq:nv_core}
 \end{equation}
-
 When a new tissue $T_{k+1}$ is incorporated, the invariant 
 core is updated as:
 \begin{equation}
@@ -77,7 +76,6 @@ core is updated as:
 which is strictly more conservative than the original core: 
 $\mathcal{N}_{\mathrm{core}}'(\tau) \subseteq 
 \mathcal{N}_{\mathrm{core}}(\tau)$.
-
 The validation of any extension requires verifying three 
 properties before the updated core can be considered 
 methodologically sound:
@@ -96,7 +94,6 @@ methodologically sound:
     ruling out selection artefacts 
     (Steps~C--D, Sections~\ref{app:sec:stepC}--\ref{app:sec:stepD}).
 \end{enumerate}
-
 This three-step validation protocol is general and applies 
 identically to any future tissue extension.
 
@@ -129,7 +126,6 @@ blood, buccal epithelial cells, placenta, and breast tissue.
 }
 \label{fig:point0_global_structure}
 \end{figure}
-
 The four-way invariant core $\mathcal{N}_{\mathrm{core}}'(0.05)$ 
 comprises 29,989 CpGs — a substantial shared subset whose 
 persistence despite the inclusion of a cancer-relevant tissue 
@@ -166,7 +162,6 @@ via the retention rate:
 \end{equation}
 where $\mathcal{N}_{\mathrm{breast}}^{(-s)}(\tau)$ denotes 
 the non-variable set estimated without dataset $s$.
-
 \begin{figure}[t]
 \centering
 \begin{subfigure}[t]{0.48\textwidth}
@@ -188,8 +183,6 @@ non-variable CpG count as functions of the threshold.}
 \caption{Assessment of robustness and trade-off between stability and dimensionality of non-variable CpG sets.}
 \label{fig:stepAB}
 \end{figure}
-
-
 The retention rates reported in Figure~\ref{fig:stepA_lodo} 
 are consistently high across all three held-out datasets, 
 demonstrating that $\mathcal{N}_{\mathrm{breast}}(\tau)$ 
@@ -229,9 +222,6 @@ functions of $\tau \in [0.01, 0.10]$:
     }.
     \label{eq:jaccard}
 \end{equation}
-
-
-
 As shown in Figure~\ref{fig:stepB_stability_vs_size}, 
 $J(\tau)$ increases rapidly for small $\tau$ and 
 saturates before the Edgar threshold, while the CpG 
@@ -255,7 +245,6 @@ selected non-variable CpGs by comparing their
 $\beta$-value distribution to a random background 
 sample of array CpGs, computed on normal breast 
 samples pooled across datasets.
-
 \begin{figure}[t]
 \centering
 \begin{subfigure}[t]{0.48\textwidth}
@@ -277,7 +266,6 @@ $r_{\beta,j} = Q_{0.90} - Q_{0.10}$ across CpG subsets.}
 \caption{Characterization of the selected non-variable CpG set in terms of methylation distribution and baseline risk behavior.}
 \label{fig:stepCD}
 \end{figure}
-
 Non-variable CpGs in breast tissue are strongly 
 concentrated at extreme $\beta$ values, consistent 
 with constitutive hypo- or hypermethylated states. 
@@ -304,7 +292,6 @@ the four-way shared non-variable core
 $\mathcal{N}_{\mathrm{core}}'(0.05)$, the breast-specific 
 non-variable set $\mathcal{N}_{\mathrm{breast}}(0.05)$, 
 the breast-exclusive component, and a random background set.
-
 The ECDFs in Figure~\ref{fig:stepD_rr_ecdf} show a 
 clear separation: the non-variable subsets are sharply 
 concentrated at low $r_{\beta,j}$ values, with the 

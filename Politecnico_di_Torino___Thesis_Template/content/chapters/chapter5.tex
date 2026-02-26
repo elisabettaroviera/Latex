@@ -979,7 +979,15 @@ Applying the predefined threshold $\tau = 0.05$ removed
 space for downstream supervised ranking. Lower candidate 
 thresholds (0.01, 0.02) are shown for reference but were not 
 adopted, as they would retain a substantially larger fraction 
-of near-constant probes.
+of near-constant probes. To assess whether this filtering step induced structural genomic bias,
+the distribution of invariant loci across gene-feature categories
+was examined via fold-change enrichment analysis.
+As reported in Appendix~\ref{app:empirical_variability_extension},
+invariant CpGs showed moderate enrichment in promoter-proximal
+regions (TSS200, first exon, 5'UTR), whereas gene bodies and 3'UTR regions were relatively under-represented.
+No extreme over-representation was observed, indicating that the
+variability-based reduction primarily eliminates low-dispersion loci
+without introducing pathological distortion of the genomic feature space.
 
 % ============================================================
 \begin{figure}[t]
@@ -1099,30 +1107,6 @@ promoter-restricted enrichment. OpenSea loci were not excluded a priori, as dist
 regions may capture long-range epigenetic alterations relevant 
 to early field effects.
 
-\subsection{Dataset GSE225845}
-\label{subsec:fs_intra_gse225845}
-The feature selection framework described in Section~\ref{sec:fs_framework} 
-was applied to the preprocessed GSE225845 cohort, restricted to the 
-Normal and Adjacent tissue classes, yielding a final panel of 
-$K=5000$ CpGs after variability filtering, stability ranking, 
-redundancy pruning, and diversification. The selected loci are 
-available in the project repository at 
-\href{https://github.com/elisabettaroviera/THESIS/blob/main/05%20-%20CpG%20list/Final%205000%20CpGs%20per%20Dataset/final_5000_gse225845.csv}
-{\texttt{final\_5000\_gse225845.csv}}.
-
-% ============================================================
-\paragraph{Empirical Variability-Based Dimensionality Reduction}
-% ============================================================
-
-Variability was quantified via the inter-quantile range 
-$r_{\beta,j} = P90(\beta) - P10(\beta)$ computed on the 
-training set. Figure~\ref{fig:gse225845_rbeta} 
-shows the empirical distribution of $r_{\beta}$ across CpGs. 
-Applying the predefined threshold $\tau = 0.05$ removed 
-134{,}039 low-variability loci, defining the reduced candidate 
-space for downstream supervised ranking. Lower candidate 
-thresholds (0.01, 0.02) are shown for reference but were not 
-adopted.
 % ============================================================
 \begin{figure}[t]
 \centering
@@ -1147,6 +1131,36 @@ adopted.
 \label{fig:gse225845_variance_controls}
 \end{figure}
 % ============================================================
+
+
+\subsection{Dataset GSE225845}
+\label{subsec:fs_intra_gse225845}
+The feature selection framework described in Section~\ref{sec:fs_framework} 
+was applied to the preprocessed GSE225845 cohort, restricted to the 
+Normal and Adjacent tissue classes, yielding a final panel of 
+$K=5000$ CpGs after variability filtering, stability ranking, 
+redundancy pruning, and diversification. The selected loci are 
+available in the project repository at 
+\href{https://github.com/elisabettaroviera/THESIS/blob/main/05%20-%20CpG%20list/Final%205000%20CpGs%20per%20Dataset/final_5000_gse225845.csv}
+{\texttt{final\_5000\_gse225845.csv}}.
+
+% ============================================================
+\paragraph{Empirical Variability-Based Dimensionality Reduction}
+% ============================================================
+
+Variability was quantified via the inter-quantile range 
+$r_{\beta,j} = P90(\beta) - P10(\beta)$ computed on the 
+training set. Figure~\ref{fig:gse225845_rbeta} 
+shows the empirical distribution of $r_{\beta}$ across CpGs. 
+Applying the predefined threshold $\tau = 0.05$ removed 
+134{,}039 low-variability loci, defining the reduced candidate 
+space for downstream supervised ranking. Lower candidate 
+thresholds (0.01, 0.02) are shown for reference but were not 
+adopted. As observed in GSE69914, the variability-based reduction does 
+not induce pathological genomic bias: invariant loci display 
+moderate enrichment in promoter-proximal regions, while gene 
+bodies and 3'UTR regions are relatively under-represented 
+(see Appendix~\ref{app:empirical_variability_extension}).
 
 
 % ============================================================
@@ -1251,6 +1265,11 @@ in high-density regions.
 The resulting panel therefore satisfies all diversification 
 constraints by construction.
 
+
+\subsection{Dataset GSE287331}
+\label{subsec:fs_intra_gse287331}
+
+
 % ============================================================
 \begin{figure}[t]
 \centering
@@ -1277,9 +1296,6 @@ constraints by construction.
 % ============================================================
 
 
-\subsection{Dataset GSE287331}
-\label{subsec:fs_intra_gse287331}
-
 The feature selection framework described in Section~\ref{sec:fs_framework} 
 was applied to the preprocessed GSE287331 cohort, restricted to the 
 Normal and Adjacent tissue classes, yielding a final panel of 
@@ -1304,7 +1320,14 @@ Applying the predefined threshold $\tau = 0.05$ removed
 dimensionality of the feature space prior to supervised ranking. 
 Lower candidate thresholds are shown for reference 
 but were not adopted, as they would retain a markedly larger 
-proportion of near-constant probes.
+proportion of near-constant probes. Consistent with the other cohorts, invariant CpGs exhibit 
+moderate enrichment in promoter-proximal regions (notably TSS200 
+and first exon), while distal or non-promoter regions are 
+relatively under-represented (see Appendix~\ref{app:empirical_variability_extension}). 
+The magnitude of enrichment is less pronounced than in 
+GSE69914 and GSE225845, suggesting that the variability structure 
+of this dataset is more diffusely distributed across genomic 
+contexts.
 
 
 % ============================================================
@@ -1439,35 +1462,27 @@ for the pre-selection inter-dataset analysis of Section~\ref{sec:fs_intra_datase
 now applied to the output of the full selection pipeline rather than to
 the global methylome.
 
-\begin{table}[t]
-\centering
-\scriptsize
-\caption{%
-  Permutation-based overlap test for the three final $5{,}000$-CpG panels.
-  For each cohort pair, the observed pairwise intersection size is compared
-  against the empirical null distribution obtained by drawing $10{,}000$
-  random selections of equal cardinality from the post-preprocessing
-  platform intersection.
-  Enrichment ratio is defined as the observed count divided by the
-  null mean.
-}
-\label{tab:interfs_overlap}
-\begin{tabular}{l c c c c}
-\toprule
-Pair & Observed & Null Mean & Enrichment & $p$-value \\
-\midrule
-GSE69914--GSE225845 & 148 & 69.0 & $\times 2.14$ & $< 10^{-4}$ \\
-GSE69914--GSE287331 &  84 & 68.3 & $\times 1.23$ & $0.024$     \\
-GSE225845--GSE287331 & 128 & 37.9 & $\times 3.38$ & $< 10^{-4}$ \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 %----------------------------------------------------------------------
 \subsection{Set-Level Replicability}
 \label{sec:inter_fs_overlap}
 %----------------------------------------------------------------------
 
+\begin{table}[t]
+\centering
+\scriptsize
+\caption{Permutation-based enrichment of pairwise overlaps among the three final $5{,}000$-CpG panels.}
+\label{tab:interfs_overlap}
+\begin{tabular}{l c c c c}
+\toprule
+Pair & Shared CpGs & Expected Overlap & Enrichment Ratio & $p$-value \\
+\midrule
+GSE69914--GSE225845 & 148 & 69.0 & $2.14$ & $< 10^{-4}$ \\
+GSE69914--GSE287331 &  84 & 68.3 & $1.23$ & $0.024$     \\
+GSE225845--GSE287331 & 128 & 37.9 & $3.38$ & $< 10^{-4}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 Pairwise intersections between the three final $5{,}000$-CpG panels were
 computed and are visualised in Figure~\ref{fig:interfs_venn}.
 The identity-level overlap is summarised by the Jaccard similarity
@@ -1481,23 +1496,23 @@ $|A \cup B|$ the size of their union.
 This scale-invariant measure normalises the raw intersection count
 against the total selection universe, rendering it comparable across
 cohort pairs with different platform intersections.
-
 The observed values,
-\[
-J(\text{GSE69914},\text{GSE225845}) = 0.0150, \quad
-J(\text{GSE69914},\text{GSE287331}) = 0.0085, \quad
-J(\text{GSE225845},\text{GSE287331}) = 0.0130,
-\]
+\(
+J(\text{GSE69914},\text{GSE225845}) = 0.0150,\)
+\(J(\text{GSE69914},\text{GSE287331}) = 0.0085,\)
+\(J(\text{GSE225845},\text{GSE287331}) = 0.0130,
+\)
 indicate that fewer than $1.5\%$ of selected CpGs are shared between
 any two cohort-specific panels, confirming that identity-level
 replicability is limited across all pairs.
-This outcome is consistent with the broader pattern of weak single-locus
-reproducibility documented in the pre-selection inter-dataset analysis
-of Section~\ref{sec:inter_dataset_eda}, and is expected given the
-substantial platform heterogeneity ($450$K vs.\ EPIC), cohort-specific
-noise structure, and the HDLSS regime in which the selection operates.
+This pattern is consistent with the weak locus-level reproducibility
+observed in the pre-selection inter-dataset analysis
+(Section~\ref{sec:inter_dataset}).
+Given the high-dimensional setting, cohort-specific noise structure,
+and heterogeneous sampling conditions, only partial overlap
+between independently derived panels is expected.
 
-\paragraph{Permutation-based assessment of overlap significance.}
+\paragraph{Permutation-based assessment of overlap significance}
 A naive interpretation of the raw intersection size would be
 misleading without accounting for the baseline expected overlap
 under random selection.
@@ -1547,35 +1562,6 @@ constitute a shared genomic signature.
 Cross-cohort replicability must therefore be evaluated at the level
 of effect structure rather than probe identity, as formalised in
 the following subsections.
-
-\begin{table}[t]
-\centering
-\small
-\caption{%
-  Permutation-based overlap test for the three final $5{,}000$-CpG
-  panels. For each cohort pair, the null distribution was obtained
-  from $10{,}000$ random draws of two sets of $K{=}5{,}000$ CpGs
-  from the post-preprocessing pairwise intersection
-  $\mathcal{U}_{AB}$ (universe size reported).
-  Enrichment ratio is defined as observed overlap divided by null
-  mean; $p$-value is the proportion of null replications with
-  overlap $\geq$ observed.
-}
-\label{tab:interfs_overlap}
-\begin{tabular}{l r r r r r}
-\toprule
-Pair & $|\mathcal{U}_{AB}|$ & Observed & Null Mean
-     & Enrichment & $p$-value \\
-\midrule
-GSE69914--GSE225845  & \texttt{[?]} & 148 & 69.0
-    & $\times 2.14$ & $< 10^{-3}$ \\
-GSE69914--GSE287331  & \texttt{[?]} &  84 & 68.3
-    & $\times 1.23$ & $0.024$     \\
-GSE225845--GSE287331 & \texttt{[?]} & 128 & 37.9
-    & $\times 3.38$ & $< 10^{-3}$ \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 %----------------------------------------------------------------------
 \begin{figure}[t]
@@ -1636,7 +1622,7 @@ inversion rather than mere amplitude attenuation.
 Both quantities are visualised jointly in
 Figure~\ref{fig:interfs_concordance}.
 
-\paragraph{GSE69914--GSE225845: shared drift axis.}
+\paragraph{GSE69914--GSE225845: shared drift axis}
 The HM$450$--EPIC pair exhibits strong positive rank correlation
 ($\rho = 0.605$) and near-complete directional alignment
 ($c = 0.980$, Wilson 95\% CI excluded from $0.5$ by a wide margin).
@@ -1647,7 +1633,7 @@ This constitutes the clearest evidence of a shared epigenetic
 drift axis across independent cohorts, despite the known
 platform heterogeneity between the HM$450$ and EPIC arrays.
 
-\paragraph{GSE287331: systematic polarity inversion.}
+\paragraph{GSE287331: systematic polarity inversion}
 Pairs involving GSE287331 display a qualitatively distinct pattern.
 The Spearman correlations are weakly negative
 ($\rho = -0.042$ with GSE69914; $\rho = -0.420$ with GSE225845),
@@ -1669,20 +1655,6 @@ orientation of the drift manifold, likely arising from a combination
 of platform-specific probe-type composition, the distinct
 tumour-proximity sampling design of GSE287331 (TPxA axis), and
 residual confounding by cohort-specific batch structure.
-
-\paragraph{Interpretation.}
-The two panels of Figure~\ref{fig:interfs_concordance} jointly
-support a differentiated reading of cross-cohort consistency.
-GSE69914 and GSE225845 capture a coherent and directionally
-reproducible differential methylation structure, fulfilling the
-conditions for the \emph{shared drift structure} regime
-defined in Section~\ref{sec:inter_fs_synthesis}.
-GSE287331, by contrast, identifies a distinct and internally robust
-drift axis whose orientation is systematically inverted relative
-to the other two cohorts, placing it in the \emph{directional
-inversion} regime.
-This asymmetry has direct consequences for cross-dataset
-transferability, which is assessed quantitatively in the following subsection.
 
 %----------------------------------------------------------------------
 \subsection{Magnitude-Stratified Concordance}
@@ -1729,7 +1701,7 @@ Taken together with the negative signed correlations reported in
 Section~\ref{sec:inter_fs_effect}, this evidence positions the
 GSE287331 discordance firmly in the \emph{directional inversion}
 regime rather than the \emph{structural heterogeneity} regime
-of Section~\ref{sec:inter_fs_synthesis}: the selected loci
+of Section~\ref{sec:fs_conclusion}: the selected loci
 are not uninformative, but their dominant drift axis is systematically
 rotated relative to that of the other two cohorts.
 
@@ -1765,21 +1737,55 @@ transfer, and values substantially below $0.5$ indicating systematic
 inversion — i.e.\ the scoring function trained on cohort $A$ assigns
 \emph{higher} scores to Normal than to Adjacent samples in cohort $B$.
 
-\paragraph{GSE69914 $\leftrightarrow$ GSE225845.}
-Bidirectional transfer between the two HM$450$/EPIC cohorts yields
-AUC values of $0.776$ ($A{=}$GSE69914$\to B{=}$GSE225845) and
-$0.794$ ($A{=}$GSE225845$\to B{=}$GSE69914), both substantially
-above chance.
-These results confirm that the shared drift axis identified through
-concordance analysis translates into genuine discriminative
-transferability: the $\Delta\beta$ vector estimated in one cohort
-provides a meaningful ranking of Normal versus Adjacent samples in
-the other, without any adaptation to the target distribution.
-This constitutes the strongest cross-cohort evidence available in
-this study, demonstrating that the GSE69914--GSE225845 pair captures
+\paragraph{GSE69914--GSE225845}
+Bidirectional transfer between the HM$450$ and EPIC cohorts was 
+evaluated by training a univariate $\Delta\beta$ ranking rule in one 
+dataset and applying it directly to the other. 
+Specifically, given an effect-size vector $\Delta\beta$ estimated 
+in the source cohort, each sample $x$ in the target cohort was 
+assigned the discriminative score
+\begin{equation}
+s(x) = \sum_{j \in \mathcal{S}} \Delta\beta_j \, x_j ,
+\end{equation}
+where $\mathcal{S}$ denotes the selected CpG panel and $x_j$ the 
+methylation level of locus $j$. 
+No re-estimation or adaptation to the target distribution was performed.
+Discriminative performance was quantified via the area under the 
+receiver operating characteristic curve (AUC), defined as
+\begin{equation}
+\mathrm{AUC}
+=
+\int_0^1 \mathrm{TPR}(t)\, d\mathrm{FPR}(t),
+\end{equation}
+where $\mathrm{TPR}$ and $\mathrm{FPR}$ denote the true- and false-positive 
+rates across classification thresholds. 
+For the binary Normal–Adjacent problem, this quantity is 
+equivalently expressed as
+\begin{equation}
+\mathrm{AUC}
+=
+\mathbb{P}\!\left(
+s(X_{A}) > s(X_{N})
+\right),
+\end{equation}
+that is, the probability that a randomly selected Adjacent sample 
+receives a higher score than a randomly selected Normal sample. 
+The AUC takes values in $[0,1]$, where $0.5$ corresponds to 
+chance-level discrimination, values above $0.5$ indicate 
+discriminative ability in the correct direction, and $1$ 
+corresponds to perfect separation. Values below $0.5$ 
+reflect systematic inversion of the ranking rule.
+
+The resulting AUC was $0.776$ when training on GSE69914 and 
+testing on GSE225845, and $0.794$ in the reverse direction. 
+Both values are substantially above chance, indicating that the 
+shared drift axis identified through concordance analysis 
+translates into genuine discriminative transferability. 
+These results provide the strongest cross-cohort evidence in 
+the present study that the GSE69914--GSE225845 pair captures 
 a reproducible and functionally portable epigenetic drift structure.
 
-\paragraph{Transfers involving GSE287331.}
+\paragraph{Transfers involving GSE287331}
 All four directed transfer pairs involving GSE287331 yield AUC values
 in the range $[0.017,\, 0.226]$, substantially and consistently below
 chance level.
@@ -1794,7 +1800,7 @@ sign concordance ($c = 0.125$--$0.357$) and negative Spearman correlations
 and provides definitive evidence that the polarity inversion observed at
 the descriptive level has concrete consequences for predictive transfer.
 
-\paragraph{Interpretation.}
+\paragraph{Interpretation}
 The transferability results complete the multi-level concordance portrait
 of the three selected panels.
 The GSE69914--GSE225845 pair satisfies all criteria for the
@@ -1806,7 +1812,7 @@ Pairs involving GSE287331 are consistent with the
 systematically inverted effect polarity across all magnitude strata,
 and sub-random transfer performance.
 These asymmetries have direct methodological consequences for the
-downstream modelling strategy developed in Chapter~\ref{chap:models}:
+downstream modelling strategy developed in Chapter~\ref{chap:model_training_evaluation}:
 naive cross-cohort transfer from or to GSE287331 is not only
 non-informative but actively misleading, motivating the need for
 orientation-aware or cohort-adaptive learning approaches.
@@ -1815,129 +1821,101 @@ orientation-aware or cohort-adaptive learning approaches.
 \begin{table}[t]
 \centering
 \scriptsize
-\caption{%
-  Sequential reduction of CpG dimensionality through the feature
-  selection pipeline, applied to the training set of each cohort.
-  Values at each stage reflect the number of CpG loci entering the
-  subsequent step. Steps marked \textsuperscript{$\dagger$} produce
-  a fixed-cardinality output by design.
-  Intermediate values marked \texttt{[?]} are not recoverable from
-  the current pipeline logs and should be filled from run outputs.
-}
+\caption{Number of CpGs retained at each step of the feature selection pipeline (training set).}
 \label{tab:fs_reduction_steps_all}
-\begin{tabular}{l r r r}
+\begin{tabular}{l c c c}
 \toprule
-Pipeline stage & GSE69914 & GSE225845 & GSE287331 \\
+Pipeline step 
+& CpGs in GSE69914 
+& CpGs in GSE225845 
+& CpGs in GSE287331 \\
 \midrule
 Post-preprocessing space           & 251{,}483 & 530{,}683 & 486{,}725 \\
-After Edgar variability filter ($\tau{=}0.05$, $\beta$-space)
-                                   & 151{,}380 & 396{,}644 & 286{,}000 \\
-After $M$-value SD trimming (bottom 2\%)
-                                   & 148{,}352 & 388{,}711 & 280{,}280 \\
-After stability + effect-size filter\textsuperscript{$\dagger$}
+After Edgar variability filter     & 151{,}380 & 396{,}644 & 286{,}000 \\
+After $M$-value SD trimming        & 148{,}352 & 388{,}711 & 280{,}280 \\
+After stability + effect-size filter
                                    & 15{,}000  & 15{,}000  & 15{,}000  \\
-After correlation pruning ($|r|\geq 0.85$)
-                                   & 6{,}300   & \texttt{[?]} & \texttt{[?]} \\
-After constrained diversification\textsuperscript{$\dagger$}
-                                   & 5{,}000   & 5{,}000   & 5{,}000   \\
+After correlation pruning          & 12{,}313  & 6{,}453   & 6{,}300  \\
+After constrained diversification  & 5{,}000   & 5{,}000   & 5{,}000   \\
 \bottomrule
 \end{tabular}
 \end{table}
 %----------------------------------------------------------------------
 
 
-%----------------------------------------------------------------------
-\subsection{Synthesis of Cross-Cohort Behaviour}
-\label{sec:inter_fs_synthesis}
-%----------------------------------------------------------------------
-
-The multi-level evaluation conducted in Sections~\ref{sec:inter_fs_overlap}–-%
-\ref{sec:inter_fs_transfer} reveals a pronounced and internally consistent
-asymmetry in the cross-cohort behaviour of the three selected CpG panels.
-
-At every analytical level — identity-level enrichment, signed and
-magnitude-stratified effect concordance, and zero-shot discriminative
-transferability — GSE69914 and GSE225845 exhibit mutually reinforcing
-evidence of a shared epigenetic drift structure.
-Their differential methylation profiles align in both polarity and
-relative magnitude ordering, and the corresponding scoring functions
-retain substantial discriminative power when applied to the partner
-cohort without retraining (AUC $= 0.776$ and $0.794$, respectively).
-The conjunction of significant set enrichment (permutation $p < 10^{-4}$),
-near-complete directional concordance ($c = 0.980$), and bidirectional
-transferability establishes this pair as satisfying all criteria for the
-\emph{shared drift structure} regime.
-
-GSE287331 occupies a qualitatively distinct position.
-Despite yielding significant identity-level enrichment relative to the
-permutation null — confirming the non-random nature of the selected
-loci — both effect polarity and transfer performance indicate systematic
-structural incompatibility with the other two cohorts.
-Sign concordance collapses to $c = 0.125$--$0.357$, Spearman
-correlations are negative ($\rho = -0.042$ to $-0.420$),
-and zero-shot AUC values fall consistently in the range
-$[0.017,\, 0.226]$, reflecting active inversion of the scoring
-direction rather than mere absence of shared signal.
-Magnitude-stratified analysis confirms that this inversion is
-structural — not a low-amplitude artefact — and persists across
-all deciles of effect size, including the strongest drift signals.
-These results are consistent with the \emph{directional inversion}
-regime: the panel selected from GSE287331 captures an internally
-robust and biologically discriminative drift axis, but one whose
-dominant orientation is systematically rotated relative to that
-shared by GSE69914 and GSE225845.
-
-Two non-exclusive mechanistic hypotheses may account for this behaviour.
-First, platform-level effects: GSE287331 is the only cohort for which
-BMIQ normalisation was found to suppress genuine group structure
-(Section~\ref{sec:preproc_gse287331}), and its EPIC data carry
-residual Type~I/II probe imbalance that may differentially distort
-the estimated $\Delta\beta$ signs relative to the HM450-based
-GSE69914.
-Second, sampling design: GSE287331 was constructed along a
-fine-grained tumour-proximity axis (TPxA), with Adjacent samples
-operationally defined at a different tissue margin than in the other
-two cohorts.
-This design difference may capture a biologically distinct subtype of
-epigenetic field effect, whose dominant methylation signature is
-genuinely inverted relative to the broader Adjacent--Normal contrast
-characterised in GSE69914 and GSE225845.
-Disentangling these contributions would require platform-harmonised
-reanalysis and is identified as a direction for future work.
-
-A methodological remark on statistical significance is warranted.
-Throughout this section, permutation $p$-values quantify enrichment
-relative to the large-cardinality random baseline and should not be
-conflated with biological equivalence.
-Under the large-universe sampling regime operative here — where
-$5{,}000$ loci are drawn from post-preprocessing intersections of
-$\mathcal{O}(10^5)$ CpGs — even modest absolute overlaps can achieve
-nominal significance.
-Jaccard indices in the range $0.009$--$0.015$ demonstrate that
-identity-level reproducibility remains structurally weak,
-and that cross-cohort concordance must be interpreted primarily
-through effect-structure and transferability evidence.
-
-Collectively, the present analysis demonstrates that the epigenetic
-drift characterising the Normal--Adjacent transition is \emph{partially}
-replicable across independent cohorts, but that its orientation is
-modulated by cohort-specific factors including platform architecture,
-sampling design, and residual batch structure.
-These structural asymmetries have direct implications for downstream
-predictive modelling: naive cross-cohort transfer of linear
-$\Delta\beta$ signatures is feasible between GSE69914 and GSE225845
-but actively misleading when GSE287331 is involved, motivating
-orientation-aware or cohort-adaptive representational strategies
-investigated in Chapter~\ref{chap:models}.
-
-
 % ============================================================
-\section{Synthesis and Transition to Predictive Modelling}
+\section{Feature Selection Outcomes and Modelling Implications}
 \label{sec:fs_conclusion}
 % ============================================================
 
-\subsection{Structural Properties of the Final CpG Panel}
-\label{subsec:fs_structural_summary}
+The feature selection framework developed in this chapter addresses
+the core statistical challenge posed by genome-wide DNA methylation
+data in the HDLSS regime: identifying a compact, stable, and
+biologically coherent CpG panel capable of characterising the
+Normal--Adjacent epigenetic transition across independent cohorts.
 
-\subsection{Implications for Supervised Learning and Model Design}
-\label{subsec:fs_transition_ml}
+The pipeline operates as a sequence of strictly train-only
+dimensionality reduction stages, each targeting a distinct source
+of noise or redundancy in the methylation feature space.
+Table~\ref{tab:fs_reduction_steps_all} summarises the progressive
+reduction from the post-preprocessing spaces — ranging from
+$251{,}483$ to $530{,}683$ CpGs depending on platform — to the
+final panels of $K = 5{,}000$ loci retained after variability
+filtering, stability-based ranking, correlation pruning, and
+constrained genomic diversification.
+The resulting panels exhibit several desirable structural properties.
+Directional stability scores are concentrated near unity across all
+three cohorts, indicating that the selected CpGs express
+reproducible Adjacent--Normal polarity across resampling splits.
+Correlation-based redundancy pruning eliminates co-methylated
+blocks, yielding non-redundant representatives of independent
+epigenetic signals.
+Genomic diversification enforces broad chromosomal and
+regulatory-context coverage, reducing the risk that downstream
+models capture locus-specific artefacts rather than system-level
+drift patterns.
+
+
+The inter-dataset evaluation of Section~\ref{sec:inter_dataset_fs}
+reveals that cross-cohort replicability is partial and asymmetric.
+GSE69914 and GSE225845 satisfy all criteria for the \emph{shared
+drift structure} regime: their panels are mutually enriched beyond
+random expectation, exhibit near-complete directional concordance
+($c = 0.980$), and support bidirectional zero-shot transfer
+(AUC $= 0.776$ and $0.794$).
+GSE287331, by contrast, occupies the \emph{directional inversion}
+regime: its panel captures a robust but systematically inverted
+drift axis, yielding sub-random transfer performance
+(AUC $\in [0.017,\, 0.226]$) against both partner cohorts.
+This asymmetry has a direct methodological consequence.
+Linear $\Delta\beta$ signatures, however stable within a cohort,
+do not constitute a universally portable representation of the
+Normal--Adjacent transition: their discriminative orientation
+is modulated by platform architecture, sampling design, and
+residual batch structure in ways that naive cross-cohort transfer
+cannot accommodate.
+
+The structural properties and cross-cohort limitations of the
+final CpG panels jointly define the design space for the
+downstream modelling strategy.
+Within each cohort, the selected panels provide a low-dimensional,
+stability-filtered, and biologically grounded input representation
+for supervised classification of Normal versus Adjacent tissue.
+Chapter~\ref{chap:model_training_evaluation} develops and evaluates a suite of
+classifiers — ranging from regularised linear models to
+ensemble methods — applied independently within each dataset,
+assessing the degree to which the selected CpG signatures support
+within-cohort discriminability.
+The cross-cohort asymmetries documented here, however, motivate
+an analysis that goes beyond standard intra-dataset evaluation.
+Where drift orientation is preserved — as between GSE69914 and
+GSE225845 — cross-dataset transfer of trained models is a
+principled and tractable objective.
+Where systematic inversion is present, as with GSE287331,
+orientation-aware or cohort-adaptive strategies are required.
+Chapter~\ref{chap:CpGPT} addresses this challenge through
+CpGPT-based representation learning, investigating whether
+higher-order methylation organisation, not captured by linear
+$\Delta\beta$ projections, supports a more generalisable encoding
+of the Normal--Adjacent epigenetic transition across cohorts with
+divergent drift orientations.

@@ -39,18 +39,18 @@
 \addvspace {10\p@ }
 \contentsline {figure}{\numberline {5.1}{\ignorespaces Variability-based filtering in $\beta $-space and residual variance trimming in $M$-space in GSE69914.}}{61}{figure.caption.118}%
 \contentsline {figure}{\numberline {5.2}{\ignorespaces Stability enforcement and correlation-based redundancy structure in GSE69914.}}{62}{figure.caption.121}%
-\contentsline {figure}{\numberline {5.3}{\ignorespaces Variability-based filtering in $\beta $-space and residual variance trimming in $M$-space in GSE225845.}}{63}{figure.caption.125}%
+\contentsline {figure}{\numberline {5.3}{\ignorespaces Variability-based filtering in $\beta $-space and residual variance trimming in $M$-space in GSE225845.}}{63}{figure.caption.124}%
 \contentsline {figure}{\numberline {5.4}{\ignorespaces Stability and redundancy diagnostics in GSE225845.}}{64}{figure.caption.128}%
-\contentsline {figure}{\numberline {5.5}{\ignorespaces Variability-based filtering in $\beta $-space and residual variance trimming in $M$-space in GSE287331.}}{65}{figure.caption.131}%
-\contentsline {figure}{\numberline {5.6}{\ignorespaces Stability and redundancy diagnostics in GSE287331.}}{66}{figure.caption.134}%
-\contentsline {figure}{\numberline {5.7}{\ignorespaces Three-way overlap of the final 5{,}000 CpG signatures independently selected in GSE69914, GSE225845 and GSE287331. }}{67}{figure.caption.138}%
-\contentsline {figure}{\numberline {5.8}{\ignorespaces Inter-dataset effect concordance of the final 5{,}000 CpG signatures. }}{70}{figure.caption.142}%
+\contentsline {figure}{\numberline {5.5}{\ignorespaces Variability-based filtering in $\beta $-space and residual variance trimming in $M$-space in GSE287331.}}{66}{figure.caption.131}%
+\contentsline {figure}{\numberline {5.6}{\ignorespaces Stability and redundancy diagnostics in GSE287331.}}{67}{figure.caption.134}%
+\contentsline {figure}{\numberline {5.7}{\ignorespaces Three-way overlap of the final 5{,}000 CpG signatures independently selected in GSE69914, GSE225845 and GSE287331. }}{68}{figure.caption.138}%
+\contentsline {figure}{\numberline {5.8}{\ignorespaces Inter-dataset effect concordance of the final 5{,}000 CpG signatures. }}{70}{figure.caption.141}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {B.1}{\ignorespaces Global overlap structure of non-variable CpGs across blood, buccal epithelial cells, placenta, and breast tissue. }}{85}{figure.caption.151}%
-\contentsline {figure}{\numberline {B.2}{\ignorespaces Assessment of robustness and trade-off between stability and dimensionality of non-variable CpG sets.}}{86}{figure.caption.152}%
-\contentsline {figure}{\numberline {B.3}{\ignorespaces Characterization of the selected non-variable CpG set in terms of methylation distribution and baseline risk behavior.}}{87}{figure.caption.153}%
+\contentsline {figure}{\numberline {B.1}{\ignorespaces Global overlap structure of non-variable CpGs across blood, buccal epithelial cells, placenta, and breast tissue. }}{85}{figure.caption.149}%
+\contentsline {figure}{\numberline {B.2}{\ignorespaces Assessment of robustness and trade-off between stability and dimensionality of non-variable CpG sets.}}{86}{figure.caption.150}%
+\contentsline {figure}{\numberline {B.3}{\ignorespaces Characterization of the selected non-variable CpG set in terms of methylation distribution and baseline risk behavior.}}{87}{figure.caption.151}%
 \addvspace {10\p@ }

@@ -1,7 +1,69 @@
-\chapter{Model training and evaluation}
-\label{sec:model_training_evaluation}
+%======================================================================
+\chapter{Predictive Modelling and Cross-Dataset Generalisation}
+\label{chap:model_training_evaluation}
+%======================================================================
 
-REPORT 04
+%----------------------------------------------------------------------
+\section{Chapter Overview and Link with Feature Selection}
+\label{sec:cap6_overview}
+%----------------------------------------------------------------------
+\subsection{Motivation and scope}
+\subsection{From stable CpG panels to predictive modelling}
+\subsection{Chapter structure and expected outcomes}
+
+%----------------------------------------------------------------------
+\section{General Evaluation Framework}
+\label{sec:cap6_framework}
+%----------------------------------------------------------------------
+\subsection{Prediction task and label definition}
+\subsection{Train--test protocol and leakage control assumptions}
+\subsection{Input representations and feature spaces}
+\subsection{Performance metrics and reporting conventions}
+\subsection{Visual diagnostics: ROC and complementary plots}
+
+%----------------------------------------------------------------------
+\section{Within-Dataset Baseline Modelling on the Final 5k CpG Panel}
+\label{sec:cap6_within_dataset_5k}
+%----------------------------------------------------------------------
+\subsection{Linear SVM on $M$-values: model specification and regularisation}
+\subsection{Test-set performance: AUC, balanced accuracy, precision/recall, MCC}
+\subsection{ROC analysis and qualitative interpretation}
+
+%----------------------------------------------------------------------
+\section{Cross-Dataset Evaluation Under Feature-Space Intersection}
+\label{sec:cap6_cross_dataset}
+%----------------------------------------------------------------------
+\subsection{Rationale: platform constraints and intersection-induced shrinkage}
+\subsection{Train refit on intersected CpGs and calibrated scoring}
+\subsection{External testing on independent cohorts: performance summary}
+\subsection{Failure modes and consistency with inter-dataset feature-selection signals}
+
+%----------------------------------------------------------------------
+\section{From 5k to 50 CpGs: Bi-Objective Knapsack Selection}
+\label{sec:cap6_knapsack}
+%----------------------------------------------------------------------
+\subsection{Motivation: compact panels for interpretability and robustness}
+\subsection{Candidate pool construction from the 5k panel}
+\subsection{MILP formulation: objective terms and normalisation}
+\subsection{Hard constraints: correlation conflicts, chromosome caps, gene caps, anchor budget}
+\subsection{Directional balance constraint and COSMIC breast prior}
+\subsection{Hyperparameter sweeps: $\mu$ trade-off and knee selection}
+\subsection{Sensitivity sweep for $W_{\mathrm{COSMIC}}$}
+
+%----------------------------------------------------------------------
+\section{Evaluation of the 50 CpG Panel}
+\label{sec:cap6_eval_50cpg}
+%----------------------------------------------------------------------
+\subsection{Normal vs Adjacent separation: test-set evaluation}
+\subsection{Optional auxiliary contrast: Normal vs Tumor evaluation}
+\subsection{Comparison against the $\mu=0$ solution and stability diagnostics}
+
+%----------------------------------------------------------------------
+\section{Synthesis and Transition to the Next Chapter}
+\label{sec:cap6_synthesis}
+%----------------------------------------------------------------------
+\subsection{Summary of intra- and cross-dataset findings}
+\subsection{Implications for representation learning and next-step modelling}
 
 Qui ci va
 - Classificatori
