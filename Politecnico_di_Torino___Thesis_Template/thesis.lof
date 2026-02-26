@@ -50,11 +50,11 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {B.1}{\ignorespaces Global overlap structure of non-variable CpGs across blood, buccal epithelial cells, placenta, and breast tissue. }}{87}{figure.caption.162}%
-\contentsline {figure}{\numberline {B.2}{\ignorespaces Assessment of robustness and trade-off between stability and dimensionality of non-variable CpG sets.}}{88}{figure.caption.163}%
-\contentsline {figure}{\numberline {B.3}{\ignorespaces Characterization of the selected non-variable CpG set in terms of methylation distribution and baseline risk behavior.}}{89}{figure.caption.164}%
-\contentsline {figure}{\numberline {B.4}{\ignorespaces Distribution of $r_{\beta }$ computed on the Normal+Tumor comparison for each dataset. Vertical dashed lines indicate the selected threshold. }}{92}{figure.caption.165}%
-\contentsline {figure}{\numberline {B.5}{\ignorespaces Fold-enrichment of genomic context categories among invariant CpGs relative to the background distribution in each dataset. The dashed line indicates enrichment equal to background (fold = 1). }}{93}{figure.caption.166}%
-\contentsline {figure}{\numberline {B.6}{\ignorespaces Spearman correlation between CpG-level $\Delta \beta $ values computed in the Normal+Adjacent and Normal+Tumor contrasts for each dataset. The diagonal line represents identity. }}{94}{figure.caption.167}%
-\contentsline {figure}{\numberline {B.7}{\ignorespaces Overlap between universal invariants and breast-specific invariant sets derived from the Normal+Adjacent and Normal+Tumor contrasts in each dataset. }}{96}{figure.caption.171}%
+\contentsline {figure}{\numberline {B.1}{\ignorespaces Global overlap structure of non-variable CpGs across blood, buccal epithelial cells, placenta, and breast tissue. }}{88}{figure.caption.162}%
+\contentsline {figure}{\numberline {B.2}{\ignorespaces Assessment of robustness and trade-off between stability and dimensionality of non-variable CpG sets.}}{89}{figure.caption.163}%
+\contentsline {figure}{\numberline {B.3}{\ignorespaces Characterization of the selected non-variable CpG set in terms of methylation distribution and baseline risk behavior.}}{90}{figure.caption.164}%
+\contentsline {figure}{\numberline {B.4}{\ignorespaces Distribution of $r_{\beta }$ computed on the Normal+Tumor comparison for each dataset. Vertical dashed lines indicate the selected threshold. }}{93}{figure.caption.165}%
+\contentsline {figure}{\numberline {B.5}{\ignorespaces Fold-enrichment of genomic context categories among invariant CpGs relative to the background distribution in each dataset. The dashed line indicates enrichment equal to background (fold = 1). }}{94}{figure.caption.166}%
+\contentsline {figure}{\numberline {B.6}{\ignorespaces Spearman correlation between CpG-level $\Delta \beta $ values computed in the Normal+Adjacent and Normal+Tumor contrasts for each dataset. The diagonal line represents identity. }}{95}{figure.caption.167}%
+\contentsline {figure}{\numberline {B.7}{\ignorespaces Overlap between universal invariants and breast-specific invariant sets derived from the Normal+Adjacent and Normal+Tumor contrasts in each dataset. }}{97}{figure.caption.171}%
 \addvspace {10\p@ }
