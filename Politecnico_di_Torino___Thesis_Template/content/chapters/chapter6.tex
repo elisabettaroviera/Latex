@@ -62,121 +62,363 @@ linear $\Delta\beta$ signatures to generalise across cohorts with divergent
 drift orientations — directly motivate the representation-learning approach 
 developed in Chapter~\ref{chap:CpGPT}.
 
+
 %-----------------------------------------------------------
 \section{Predictive Framework}
 %-----------------------------------------------------------
+
+Following feature selection, each dataset is restricted to the 
+corresponding panel of $K = 5{,}000$ CpGs identified in 
+Chapter~\ref{chap:feature_selection}. 
+Supervised baseline classifiers are applied independently 
+within each cohort to assess whether the structurally stable 
+and biologically diversified signatures encode sufficient 
+discriminative information to separate Normal and Adjacent tissue.
 
 %-----------------------------------------------------------
 \subsection{Intra-Dataset Supervised Modelling}
 %-----------------------------------------------------------
 
-This section describes the supervised classification framework
-applied independently within each cohort.
-
 \paragraph{Data partitioning and leakage control}
-Description of train/test split strategy and preprocessing
-performed strictly on training data.
+For each dataset, samples are partitioned into stratified 
+training and test sets (80/20 split), preserving the 
+Normal--Adjacent class proportions. Standardisation is fitted 
+exclusively on the training set and then applied to the held-out 
+test set without re-estimation. Feature selection is performed 
+strictly within training folds in Chapter~\ref{chap:feature_selection}, 
+ensuring complete leakage control.
 
 \paragraph{Linear Support Vector Machine}
-Formal definition of the linear SVM classifier,
-regularisation parameter selection,
-and decision function.
+A linear Support Vector Machine (SVM) is adopted as the primary 
+classifier~\cite{cortes1995svm}. Given training data 
+$\{(x_i, y_i)\}_{i=1}^n$ with $x_i \in \mathbb{R}^p$ and 
+$y_i \in \{-1,+1\}$, the primal formulation is
 
-\paragraph{k-Nearest Neighbours (GSE69914 only)}
-Definition of the kNN classifier,
-distance metric,
-and rationale for inclusion as a local non-parametric baseline.
+\[
+\min_{w,b,\xi} \quad 
+\frac{1}{2}\lVert w\rVert^2 + C \sum_{i=1}^n \xi_i
+\quad
+\text{s.t.}\quad
+y_i(w^\top x_i + b) \ge 1 - \xi_i,\ \xi_i \ge 0.
+\]
+
+The decision function is $f(x)=w^\top x + b$, with class assignment 
+given by $\mathrm{sign}(f(x))$. In this work, the model is trained on 
+standardised $M$-values with fixed hyperparameters ($C=0.5$, 
+$\texttt{max\_iter}=10{,}000$) to prioritise robustness over tuning.
+
+\paragraph{$k$-Nearest Neighbours (GSE69914 only)}
+For GSE69914, a $k$-Nearest Neighbours (kNN) classifier is also evaluated 
+as a local non-parametric baseline~\cite{cover1967nn}. For a query $x$, 
+let $\mathcal{N}_k(x)$ denote the set of the $k$ closest training samples 
+under Euclidean distance. The predicted label is
+
+\[
+\hat{y}(x)=\operatorname{mode}\{y_i:\ x_i \in \mathcal{N}_k(x)\}.
+\]
+
+The method is applied on standardised features with fixed $k=5$.
 
 \paragraph{Performance metrics}
-Definition of AUC, balanced accuracy,
-Matthews correlation coefficient,
-precision, recall and F1-score.
+AUC is computed as defined in Chapter~\ref{chap:feature_selection}. 
+Balanced accuracy, MCC, precision, recall, and F1-score are reported to 
+complement AUC under potential class imbalance. Balanced accuracy is
+
+\[
+\mathrm{BAcc}=\frac{1}{2}\left(
+\frac{\mathrm{TP}}{\mathrm{TP}+\mathrm{FN}}+
+\frac{\mathrm{TN}}{\mathrm{TN}+\mathrm{FP}}
+\right),
+\]
+
+while MCC is
+
+\[
+\mathrm{MCC}=
+\frac{\mathrm{TP}\cdot\mathrm{TN}-\mathrm{FP}\cdot\mathrm{FN}}
+{\sqrt{(\mathrm{TP}+\mathrm{FP})(\mathrm{TP}+\mathrm{FN})
+(\mathrm{TN}+\mathrm{FP})(\mathrm{TN}+\mathrm{FN})}}.
+\]
+
+Finally,
+\[
+\mathrm{Precision}=\frac{\mathrm{TP}}{\mathrm{TP}+\mathrm{FP}},
+\qquad
+\mathrm{Recall}=\frac{\mathrm{TP}}{\mathrm{TP}+\mathrm{FN}},
+\qquad
+\mathrm{F1}=\frac{2\,\mathrm{Precision}\,\mathrm{Recall}}
+{\mathrm{Precision}+\mathrm{Recall}}.
+\]
 
 %-----------------------------------------------------------
 \subsection{Cross-Dataset Evaluation Protocol}
 %-----------------------------------------------------------
 
-This section defines the cross-cohort transferability framework.
+This subsection formalises the cross-cohort transferability 
+framework adopted to assess whether the inferred epigenetic 
+drift axis generalises across independent datasets.
 
 \paragraph{Feature space alignment}
-Restriction to shared CpG space and column ordering consistency.
+
+Cross-dataset evaluation requires strict alignment of the 
+feature space between source and target cohorts. 
+For each ordered pair of datasets $(A,B)$, the CpG panel is 
+restricted to the intersection of the effective 5,000-CpG sets 
+used during intra-dataset training in cohort $A$. 
+Only CpGs present in both datasets and retained in the 
+final feature selection of the source cohort are considered.
+
+Column ordering is explicitly harmonised to ensure identical 
+feature indexing across matrices. No re-selection or 
+feature re-ranking is performed on the target cohort. 
+All transformations (including the $\beta \to M$ mapping, 
+when required) are applied consistently across datasets 
+prior to modelling.
 
 \paragraph{Train-on-A / Test-on-B design}
-Formal description of the external validation setting,
-including absence of retraining on the target cohort.
+
+External validation is implemented under a strict 
+train-on-$A$ / test-on-$B$ paradigm. 
+The classifier is trained exclusively on the training split 
+of cohort $A$, using the aligned CpG space described above. 
+No samples from cohort $B$ enter the fitting procedure at any stage.
+
+Feature standardisation is fitted on the source training set 
+and subsequently applied, without re-estimation, to the 
+target dataset. A linear Support Vector Machine is trained 
+on the source cohort and probability calibration is performed 
+via sigmoid calibration (three-fold internal cross-validation) 
+within the source training data only. 
+The calibrated decision function is then evaluated directly 
+on cohort $B$.
+
+No hyperparameter tuning, retraining, or adaptation 
+is performed on the target cohort. 
+This design enforces complete separation between 
+source and target distributions and quantifies 
+true zero-shot transferability.
 
 \paragraph{Evaluation criteria}
-Definition of discrimination metrics and interpretation
-under distributional shift.
+
+Discriminative performance is quantified using the same 
+metrics adopted for intra-dataset validation, including 
+AUC, balanced accuracy, and Matthews correlation coefficient. 
+Performance is reported both on the internal test split 
+of cohort $A$ and on the external cohort $B$.
+
+Under distributional shift, degradation in AUC or balanced 
+accuracy is interpreted as evidence of limited transferability 
+of the learned separating hyperplane. 
+In particular, systematic performance inversion is examined 
+in relation to the directional concordance structure 
+identified in Chapter~\ref{chap:feature_selection}. 
+External performance below random expectation 
+(AUC $\approx 0.5$) is considered indicative of 
+either weak shared signal or reversed drift orientation 
+between cohorts.
 
 %-----------------------------------------------------------
 \subsection{Constrained Subset Optimisation: Knapsack Formulation}
 %-----------------------------------------------------------
 
-This section formalises the compression of the 5,000-CpG panel
-into a fixed-cardinality subset.
+This subsection formalises the compression of the 
+5,000-CpG panel into a fixed-cardinality subset of size 
+$K = 50$ through a constrained combinatorial optimisation framework. 
+The formulation is inspired by the classical $0$--$1$ knapsack 
+problem originally discussed in the context of discrete-variable 
+extremum problems by Dantzig~\cite{dantzig1957}, and extended here 
+to incorporate multiple structural and biological constraints.
+
+While the classical knapsack maximises a linear utility function 
+under a single capacity constraint, the present formulation 
+adopts a multi-constraint mixed-integer linear programming (MILP) 
+structure tailored to genomic panel design. Similar optimisation-based 
+approaches have been explored in marker and SNP panel selection 
+problems~\cite{wu2016snp,nishiyama2022ilp}, supporting the use 
+of binary decision variables and explicit structural constraints 
+in genomics.
 
 \paragraph{Objective function}
-Definition of the optimisation criterion combining
-statistical ranking and diversification score.
+
+Let $\mathcal{J}$ denote the set of 5,000 CpGs retained after 
+feature selection. For each CpG $j \in \mathcal{J}$, 
+a binary decision variable $x_j \in \{0,1\}$ indicates inclusion 
+in the compressed panel.
+
+Each CpG is assigned a composite score
+\[
+v_j = 
+w_{\mathrm{stat}} \,\tilde{s}_j 
++ w_{\Delta M} \,\tilde{d}_j 
++ w_{\mathrm{stab}} \,\tilde{r}_j
++ w_{\mathrm{COSMIC}} \,\mathbf{1}_{\{j \in \mathrm{CGC}\}},
+\]
+where $\tilde{s}_j$, $\tilde{d}_j$, and $\tilde{r}_j$ denote 
+normalised statistical ranking components 
+(classifier weight magnitude, absolute effect size, and stability score, 
+respectively), and $\mathbf{1}_{\{j \in \mathrm{CGC}\}}$ indicates 
+whether the gene mapped to CpG $j$ appears in the 
+COSMIC Cancer Gene Census~\cite{sondka2018cosmic}.
+
+The optimisation objective is
+
+\[
+\max_{x} \quad \sum_{j \in \mathcal{J}} v_j x_j
++ \mu \, \Phi(x),
+\]
+
+where $\Phi(x)$ encodes diversification incentives 
+and $\mu \ge 0$ controls the trade-off between 
+pure statistical ranking and structural balance. 
+A sweep over $\mu$ is performed to identify 
+a stable trade-off region.
 
 \paragraph{Cardinality and structural constraints}
-Fixed subset size, chromosome caps,
-genomic context constraints,
-correlation-exclusion rules,
-and sign-balance conditions.
+
+The optimisation is subject to the following constraints:
+
+\begin{itemize}
+\item \textbf{Fixed cardinality:}
+\[
+\sum_{j \in \mathcal{J}} x_j = K.
+\]
+
+\item \textbf{Chromosome caps:}
+for each chromosome $c$,
+\[
+\sum_{j \in \mathcal{J}_c} x_j \le \alpha_{\mathrm{chr}} K,
+\]
+where $\mathcal{J}_c$ denotes CpGs located on chromosome $c$.
+
+\item \textbf{Genomic context limits:}
+upper bounds are imposed on the proportion of CpGs 
+belonging to specific contexts (e.g., OpenSea, Island).
+
+\item \textbf{Correlation exclusion:}
+for CpG pairs $(i,j)$ with 
+$|r_{ij}| \ge 0.85$,
+\[
+x_i + x_j \le 1,
+\]
+preventing the simultaneous selection of highly 
+correlated loci.
+
+\item \textbf{Gene-level diversity:}
+linking variables ensure that no gene is represented 
+by more than a fixed number of CpGs, and that 
+a minimum number of distinct genes is selected.
+
+\item \textbf{Directional balance:}
+a minimum number of hypermethylated loci is enforced 
+to prevent polarity collapse.
+\end{itemize}
+
+These constraints extend the classical single-capacity 
+knapsack formulation~\cite{dantzig1957} into a structured 
+multi-constraint MILP suitable for genomic panel compression.
 
 \paragraph{Optimisation strategy}
-Description of greedy or mixed-integer approximation scheme
-and computational considerations.
+
+The resulting problem is solved using a mixed-integer 
+linear programming solver (CBC backend via PuLP). 
+Given the moderate dimensionality ($|\mathcal{J}| = 5{,}000$), 
+exact optimisation is computationally feasible. 
+
+To assess stability of the solution with respect to 
+the diversification parameter $\mu$, a parameter sweep 
+is conducted and the Pareto trade-off curve between 
+statistical score and diversification component 
+is analysed. The final subset is selected at the 
+empirical knee point of this curve.
+
+The formulation therefore combines classical 
+binary combinatorial optimisation~\cite{dantzig1957} 
+with recent optimisation-based approaches to marker 
+panel design in genomics~\cite{wu2016snp,nishiyama2022ilp}, 
+yielding a compact CpG panel that jointly preserves 
+predictive relevance and biological structure.
 
 %-----------------------------------------------------------
 \subsection{Gene Set and Functional Enrichment Analysis}
 %-----------------------------------------------------------
 
-This section evaluates the biological coherence
-of the selected CpG panels.
+This subsection evaluates the biological coherence of the 
+CpG subsets selected through supervised modelling and 
+constrained optimisation. The objective is to determine 
+whether loci identified purely through statistical and 
+structural criteria converge on genes with established 
+roles in cancer biology.
 
 \paragraph{CpG-to-gene mapping}
-Annotation procedure based on Illumina manifest.
+
+CpG loci are annotated to genes using the Illumina 
+EPIC manifest (GRCh38 assembly), relying on the 
+\texttt{UCSC\_RefGene\_Name} field. 
+When multiple gene symbols are associated with a single CpG, 
+all mapped genes are retained. 
+Gene symbols are harmonised to official HGNC nomenclature 
+prior to downstream analysis.
+
+Let $\mathcal{G}$ denote the set of unique genes mapped 
+from the selected CpG subset. 
+Gene-level analyses are conducted on $\mathcal{G}$ 
+after removal of duplicated mappings.
 
 \paragraph{Enrichment testing}
-Definition of over-representation analysis,
-background universe,
-multiple-testing correction.
+
+Functional coherence is assessed using over-representation 
+analysis (ORA). 
+Let $\mathcal{U}$ denote the background universe of genes 
+mapped from the full 5,000-CpG panel of the corresponding cohort. 
+For a given reference gene set $\mathcal{S}$, 
+the enrichment of $\mathcal{G}$ in $\mathcal{S}$ 
+is evaluated via the hypergeometric test:
+
+\[
+p =
+\sum_{k = k_0}^{|\mathcal{G}|}
+\frac{
+\binom{|\mathcal{S}|}{k}
+\binom{|\mathcal{U}| - |\mathcal{S}|}{|\mathcal{G}| - k}
+}{
+\binom{|\mathcal{U}|}{|\mathcal{G}|}
+},
+\]
+
+where $k_0 = |\mathcal{G} \cap \mathcal{S}|$ denotes 
+the observed overlap. 
+
+Multiple hypothesis testing correction is performed 
+using the Benjamini--Hochberg procedure to control 
+the false discovery rate (FDR). 
+Adjusted $q$-values below $0.05$ are considered significant.
 
 \paragraph{Reference databases}
-Description of external resources
-(e.g. COSMIC Cancer Gene Census, curated field-cancerization genes).
+
+External biological knowledge is incorporated through 
+curated gene sets. 
+In particular, selected genes are cross-referenced 
+against the COSMIC Cancer Gene Census (CGC) database 
+(version 103, GRCh38 assembly)~\cite{sondka2018cosmic}, 
+which catalogues genes with documented roles in oncogenesis.
+
+Additional curated gene lists relevant to field cancerisation 
+and early epigenetic deregulation are considered when 
+interpreting enrichment results. 
+The integration of these external resources enables 
+assessment of whether statistically derived CpG panels 
+converge on genes implicated in tumour initiation, 
+chromatin regulation, and cancer-associated signalling pathways.
 
 %-----------------------------------------------------------
 \section{Intra-Dataset Results}
 %-----------------------------------------------------------
 
-%-----------------------------------------------------------
-\subsection{Classification Performance on the 5,000-CpG Panel}
-%-----------------------------------------------------------
+\subsection{Dataset GSE69914}
 
-Performance metrics obtained independently within each cohort.
+\subsection{Dataset GSE225845}
 
-%-----------------------------------------------------------
-\subsection{Comparison Between Linear and Local Classifiers}
-%-----------------------------------------------------------
-
-Comparison between SVM and kNN (GSE69914),
-with analysis of linear separability.
-
-%-----------------------------------------------------------
-\subsection{Compression to a 50-CpG Panel}
-%-----------------------------------------------------------
-
-Evaluation of predictive stability after knapsack-based reduction.
-
-%-----------------------------------------------------------
-\subsection{Biological Characterisation of the 50-CpG Signature}
-%-----------------------------------------------------------
-
-Functional enrichment results and gene-level interpretation.
+\subsection{Dataset GSE287331}
 
 %-----------------------------------------------------------
 \section{Inter-Dataset Results}
